@@ -1,0 +1,41 @@
+version: '3.9'
+name: tp1
+services:
+
+  server:
+    container_name: server
+    image: server:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=DEBUG
+    networks:
+      - testing_net
+    volumes:
+      - type: bind
+        source: ./server/config.ini
+        target: /config.ini
+
+  client:
+    container_name: client
+    image: client:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=DEBUG
+    networks:
+      - testing_net
+    depends_on:
+      - server
+    volumes:
+      - type: bind
+        source: ./client/config.ini
+        target: /config.ini
+    
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 168.25.125.0/24
