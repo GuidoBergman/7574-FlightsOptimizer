@@ -1,6 +1,7 @@
 import logging
 import signal
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
+from manejador_colas import ManejadorColas
 
 
 
@@ -10,6 +11,7 @@ class Server:
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
+        self._colas = ManejadorColas('rabbitmq')
 
         
         
@@ -23,7 +25,9 @@ class Server:
         
 
     def run(self):
+            self._colas.crear_cola('cola')
             while True:
+                self._colas.enviar_mensaje('cola', 'botella')
                 logging.info('action: accept_connections | result: in_progress')
                 try:
                     client_sock, addr = self._server_socket.accept()

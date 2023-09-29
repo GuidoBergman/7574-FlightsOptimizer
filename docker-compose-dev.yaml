@@ -2,6 +2,20 @@ version: '3.9'
 name: tp1
 services:
 
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
+    ports:
+      - 15672:15672
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:15672"]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+    networks:
+      - rabbit_net
+
   server:
     container_name: server
     image: server:latest
@@ -9,12 +23,37 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=DEBUG
+    restart: on-failure
+    depends_on:
+      - rabbitmq
     networks:
       - testing_net
+      - rabbit_net
     volumes:
       - type: bind
         source: ./server/config.ini
         target: /config.ini
+
+
+  filtro_escalas:
+    container_name: filtro_escalas
+    image: filtro_escalas:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=DEBUG
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - server
+    networks:
+      - testing_net
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_escalas/config.ini
+        target: /config.ini
+
 
   client:
     container_name: client
@@ -25,6 +64,7 @@ services:
       - LOGGING_LEVEL=DEBUG
     networks:
       - testing_net
+    restart: on-failure
     depends_on:
       - server
     volumes:
@@ -39,3 +79,8 @@ networks:
       driver: default
       config:
         - subnet: 168.25.125.0/24
+  rabbit_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 128.25.125.0/24
