@@ -1,5 +1,7 @@
+import csv
 import logging
 import signal
+from filtros.modelo.Aeropuerto import Aeropuerto
 from filtros.modelo.Vuelo import Vuelo
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 
@@ -15,7 +17,7 @@ class Client:
         
         
 
-    def cargar_vuelos_desde_csv(archivo_csv: str) -> List[Vuelo]:
+    def cargar_vuelos_desde_csv(archivo_csv: str) -> [Vuelo]:
         vuelos = []
         with open(archivo_csv, 'r', encoding='utf-8') as file:
             next(file)  # Saltar la primera línea con encabezados
@@ -32,6 +34,24 @@ class Client:
                     vuelos.append(vuelo)
         return vuelos
         
+
+    def leer_aeropuertos_desde_csv(nombre_archivo: str) -> [Aeropuerto]:
+        aeropuertos = []
+
+        with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+            next(archivo)  # Saltar la primera línea con encabezados
+            for linea in archivo:
+                campos = linea.strip().split(';')
+                if len(campos) >= 7:
+                    codigo = campos[0]  # Airport Code
+                    latitud = float(campos[5])  # Latitude
+                    longitud = float(campos[6])  # Longitude
+
+                    aeropuerto = Aeropuerto(codigo, latitud, longitud)
+                    aeropuertos.append(aeropuerto)
+
+        return aeropuertos
+
 
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('action: sigterm_received')
