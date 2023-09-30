@@ -1,5 +1,6 @@
 import logging
 import signal
+from filtros.modelo.Vuelo import Vuelo
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 
 
@@ -14,6 +15,22 @@ class Client:
         
         
 
+    def cargar_vuelos_desde_csv(archivo_csv: str) -> List[Vuelo]:
+        vuelos = []
+        with open(archivo_csv, 'r', encoding='utf-8') as file:
+            next(file)  # Saltar la primera línea con encabezados
+            for line in file:
+                fields = line.strip().split(',')
+                if len(fields) >= 4:
+                    id_vuelo = fields[0]  # legId
+                    origen = fields[3]  # startingAirport
+                    destino = fields[4]  # destinationAirport
+                    trayecto = f"{origen}-{destino}"
+                    precio = float(fields[11])  # totalFare
+                    segmentos = fields[22].split("||")  # segmentsAirlineName
+                    vuelo = Vuelo(id_vuelo, trayecto, precio, segmentos)
+                    vuelos.append(vuelo)
+        return vuelos
         
 
     def sigterm_handler(self, _signo, _stack_frame):

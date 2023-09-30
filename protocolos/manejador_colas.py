@@ -27,6 +27,12 @@ class ManejadorColas:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
+
+
+    def enviar_resultado(resultado):
+        print("ENVIAR RESULTADO")
+        
+
     def cerrar():
         self._connection.close()
 
