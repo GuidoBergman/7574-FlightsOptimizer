@@ -1,10 +1,9 @@
-import csv
 import logging
 import signal
-from filtros.modelo.Aeropuerto import Aeropuerto
-from filtros.modelo.Vuelo import Vuelo
+from modelo.Aeropuerto import Aeropuerto
+from modelo.Vuelo import Vuelo
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
-
+from protocolo_cliente import ProtocoloCliente
 
 
 class Client:
@@ -12,12 +11,13 @@ class Client:
         # Initialize server socket
         self._server_socket = SocketComun()
         self._server_socket.connect(host, port)
+        self._protocolo = ProtocoloCliente(self._server_socket)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
         
         
 
-    def cargar_vuelos_desde_csv(archivo_csv: str) -> [Vuelo]:
+    def _enviar_vuelos(self, archivo_csv: str) -> [Vuelo]:
         vuelos = []
         with open(archivo_csv, 'r', encoding='utf-8') as file:
             next(file)  # Saltar la primera línea con encabezados
@@ -27,15 +27,23 @@ class Client:
                     id_vuelo = fields[0]  # legId
                     origen = fields[3]  # startingAirport
                     destino = fields[4]  # destinationAirport
-                    trayecto = f"{origen}-{destino}"
-                    precio = float(fields[11])  # totalFare
-                    segmentos = fields[22].split("||")  # segmentsAirlineName
-                    vuelo = Vuelo(id_vuelo, trayecto, precio, segmentos)
-                    vuelos.append(vuelo)
+                    duracion = fields[6] #travelDuration
+                    precio = float(fields[12])  # totalFare
+                    try:
+                        distancia = int(fields[14])  # totalTravelDistance
+                    except ValueError:
+                        distancia = -1
+                    escalas = fields[19]  # segmentsArrivalAirportCode
+                    vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
+                    logging.info(f'id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
+                    #vuelos.append(vuelo)
+                    self._protocolo.enviar_vuelo(vuelo)
+
+        self._protocolo.enviar_fin_vuelos()
         return vuelos
         
 
-    def leer_aeropuertos_desde_csv(nombre_archivo: str) -> [Aeropuerto]:
+    def _enviar_aeropuertos(self, nombre_archivo: str) -> [Aeropuerto]:
         aeropuertos = []
 
         with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
@@ -60,7 +68,7 @@ class Client:
         
 
     def run(self):
-            self._server_socket.send('hola'.encode('utf-8'), 4)
+            self._enviar_vuelos('itineraries_short.csv')
 
                 
 

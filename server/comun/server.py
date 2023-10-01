@@ -2,6 +2,7 @@ import logging
 import signal
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 from manejador_colas import ManejadorColas
+from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS
 
 
 
@@ -26,18 +27,25 @@ class Server:
 
     def run(self):
             self._colas.crear_cola('cola')
+            try:
+                client_sock, addr = self._server_socket.accept()
+            except OSError:
+                return
+
+            protocolo_cliente = ProtocoloCliente(client_sock)    
             while True:
                 self._colas.enviar_mensaje('cola', 'botella')
                 logging.info('action: accept_connections | result: in_progress')
-                try:
-                    client_sock, addr = self._server_socket.accept()
-                except OSError:
-                    break
-                
-                _, msg, _ = client_sock.receive(4)
-                print(msg.decode('utf-8'))
 
-                client_sock.close()
+                
+                estado, vuelo = protocolo_cliente.recibir_vuelo()
+                if estado == ESTADO_FIN_VUELOS:
+                    break
+
+                logging.error(f'Vuelo recibido:  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
+
+
+            client_sock.close()
 
 
             
