@@ -24,7 +24,7 @@ class PrecioReduce:
 
         for resumen in self.resumenes_precios:
             if resumen.maximo_precio > promedio:
-                estadisticas = EstadisticasPrecio(resumen.trayecto, resumen.maximo_precio, promedio)
+                estadisticas = ResumenPrecios(resumen.trayecto, resumen.maximo_precio, promedio)
                 self.enviar(estadisticas)
 
     
