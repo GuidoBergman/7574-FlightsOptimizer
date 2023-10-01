@@ -26,9 +26,11 @@ class FiltroEscalas:
 
         
     def procesar_vuelo(self, vuelo: Vuelo):
-        if len(vuelo.escalas) > 3:
-            self.mandar_resultado(vuelo)
-            return  # Si tiene más de 3 escalas, no se agrega a los vuelos más rápidos
+        if len(vuelo.escalas) < 3:
+            return
+        
+        self.mandar_resultado(vuelo)
+            
 
         # Actualizar los 2 vuelos más rápidos por trayecto para vuelos con más de 3 escalas
         trayecto = vuelo.trayecto
@@ -47,11 +49,9 @@ class FiltroEscalas:
     def procesar_finvuelo(self):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
         for trayecto, vuelos in self.vuelos_mas_rapidos.items():
-            for vuelo_id, _ in vuelos:
+            for vuelo_id, vuelo in vuelos:
                 # Buscar el vuelo en base al ID
-                for vuelo in self.vuelos_con_tres_escalas:
-                    if vuelo.id_vuelo == vuelo_id:
-                        self.mandar_resultado(vuelo)
+                self.mandar_resultado(vuelo)
         
     def run(self):
           self._colas.crear_cola('cola')
