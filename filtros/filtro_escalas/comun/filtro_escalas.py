@@ -1,6 +1,6 @@
 import logging
 import signal
-from filtros.modelo.Vuelo import Vuelo
+from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from modelo.estado_vuelo import EstadoVuelo
 from protocoloescalas import ProtocoloFiltroEscalas

@@ -22,7 +22,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
+      - LOGGING_LEVEL=ERROR
     restart: on-failure
     depends_on:
       - rabbitmq
@@ -41,7 +41,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
+      - LOGGING_LEVEL=ERROR
     restart: on-failure
     depends_on:
       - rabbitmq
@@ -61,7 +61,7 @@ services:
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
+      - LOGGING_LEVEL=ERROR
     networks:
       - testing_net
     restart: on-failure
