@@ -1,6 +1,6 @@
 from enum import Enum
 
-class EstadoVuelo(Enum):
+class Estado(Enum):
     OK = "ok"
     ERROR = "error"
-    FIN_VUELOS = "finVuelos"
+    FIN = "finVuelos"

@@ -4,7 +4,7 @@ from filtros.modelo.Aeropuerto import Aeropuerto
 from filtros.modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from geopy.distance import great_circle
-from modelo.estado_vuelo import EstadoVuelo
+from modelo.estado import Estado
 from protocolofiltrodistancias import ProtocoloFiltroDistancia
 from protocoloresultados import ProtocoloResultado
 
@@ -61,11 +61,11 @@ class FiltroDistancia:
           
           while self.corriendo:
             aeropuerto, estado = self._protocolo.recibir_aeropuerto()
-            if estado == EstadoVuelo.OK:
+            if estado == Estado.OK:
                 self.agregar_aeropuerto(aeropuerto)
 
             vuelo, estado = self._protocolo.recibir_vuelo()
-            if estado == EstadoVuelo.OK:
+            if estado == Estado.OK:
                 self.procesar_vuelo(vuelo)
             else:
                 break

@@ -2,7 +2,7 @@ import logging
 import signal
 from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
-from modelo.estado_vuelo import EstadoVuelo
+from modelo.estado import Estado
 from protocoloescalas import ProtocoloFiltroEscalas
 from protocoloresultados import ProtocoloResultado
 from protocolovelocidad import ProtocoloFiltroVelocidad
@@ -16,8 +16,6 @@ class FiltroEscalas:
        self._protocoloResultado = ProtocoloResultado()
        self._protocoloVelocidad = ProtocoloFiltroVelocidad()
        self._protocolo = ProtocoloFiltroEscalas()
-       
-       
        self.vuelos_con_tres_escalas = []
        self.corriendo = True
        
@@ -39,12 +37,14 @@ class FiltroEscalas:
 
           while self.corriendo:
             vuelo, estado = self._protocolo.recibir_vuelo()
-            if estado == EstadoVuelo.OK:
+            if estado == Estado.OK:
                 self.procesar_vuelo(vuelo)
             else:
                 break
 
-            
+            if estado == Estado.FIN_VUELOS:
+                self._protocoloVelocidad.enviar_fin_vuelos()
+
     
         
         

@@ -1,6 +1,6 @@
 from filtros.filtro_precio.comun.resumen_precios import ResumenPrecios
 from manejador_colas import ManejadorColas
-from modelo.estado_vuelo import EstadoVuelo
+from modelo.estado import Estado
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocoloresultados import ProtocoloResultado
 
@@ -37,7 +37,7 @@ class PrecioReduce:
           
           while self.corriendo:
             resumen, estado = self._protocolo.recibir_resumen()
-            if estado == EstadoVuelo.OK:
+            if estado == Estado.OK:
                 self.agregar_resumen(resumen)
             else:
                 break

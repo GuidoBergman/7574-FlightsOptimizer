@@ -1,12 +1,12 @@
 import string
 from filtros.filtro_precio.comun import resumen_precios
 from modelo.Vuelo import Vuelo
-from modelo.estado_vuelo import EstadoVuelo
+from modelo.estado import Estado
 
 
 class ProtocoloFiltroPrecio:
 
-    def recibir_vuelo(self) -> (Vuelo, EstadoVuelo):
+    def recibir_vuelo(self) -> (Vuelo, Estado):
         print()
 
 
@@ -17,5 +17,5 @@ class ProtocoloFiltroPrecio:
     def mandar_resumen(self, trayecto, resumen: resumen_precios):
         2
 
-    def recibir_resumen(self) -> (string, resumen_precios, EstadoVuelo):
+    def recibir_resumen(self) -> (string, resumen_precios, Estado):
         2
