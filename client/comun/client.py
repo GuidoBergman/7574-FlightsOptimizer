@@ -17,8 +17,7 @@ class Client:
         
         
 
-    def _enviar_vuelos(self, archivo_csv: str) -> [Vuelo]:
-        vuelos = []
+    def _enviar_vuelos(self, archivo_csv: str):
         with open(archivo_csv, 'r', encoding='utf-8') as file:
             next(file)  # Saltar la primera línea con encabezados
             for line in file:
@@ -40,12 +39,10 @@ class Client:
                     self._protocolo.enviar_vuelo(vuelo)
 
         self._protocolo.enviar_fin_vuelos()
-        return vuelos
+       
         
 
-    def _enviar_aeropuertos(self, nombre_archivo: str) -> [Aeropuerto]:
-        aeropuertos = []
-
+    def _enviar_aeropuertos(self, nombre_archivo: str):
         with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
             next(archivo)  # Saltar la primera línea con encabezados
             for linea in archivo:
@@ -56,9 +53,9 @@ class Client:
                     longitud = float(campos[6])  # Longitude
 
                     aeropuerto = Aeropuerto(codigo, latitud, longitud)
-                    aeropuertos.append(aeropuerto)
+                    self._protocolo.enviar_aeropuerto(aeropuerto)
 
-        return aeropuertos
+        self._protocolo.enviar_fin_aeropuertos()
 
 
     def sigterm_handler(self, _signo, _stack_frame):
@@ -68,7 +65,9 @@ class Client:
         
 
     def run(self):
-            self._enviar_vuelos('itineraries_short.csv')
+        self._enviar_aeropuertos('airports-codepublic.csv')
+        self._enviar_vuelos('itineraries_short.csv')
+
 
                 
 

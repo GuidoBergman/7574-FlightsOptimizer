@@ -2,7 +2,7 @@ import logging
 import signal
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 from manejador_colas import ManejadorColas
-from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS
+from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
 
 
 
@@ -25,6 +25,27 @@ class Server:
         logging.info(f'action: close_server_socket | result: success')
         
 
+    def _recibir_vuelos(self, protocolo_cliente):
+        while True:
+            self._colas.enviar_mensaje('cola', 'botella')
+            
+            estado, vuelo = protocolo_cliente.recibir_vuelo()
+            if estado == ESTADO_FIN_VUELOS:
+                break
+
+            logging.error(f'Vuelo recibido:  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
+
+
+    def _recibir_aeropuertos(self, protocolo_cliente):
+        while True:            
+            estado, aeropuerto = protocolo_cliente.recibir_aeropuerto()
+            if estado == ESTADO_FIN_AEROPUERTOS:
+                break
+
+            logging.error(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
+
+
+
     def run(self):
             self._colas.crear_cola('cola')
             try:
@@ -32,17 +53,9 @@ class Server:
             except OSError:
                 return
 
-            protocolo_cliente = ProtocoloCliente(client_sock)    
-            while True:
-                self._colas.enviar_mensaje('cola', 'botella')
-                logging.info('action: accept_connections | result: in_progress')
-
-                
-                estado, vuelo = protocolo_cliente.recibir_vuelo()
-                if estado == ESTADO_FIN_VUELOS:
-                    break
-
-                logging.error(f'Vuelo recibido:  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
+            protocolo_cliente = ProtocoloCliente(client_sock)  
+            self._recibir_aeropuertos(protocolo_cliente)  
+            self._recibir_vuelos(protocolo_cliente)
 
 
             client_sock.close()
