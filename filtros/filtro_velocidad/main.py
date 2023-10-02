@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from configparser import ConfigParser
-from filtros.filtro_precio.comun.filtro_precio import FiltroEscalas, FiltroPrecios
+from filtros.filtro_velocidad.comun.filtro_velocidad import FiltroEscalas
 import logging
 import os
 
@@ -49,7 +49,7 @@ def main():
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    filtro_escalas = FiltroPrecios(port, listen_backlog)
+    filtro_escalas = FiltroVelocidad(port, listen_backlog)
     filtro_escalas.run()
 
 def initialize_log(logging_level):

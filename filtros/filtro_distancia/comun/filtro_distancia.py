@@ -4,12 +4,16 @@ from filtros.modelo.Aeropuerto import Aeropuerto
 from filtros.modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from geopy.distance import great_circle
+from modelo.estado_vuelo import EstadoVuelo
+from protocolofiltrodistancias import ProtocoloFiltroDistancia
+from protocoloresultados import ProtocoloResultado
 
 class FiltroDistancia:
     def __init__(self, port, listen_backlog):
        self._colas = ManejadorColas('rabbitmq')
        signal.signal(signal.SIGTERM, self.sigterm_handler)
-
+       self._protocoloResultado = ProtocoloResultado()
+       self._protocolo = ProtocoloFiltroDistancia()
        self.aeropuertos = []
         
         
@@ -40,7 +44,7 @@ class FiltroDistancia:
         distancia_directa = self.calcular_distancia(origen, destino)
 
         if distancia_directa > 0 and distancia_total > 4 * distancia_directa:
-            self.enviar(vuelo)
+            self._protocoloResultado.EnviarResultadoFiltroDistancia()
 
 
     
@@ -50,16 +54,21 @@ class FiltroDistancia:
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('action: sigterm_received')
 
-        
-    def procesar_vuelo(vuelo: Vuelo):
-        logging.info('procesando vuelo')
 
-
-
-        
     def run(self):
           self._colas.crear_cola('cola')
           self._colas.consumir_mensajes('cola')
+          
+          while self.corriendo:
+            aeropuerto, estado = self._protocolo.recibir_aeropuerto()
+            if estado == EstadoVuelo.OK:
+                self.agregar_aeropuerto(aeropuerto)
+
+            vuelo, estado = self._protocolo.recibir_vuelo()
+            if estado == EstadoVuelo.OK:
+                self.procesar_vuelo(vuelo)
+            else:
+                break
 
 
 
