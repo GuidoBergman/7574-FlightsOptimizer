@@ -49,7 +49,7 @@ def main():
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    filtro_escalas = FiltroEscalas(port, listen_backlog)
+    filtro_escalas = FiltroEscalas()
     filtro_escalas.run()
 
 def initialize_log(logging_level):

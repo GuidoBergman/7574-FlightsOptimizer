@@ -1,4 +1,5 @@
 
+from manejador_colas import ManejadorColas
 from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
 from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
@@ -6,14 +7,27 @@ from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 
 
 class ProtocoloResultado:
-    def EnviarResultadoVuelosRapidos(resultado: ResultadoVuelosRapidos):
+
+    def __init__(self):
+       self._colas = ManejadorColas('rabbitmq')
+       self.corriendo = False
+    
+    def iniciar(self):        
+        self.corriendo = False
+        self._colas.crear_cola('cola')
+        self._colas.consumir_mensajes('cola')
+
+    def parar(self):        
+        self.corriendo = False
+
+    def enviar_resultado_vuelos_rapidos(resultado: ResultadoVuelosRapidos):
         print()
 
-    def EnviarResultadoFiltroDistancia(resultado: ResultadoFiltroDistancia):
+    def enviar_resultado_filtro_distancia(resultado: ResultadoFiltroDistancia):
         print()
         
-    def EnviarResultadoFiltroEscalas(resultado: ResultadoFiltroEscalas):
+    def enviar_resultado_filtro_escalas(resultado: ResultadoFiltroEscalas):
         print()
 
-    def EnviarResultadoFiltroPrecio(resultado: ResultadoEstadisticaPrecios):
+    def enviar_resultado_filtro_precio(resultado: ResultadoEstadisticaPrecios):
         print()

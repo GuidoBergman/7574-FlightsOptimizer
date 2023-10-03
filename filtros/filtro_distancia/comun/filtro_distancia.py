@@ -44,7 +44,7 @@ class FiltroDistancia:
         distancia_directa = self.calcular_distancia(origen, destino)
 
         if distancia_directa > 0 and distancia_total > 4 * distancia_directa:
-            self._protocoloResultado.EnviarResultadoFiltroDistancia()
+            self._protocoloResultado.enviar_resultado_filtro_distancia()
 
 
     
