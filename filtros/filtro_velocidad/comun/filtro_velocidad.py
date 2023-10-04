@@ -1,7 +1,7 @@
 import logging
 import signal
-from filtros.modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
+from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
 
 class FiltroVelocidad:

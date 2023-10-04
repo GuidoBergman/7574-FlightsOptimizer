@@ -1,9 +1,8 @@
 import logging
 import signal
-from filtros.modelo.Aeropuerto import Aeropuerto
-from filtros.modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from geopy.distance import great_circle
+from modelo.Aeropuerto import Aeropuerto
 from modelo.estado import Estado
 from protocolofiltrodistancias import ProtocoloFiltroDistancia
 from protocoloresultados import ProtocoloResultado

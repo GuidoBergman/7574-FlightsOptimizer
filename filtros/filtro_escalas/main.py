@@ -5,6 +5,8 @@ from comun.filtro_escalas import FiltroEscalas
 import logging
 import os
 
+from filtros.filtro_distancia.comun import filtro_distancia
+
 
 def initialize_config():
     """ Parse env variables or config file to find program config params
@@ -49,8 +51,8 @@ def main():
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    filtro_escalas = FiltroEscalas()
-    filtro_escalas.run()
+    filtro_distancia = filtro_distancia()
+    filtro_distancia.run()
 
 def initialize_log(logging_level):
     """
