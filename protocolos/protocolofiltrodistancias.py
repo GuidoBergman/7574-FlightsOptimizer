@@ -9,7 +9,7 @@ class ProtocoloFiltroDistancia:
         print()
 
 
-    def enviar_vuelo(self,Vuelo, EstadoVuelo):
+    def enviar_vuelo(self,Vuelo):
         print()
 
     def recibir_aeropuerto(self) -> (Aeropuerto, Estado):

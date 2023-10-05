@@ -1,10 +1,10 @@
 import logging
 import signal
-from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
-from manejador_colas import ManejadorColas
 from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
 from comun.handler import Handler
 from multiprocessing import Process, Manager
+
+from socket_comun import SocketComun
 
 CANT_HANDLERS = 3
 EOF_MSG = 'EOF'
@@ -15,7 +15,7 @@ class Server:
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
-        self._colas = ManejadorColas('rabbitmq')
+        
 
         
         
@@ -30,11 +30,10 @@ class Server:
 
     def _recibir_vuelos(self, protocolo_cliente, vuelos):
         while True:
-            self._colas.enviar_mensaje('cola', 'botella')
             
             estado, vuelo = protocolo_cliente.recibir_vuelo()
             if estado == ESTADO_FIN_VUELOS:
-                vuelos.put(EOF_MSG)
+                #vuelos.put(EOF_MSG)
                 break
             
             vuelos.put(vuelo)
@@ -53,7 +52,7 @@ class Server:
 
 
     def run(self):
-            self._colas.crear_cola('cola')
+            
             try:
                 client_sock, addr = self._server_socket.accept()
             except OSError:

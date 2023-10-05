@@ -36,6 +36,7 @@ def initialize_config():
 
 def main():
     config_params = initialize_config()
+
     logging_level = config_params["logging_level"]
     port = config_params["port"]
     listen_backlog = config_params["listen_backlog"]

@@ -29,26 +29,16 @@ class ProtocoloFiltroEscalas:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.error(f'body:   {body}')
-
-        if (body[0] == IDENTIFICADOR_VUELO):
-            self.procesar_vuelo(self.traducir_vuelo(body))
-        else:
-            self.enviar_fin_vuelos()
+        logging.error(f'llego mensaje body:   {body}')
+        #self.procesar_vuelo(self.traducir_vuelo(body))
 
     def traducir_vuelo(self):
         
         formato_mensaje = FORMATO_MENSAJE_VUELO
         tamanio_mensaje = calcsize(formato_mensaje)
         estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
-        tipo_mensaje, cantidad_vuelos, id, origen, destino, escalas, distancia = unpack(formato_mensaje, mensaje)
-        id = id.decode(STRING_ENCODING)
-        origen = origen.decode(STRING_ENCODING),
-        destino = destino.decode(STRING_ENCODING)
-        escalas = escalas.decode(STRING_ENCODING)
-        duracion = duracion.decode(STRING_ENCODING)
+        cantidad_vuelos, id, origen, destino, escalas, distancia = unpack(formato_mensaje, mensaje)
 
-        return Vuelo(id, origen, destino, 0, escalas, 0, distancia)
         
 
 
@@ -64,6 +54,7 @@ class ProtocoloFiltroEscalas:
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
         tamanio_batch = 1
+
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
                                       tipo_mensaje,
                                       tamanio_batch,
@@ -71,10 +62,12 @@ class ProtocoloFiltroEscalas:
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
                                       vuelo.escalas.encode(STRING_ENCODING),
-                                      vuelo.duracion.encode(STRING_ENCODING))
+                                      vuelo.duracion.encode(STRING_ENCODING)
+                                      )
     
 
         self._colas.enviar_mensaje(mensaje_empaquetado)
+
 
 
     def enviar_fin_vuelos(self):

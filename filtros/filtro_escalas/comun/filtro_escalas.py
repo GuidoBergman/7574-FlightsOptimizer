@@ -3,7 +3,7 @@ import signal
 from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
-from protocoloescalas import ProtocoloFiltroEscalas
+from protocolofiltroescalas import ProtocoloFiltroEscalas
 from protocoloresultados import ProtocoloResultado
 from protocolovelocidad import ProtocoloFiltroVelocidad
 
@@ -36,8 +36,8 @@ class FiltroEscalas:
         
     def run(self):
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
-          self._protocoloResultado.iniciar()
-          self._protocoloVelocidad.iniciar()
+          #self._protocoloResultado.iniciar()
+          #self._protocoloVelocidad.iniciar()
           while self._protocolo.corriendo:
               a = 1
           return

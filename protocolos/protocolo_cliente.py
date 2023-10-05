@@ -40,6 +40,7 @@ class ProtocoloCliente:
             formato_mensaje = FORMATO_MENSAJE_VUELO
             tamanio_mensaje = calcsize(formato_mensaje)
             estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
+            
             if estado != STATUS_OK:
                 logging.error(f'acción: recibir_vuelo | result: error')
                 return STATUS_ERR, None

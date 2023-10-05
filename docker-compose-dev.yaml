@@ -3,6 +3,8 @@ name: tp1
 services:
 
   rabbitmq:
+
+
     build:
       context: ./rabbitmq
       dockerfile: Dockerfile
@@ -16,6 +18,7 @@ services:
     networks:
       - rabbit_net
 
+
   server:
     container_name: server
     image: server:latest
@@ -23,7 +26,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=ERROR
-    restart: on-failure
     depends_on:
       - rabbitmq
     networks:
@@ -42,7 +44,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=ERROR
-    restart: on-failure
     depends_on:
       - rabbitmq
       - server
@@ -64,7 +65,6 @@ services:
       - LOGGING_LEVEL=ERROR
     networks:
       - testing_net
-    restart: on-failure
     depends_on:
       - server
     volumes:

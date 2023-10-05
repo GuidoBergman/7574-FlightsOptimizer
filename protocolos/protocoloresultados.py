@@ -4,6 +4,7 @@ from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
 from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
 from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
+from modelo.Vuelo import Vuelo
 
 
 class ProtocoloResultado:
@@ -26,7 +27,7 @@ class ProtocoloResultado:
     def enviar_resultado_filtro_distancia(resultado: ResultadoFiltroDistancia):
         print()
         
-    def enviar_resultado_filtro_escalas(resultado: ResultadoFiltroEscalas):
+    def enviar_resultado_filtro_escalas(vuelo: Vuelo):
         print()
 
     def enviar_resultado_filtro_precio(resultado: ResultadoEstadisticaPrecios):
