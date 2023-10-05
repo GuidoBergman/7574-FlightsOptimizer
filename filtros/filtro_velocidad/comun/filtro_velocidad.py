@@ -3,24 +3,17 @@ import signal
 from manejador_colas import ManejadorColas
 from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
+from protocoloresultados import ProtocoloResultado
 
 class FiltroVelocidad:
     def __init__(self, port, listen_backlog):
        self._colas = ManejadorColas('rabbitmq')
        self._protocolo = ProtocoloFiltroVelocidad()
-
-       signal.signal(signal.SIGTERM, self.sigterm_handler)
-       self.vuelos_con_tres_escalas = []
        
-        
-    def mandar_resultado(self, vuelo: Vuelo):
-        # Lógica para manejar el resultado, por ejemplo, imprimirlo o enviarlo a otra parte.
-        print(f"Vuelo con más de 3 escalas: {vuelo.trayecto}, ID: {vuelo.id_vuelo}")
-
-    def mandar_resultado(self, vuelo: Vuelo):
-        # Lógica para manejar el resultado, por ejemplo, imprimirlo o enviarlo a otra parte.
-        print(f"Vuelo con más de 3 escalas: {vuelo.trayecto}, ID: {vuelo.id_vuelo}")
-
+       self._protocoloResultado = ProtocoloResultado()
+       signal.signal(signal.SIGTERM, self.sigterm_handler)
+       self.vuelos_mas_rapido = []
+       
         
 
     def sigterm_handler(self, _signo, _stack_frame):
@@ -28,39 +21,47 @@ class FiltroVelocidad:
 
         
     def procesar_vuelo(self, vuelo: Vuelo):
-        # Actualizar los 2 vuelos más rápidos por trayecto para vuelos con más de 3 escalas
-        trayecto = vuelo.trayecto
-        duracion_actual = vuelo.escalas[0]  # Supongamos que la duración es el primer segmento
+        # Concatenar origen y destino para obtener el proyecto
+        trayecto = vuelo.origen + "-" + vuelo.destino
 
-        if trayecto in self.vuelos_mas_rapidos:
-            vuelos_actuales = self.vuelos_mas_rapidos[trayecto]
-            vuelos_actuales.append((vuelo.id_vuelo, duracion_actual))
-            vuelos_actuales.sort(key=lambda x: x[1])
-            if len(vuelos_actuales) > 2:
-                vuelos_actuales.pop()
-            self.vuelos_mas_rapidos[trayecto] = vuelos_actuales
+        # Obtener la duración del vuelo actual
+        duracion_actual = vuelo.duracion
+
+        # Comprobar si ya hay vuelos registrados para este proyecto
+        if trayecto in self.vuelos_mas_rapido:
+            # Obtener los vuelos actuales para este proyecto
+            vuelos_proyecto = self.vuelos_mas_rapido[trayecto]
+
+            # Ordenar los vuelos por duración (ascendente)
+            vuelos_proyecto.sort(key=lambda x: x.duracion)
+
+            # Verificar si la duración del vuelo actual es menor que la duración del vuelo más lento registrado
+            if duracion_actual < vuelos_proyecto[-1].duracion:
+                # Reemplazar el vuelo más lento con el vuelo actual
+                vuelos_proyecto[-1] = vuelo
+
         else:
-            self.vuelos_mas_rapidos[trayecto] = [(vuelo.id_vuelo, duracion_actual)]
+            # Si no hay vuelos registrados para este proyecto, crear una lista con el vuelo actual
+            self.vuelos_mas_rapido[trayecto] = [vuelo]
+
+        # Si hay más de 2 vuelos para este proyecto, mantener solo los 2 más rápidos
+        if len(self.vuelos_mas_rapido[trayecto]) > 2:
+            self.vuelos_mas_rapido[trayecto].sort(key=lambda x: x.duracion)
+            self.vuelos_mas_rapido[trayecto] = self.vuelos_mas_rapido[trayecto][:2]
+
 
     def procesar_finvuelo(self):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
-        for trayecto, vuelos in self.vuelos_mas_rapidos.items():
-            for vuelo_id, vuelo in vuelos:
-                # Buscar el vuelo en base al ID
-                self._protocolo.enviar_vuelo
+        for trayecto, vuelos in self.vuelos_mas_rapido.items():
+            self._protocolo.enviar_vuelo(trayecto, vuelos)
         
     def run(self):
-          self._colas.crear_cola('cola')
-          self._colas.consumir_mensajes('cola')
-
+        
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)  
             
-          while self.corriendo:
-            vuelo, estado = self._protocolo.recibir_vuelo()
-            if estado == EstadoVuelo.OK:
-                self.procesar_vuelo(vuelo)
-            else:
-                break
-    
+          while self._protocolo.corriendo:
+              a = 1
+          return
         
         
         

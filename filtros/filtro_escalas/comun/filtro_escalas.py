@@ -1,10 +1,14 @@
 import logging
 import signal
-from modelo.Vuelo import Vuelo
+
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from protocolofiltroescalas import ProtocoloFiltroEscalas
 from protocoloresultados import ProtocoloResultado
+from protocolos.modelo.Vuelo import Vuelo
+
+from modelo.Vuelo import Vuelo
+
 from protocolovelocidad import ProtocoloFiltroVelocidad
 
 

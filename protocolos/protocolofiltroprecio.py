@@ -1,21 +1,30 @@
 import string
 from filtros.filtro_precio.comun import resumen_precios
+from manejador_colas import ManejadorColas
 from modelo.Vuelo import Vuelo
 from modelo.estado import Estado
 
 
 class ProtocoloFiltroPrecio:
 
-    def recibir_vuelo(self) -> (Vuelo, Estado):
-        print()
+    def __init__(self):    
+       self._colas = ManejadorColas('rabbitmq')
+       self.corriendo = False
+    
+
+    def callback_function(self, body):
+        # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
+        self.procesar_vuelo()
 
 
-    def enviar_vuelo(self,Vuelo, EstadoVuelo):
-        print()
+    def iniciar(self, procesar_vuelo, procesar_finvuelo):
+        self.corriendo = True
+        self.procesar_vuelo = procesar_vuelo
+        self.procesar_finvuelo =  procesar_finvuelo
+        self._colas.crear_cola('cola')
+        self._colas.consumir_mensajes('cola', self.callback_function)
 
-
-    def mandar_resumen(self, trayecto, resumen: resumen_precios):
-        2
-
-    def recibir_resumen(self) -> (string, resumen_precios, Estado):
-        2
+    def parar(self):        
+        self.corriendo = False
+        
+        

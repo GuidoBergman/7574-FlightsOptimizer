@@ -24,6 +24,7 @@ class ProtocoloFiltroVelocidad:
     def __init__(self):    
        self._colas = ManejadorColas('rabbitmq')
        self.corriendo = False
+       self.nombre_cola = 'cola_FiltroVelocidad'
     
 
     def callback_function(self, body):
@@ -35,8 +36,8 @@ class ProtocoloFiltroVelocidad:
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
-        self._colas.crear_cola('cola')
-        self._colas.consumir_mensajes('cola', self.callback_function)
+        self._colas.crear_cola(self.nombre_cola)
+        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
 
     def parar(self):        
         self.corriendo = False

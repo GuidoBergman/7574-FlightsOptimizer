@@ -23,6 +23,7 @@ FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
 class ProtocoloFiltroEscalas:
        
     def __init__(self):    
+       self.nombre_cola = 'cola'
        self._colas = ManejadorColas('rabbitmq')
        self.corriendo = False
     
@@ -46,15 +47,15 @@ class ProtocoloFiltroEscalas:
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
-        self._colas.crear_cola('cola')
-        self._colas.consumir_mensajes('cola', self.callback_function)
+        self._colas.crear_cola(self.nombre_cola)
+        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
 
 
 
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
         tamanio_batch = 1
-
+        
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
                                       tipo_mensaje,
                                       tamanio_batch,
@@ -65,8 +66,8 @@ class ProtocoloFiltroEscalas:
                                       vuelo.duracion.encode(STRING_ENCODING)
                                       )
     
-
-        self._colas.enviar_mensaje(mensaje_empaquetado)
+        
+        self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
 
 
 
