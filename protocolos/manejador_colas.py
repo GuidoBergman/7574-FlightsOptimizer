@@ -15,7 +15,7 @@ class ManejadorColas:
 
 
     def consumir_mensajes(self, nombre_cola, callback_function):
-       self.callback_function = callback_function
+       self._callback_function = callback_function
        self._channel.basic_consume(queue=nombre_cola, on_message_callback=self._callback_wrapper)
        self._channel.start_consuming() 
 
@@ -24,10 +24,10 @@ class ManejadorColas:
 
 
     def _callback_wrapper(self, channel, method, properties, body):
-        self.callback_function(body)
+        self._callback_function(body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
-    def cerrar():
+    def cerrar(self):
         self._connection.close()
 
