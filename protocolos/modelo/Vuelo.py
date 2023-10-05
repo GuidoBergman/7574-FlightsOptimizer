@@ -4,6 +4,9 @@ class Vuelo:
         
         # Crea una instancia de la clase Vuelo.
         
+        if type(origen) is tuple:
+            origen = origen[0] 
+
         self.id_vuelo = id_vuelo
         self.origen = origen
         self.destino = destino
