@@ -11,7 +11,6 @@ from protocolovelocidad import ProtocoloFiltroVelocidad
 class FiltroEscalas:
     def __init__(self):
        signal.signal(signal.SIGTERM, self.sigterm_handler)
-       
        self._protocolo = ProtocoloFiltroEscalas()
        self._protocoloResultado = ProtocoloResultado()
        self._protocoloVelocidad = ProtocoloFiltroVelocidad()
