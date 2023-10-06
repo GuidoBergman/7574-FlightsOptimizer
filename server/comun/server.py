@@ -60,9 +60,9 @@ class Server:
             except OSError:
                 return
 
-            socket_enviar, socket_recibir = client_sock.split()
+            #socket_enviar, socket_recibir = client_sock.split()
             
-            enviador_resultados = EnviadorResultados(socket_enviar)
+            enviador_resultados = EnviadorResultados(client_sock)
             enviador_resultados.enviar_resultados() 
 
             procesos = []
@@ -78,7 +78,7 @@ class Server:
                 
                 
 
-                protocolo_cliente = ProtocoloCliente(socket_recibir)  
+                protocolo_cliente = ProtocoloCliente(client_sock)  
                 self._recibir_aeropuertos(protocolo_cliente)  
                 self._recibir_vuelos(protocolo_cliente, vuelos)
                 

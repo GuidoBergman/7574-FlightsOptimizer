@@ -12,9 +12,9 @@ class Client:
         # Initialize server socket
         server_socket = SocketComun()
         server_socket.connect(host, port)
-        socket_enviar, socket_recibir = server_socket.split()
-        self._protocolo = ProtocoloCliente(socket_enviar)
-        self._protocolo_resultados = ProtocoloResultadosCliente(socket_recibir)
+        #socket_enviar, socket_recibir = server_socket.split()
+        self._protocolo = ProtocoloCliente(server_socket)
+        self._protocolo_resultados = ProtocoloResultadosCliente(server_socket)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
         
