@@ -25,9 +25,11 @@ class ProtocoloCliente:
 
 
     def _recibir_identificador_mensaje(self):
-        estado, mensaje, _ = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
+        estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
         if estado != STATUS_OK:
             return STATUS_ERR, None
+
+       
         return estado, mensaje.decode(STRING_ENCODING)
 
     def recibir_vuelo(self):
@@ -36,10 +38,13 @@ class ProtocoloCliente:
             logging.error(f'acción: recibir_vuelo | result: error')
             return STATUS_ERR, None
 
+        logging.error(f'acción: recibir_identificador_mensaje | result: OK | identificador: {identificador_mensaje}')
+
         if identificador_mensaje == IDENTIFICADOR_VUELO:
             formato_mensaje = FORMATO_MENSAJE_VUELO
             tamanio_mensaje = calcsize(formato_mensaje)
-            estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
+            estado, mensaje = self._socket.receive(tamanio_mensaje)
+            
             
             if estado != STATUS_OK:
                 logging.error(f'acción: recibir_vuelo | result: error')
@@ -55,6 +60,9 @@ class ProtocoloCliente:
             return STATUS_OK, vuelo
         elif identificador_mensaje == IDENTIFICADOR_FIN_VUELO:
             return ESTADO_FIN_VUELOS, None
+        else:
+            logging.error(f'acción: recibir_vuelo | result: error')
+            return STATUS_ERR, None
         
 
 
@@ -70,13 +78,21 @@ class ProtocoloCliente:
         )
         estado = self._socket.send(msg, tamanio_mensaje)
         if estado == STATUS_ERR:
-            logging.error("acción: enviar_mensaje | resultado: error")
+            logging.error("acción: enviar_vuelo | resultado: error")
             return STATUS_ERR
+
+        return STATUS_OK
 
 
 
     def enviar_fin_vuelos(self):
-        self._socket.send(IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        estado = self._socket.send(IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        if estado == STATUS_ERR:
+            logging.error("acción: enviar_fin_vuelos | resultado: error")
+            return STATUS_ERR
+
+        logging.error(f'acción: enviar_fin_vuelos | resultado: OK')
+        return STATUS_OK
 
 
 
@@ -89,7 +105,7 @@ class ProtocoloCliente:
         if identificador_mensaje == IDENTIFICADOR_AEROPUERTO:
             formato_mensaje = FORMATO_MENSAJE_AEROPUERTO
             tamanio_mensaje = calcsize(formato_mensaje)
-            estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
+            estado, mensaje = self._socket.receive(tamanio_mensaje)
             if estado != STATUS_OK:
                 logging.error(f'acción: recibir_aeropuerto | result: error')
                 return STATUS_ERR, None
@@ -117,7 +133,18 @@ class ProtocoloCliente:
             logging.error("acción: enviar_aeropuerto | resultado: error")
             return STATUS_ERR
 
+        return STATUS_OK
+
 
 
     def enviar_fin_aeropuertos(self):
-        self._socket.send(IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        estado = self._socket.send(IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        if estado == STATUS_ERR:
+            logging.error("acción: enviar_fin_aeorpuertos | resultado: error")
+            return STATUS_ERR
+
+        logging.error(f'acción: enviar_fin_aeorpuertos | resultado: OK')
+        return STATUS_OK
+
+    def cerrar(self):
+        self._socket.close()

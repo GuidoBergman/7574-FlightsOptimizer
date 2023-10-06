@@ -31,14 +31,15 @@ class Server:
 
     def _recibir_vuelos(self, protocolo_cliente, vuelos):
         while True:
-            
+            logging.error(f'Acción: recibir_vuelo | estado: en curso')
             estado, vuelo = protocolo_cliente.recibir_vuelo()
             if estado == ESTADO_FIN_VUELOS:
-                #vuelos.put(EOF_MSG)
+                logging.error(f'Acción: recibir_vuelo | estado: se terminarón de recibir todos los vuelos')
+                vuelos.put(EOF_MSG)
                 break
             
             vuelos.put(vuelo)
-            logging.info(f'Vuelo recibido (server):  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
+            logging.error(f'Acción: recibir_vuelo | estado: OK | Vuelo recibido:  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
 
 
 
@@ -59,6 +60,11 @@ class Server:
             except OSError:
                 return
 
+            socket_enviar, socket_recibir = client_sock.split()
+            
+            enviador_resultados = EnviadorResultados(socket_enviar)
+            enviador_resultados.enviar_resultados() 
+
             procesos = []
             with Manager() as manager:
                 vuelos = manager.Queue()
@@ -69,19 +75,26 @@ class Server:
                     procesos.append(handler_process)
 
 
-                protocolo_cliente = ProtocoloCliente(client_sock)  
-                self._recibir_aeropuertos(protocolo_cliente)  
-                self._recibir_vuelos(protocolo_cliente, vuelos)
-
-                enviador_resultados = EnviadorResultados(client_sock)
-                enviador_resultados.enviar_resultados()
+                
                 
 
-                client_sock.close()
+                protocolo_cliente = ProtocoloCliente(socket_recibir)  
+                self._recibir_aeropuertos(protocolo_cliente)  
+                self._recibir_vuelos(protocolo_cliente, vuelos)
+                
+
+
+
+                
+
+               
 
                 for proceso in procesos:
-                    proceso.terminate()
+                    #proceso.terminate()
                     proceso.join()
+
+                protocolo_cliente.cerrar()
+                enviador_resultados.cerrar()
 
             
     

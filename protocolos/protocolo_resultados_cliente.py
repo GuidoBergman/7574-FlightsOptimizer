@@ -49,7 +49,7 @@ class ProtocoloResultadosCliente:
 
        
     def recibir_resultado(self):
-        estado, mensaje, _ = self._socket.receive(TAMANIO_IDENTIFICADOR_RESULTADO)
+        estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_RESULTADO)
         if estado != STATUS_OK:
             return STATUS_ERR, None
         
@@ -61,8 +61,11 @@ class ProtocoloResultadosCliente:
             return STATUS_ERR, None
         
         tamanio_mensaje = resultado.calcular_tamanio()
-        estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
+        estado, mensaje = self._socket.receive(tamanio_mensaje)
         if estado != STATUS_OK:
             return STATUS_ERR, None
 
         return STATUS_OK, resultado.deserializar(mensaje)
+
+    def cerrar(self):
+        self._socket.close()

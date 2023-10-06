@@ -1,5 +1,6 @@
 from protocolo_resultados_cliente import ProtocoloResultadosCliente
 from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
+import logging
 
 class EnviadorResultados:
       def __init__(self, socket):
@@ -9,4 +10,9 @@ class EnviadorResultados:
          resultado = ResultadoFiltroEscalas('12345678901234567890123456789012',
          'BUE-MAN', 1.1, 'Trank')
 
+
          self._protocolo.enviar_resultado_filtro_escalas(resultado)
+
+      def cerrar(self):
+        self._protocolo.cerrar()
+         

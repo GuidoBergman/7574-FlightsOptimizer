@@ -2,7 +2,7 @@ from struct import unpack, pack, calcsize
 
 
 STRING_ENCODING = 'utf-8'
-FORMATO = '!32s7sfh50s'
+FORMATO = '!32s7sfH50s'
 
 
 class ResultadoFiltroEscalas:
@@ -27,6 +27,7 @@ class ResultadoFiltroEscalas:
     def deserializar(bytes):    
         id, trayecto, precio, longitud_escalas, escalas = unpack(FORMATO, bytes)
         id = id.decode(STRING_ENCODING)
+        trayecto = trayecto.decode(STRING_ENCODING)
         escalas = escalas[0:longitud_escalas].decode(STRING_ENCODING)
 
         return ResultadoFiltroEscalas(id, trayecto, precio, escalas)

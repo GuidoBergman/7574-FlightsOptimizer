@@ -3,20 +3,21 @@ name: tp1
 services:
 
   rabbitmq:
-
-
     build:
       context: ./rabbitmq
       dockerfile: Dockerfile
     ports:
       - 15672:15672
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:15672"]
-        interval: 10s
-        timeout: 5s
-        retries: 10
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 50s
     networks:
       - rabbit_net
+    logging:
+      driver: "none"
 
 
   server:
@@ -28,7 +29,8 @@ services:
       - LOGGING_LEVEL=ERROR
     restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+         condition: service_healthy
     networks:
       - testing_net
       - rabbit_net
@@ -47,7 +49,6 @@ services:
       - LOGGING_LEVEL=ERROR
     restart: on-failure
     depends_on:
-      - rabbitmq
       - server
     networks:
       - testing_net

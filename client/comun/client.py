@@ -10,9 +10,11 @@ from protocolo_resultados_cliente import ProtocoloResultadosCliente
 class Client:
     def __init__(self, host, port):
         # Initialize server socket
-        self._server_socket = SocketComun()
-        self._server_socket.connect(host, port)
-        self._protocolo = ProtocoloCliente(self._server_socket)
+        server_socket = SocketComun()
+        server_socket.connect(host, port)
+        socket_enviar, socket_recibir = server_socket.split()
+        self._protocolo = ProtocoloCliente(socket_enviar)
+        self._protocolo_resultados = ProtocoloResultadosCliente(socket_recibir)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
         
@@ -35,11 +37,11 @@ class Client:
                         distancia = -1
                     escalas = fields[19]  # segmentsArrivalAirportCode
                     vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
-                    logging.info(f'id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
-                    #vuelos.append(vuelo)
+                    logging.error(f'accion: leer_vuelo | id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
                     self._protocolo.enviar_vuelo(vuelo)
 
         self._protocolo.enviar_fin_vuelos()
+        
        
         
 
@@ -66,17 +68,20 @@ class Client:
         
 
     def run(self):
-        self._enviar_aeropuertos('airports-codepublic.csv')
-        self._enviar_vuelos('itineraries_short.csv')
+        
 
-        protocolo_resultados = ProtocoloResultadosCliente(self._server_socket)
-        estado, resultado = protocolo_resultados.recibir_resultado()
+        logging.error('action: recibir_resultado | estado: esperando')
+        estado, resultado = self._protocolo_resultados.recibir_resultado()
         if estado == STATUS_ERR:
             logging.error('action: recibir_resultado | resultado: error')
         else:
             logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
-        self._server_socket.close()
+        self._enviar_aeropuertos('airports-codepublic.csv')
+        self._enviar_vuelos('itineraries_short.csv')
+
+        self._protocolo.cerrar()
+        self._protocolo_resultados.cerrar()
 
 
                 

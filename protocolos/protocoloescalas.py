@@ -31,7 +31,7 @@ class ProtocoloFiltroEscalas:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.error(f'body:   {body}')
+        logging.debug(f'body:   {body}')
 
         if (body[0] == IDENTIFICADOR_VUELO):
             self.procesar_vuelo(self.traducir_vuelo(body))
@@ -42,7 +42,7 @@ class ProtocoloFiltroEscalas:
         
         formato_mensaje = FORMATO_MENSAJE_VUELO
         tamanio_mensaje = calcsize(formato_mensaje)
-        estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
+        estado, mensaje = self._socket.receive(tamanio_mensaje)
         tipo_mensaje, cantidad_vuelos, id, origen, destino, escalas, distancia = unpack(formato_mensaje, mensaje)
         id = id.decode(STRING_ENCODING)
         origen = origen.decode(STRING_ENCODING),
