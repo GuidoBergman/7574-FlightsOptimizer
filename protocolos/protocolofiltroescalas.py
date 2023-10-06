@@ -19,6 +19,7 @@ ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
+NOMBRE_COLA = 'cola'
 
 class ProtocoloFiltroEscalas:
        

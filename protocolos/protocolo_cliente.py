@@ -102,7 +102,10 @@ class ProtocoloCliente:
             return ESTADO_FIN_AEROPUERTOS, None
 
     def enviar_aeropuerto(self, aeropuerto):
-        self._socket.send(IDENTIFICADOR_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        estado = self._socket.send(IDENTIFICADOR_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        if estado == STATUS_ERR:
+            logging.error("acción: enviar_aeropuerto | resultado: error")
+            return STATUS_ERR
         tamanio_batch = 1
         formato_mensaje = FORMATO_MENSAJE_AEROPUERTO
         tamanio_mensaje = calcsize(formato_mensaje)
@@ -111,7 +114,7 @@ class ProtocoloCliente:
         )
         estado = self._socket.send(msg, tamanio_mensaje)
         if estado == STATUS_ERR:
-            logging.error("acción: enviar_mensaje | resultado: error")
+            logging.error("acción: enviar_aeropuerto | resultado: error")
             return STATUS_ERR
 
 

@@ -4,6 +4,7 @@ from modelo.Aeropuerto import Aeropuerto
 from modelo.Vuelo import Vuelo
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 from protocolo_cliente import ProtocoloCliente
+from protocolo_resultados_cliente import ProtocoloResultadosCliente
 
 
 class Client:
@@ -59,14 +60,23 @@ class Client:
 
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.info('action: sigterm_received')
+        logging.info('acción: sigterm_recibida')
         self._server_socket.close()
-        logging.info(f'action: close_server_socket | result: success')
+        logging.info(f'acción: cerrar_socket_servidor | resultado: OK')
         
 
     def run(self):
         self._enviar_aeropuertos('airports-codepublic.csv')
         self._enviar_vuelos('itineraries_short.csv')
+
+        protocolo_resultados = ProtocoloResultadosCliente(self._server_socket)
+        estado, resultado = protocolo_resultados.recibir_resultado()
+        if estado == STATUS_ERR:
+            logging.error('action: recibir_resultado | resultado: error')
+        else:
+            logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+
+        self._server_socket.close()
 
 
                 

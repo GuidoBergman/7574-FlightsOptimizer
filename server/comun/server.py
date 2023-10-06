@@ -2,6 +2,7 @@ import logging
 import signal
 from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
 from comun.handler import Handler
+from comun.enviador_resultados import EnviadorResultados
 from multiprocessing import Process, Manager
 
 from socket_comun import SocketComun
@@ -72,6 +73,9 @@ class Server:
                 self._recibir_aeropuertos(protocolo_cliente)  
                 self._recibir_vuelos(protocolo_cliente, vuelos)
 
+                enviador_resultados = EnviadorResultados(client_sock)
+                enviador_resultados.enviar_resultados()
+                
 
                 client_sock.close()
 

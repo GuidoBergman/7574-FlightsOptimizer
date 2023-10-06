@@ -20,6 +20,8 @@ ESTADO_FIN_AEROPUERTOS = 1
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
 
+NOMBRE_COLA = 'cola'
+
 class ProtocoloFiltroEscalas:
        
     def __init__(self):    
@@ -56,8 +58,8 @@ class ProtocoloFiltroEscalas:
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
-        self._colas.crear_cola('cola')
-        self._colas.consumir_mensajes('cola', self.callback_function)
+        self._colas.crear_cola(NOMBRE_COLA)
+        self._colas.consumir_mensajes(NOMBRE_COLA, self.callback_function)
 
 
 
@@ -74,7 +76,7 @@ class ProtocoloFiltroEscalas:
                                       vuelo.duracion.encode(STRING_ENCODING))
     
 
-        self._colas.enviar_mensaje(mensaje_empaquetado)
+        self._colas.enviar_mensaje(NOMBRE_COLA, mensaje_empaquetado)
 
 
     def enviar_fin_vuelos(self):
