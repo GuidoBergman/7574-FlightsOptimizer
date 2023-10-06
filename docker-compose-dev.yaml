@@ -69,6 +69,7 @@ services:
       - testing_net
     depends_on:
       - server
+    restart: on-failure
     volumes:
       - type: bind
         source: ./client/config.ini

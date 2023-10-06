@@ -2,7 +2,7 @@ from filtros.filtro_precio.comun.resumen_precios import ResumenPrecios
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from protocolofiltroprecio import ProtocoloFiltroPrecio
-from protocoloresultados import ProtocoloResultado
+from protocolo_resultados_servidor import ProtocoloResultado
 
 
 class PrecioReduce:

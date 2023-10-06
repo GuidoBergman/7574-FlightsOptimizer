@@ -7,7 +7,7 @@ from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from modelo.Vuelo import Vuelo
 
 
-class ProtocoloResultado:
+class ProtocoloResultadosServidor:
 
     def __init__(self):
        self._colas = ManejadorColas('rabbitmq')

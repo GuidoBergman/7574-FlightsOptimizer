@@ -5,7 +5,7 @@ from geopy.distance import great_circle
 from modelo.Aeropuerto import Aeropuerto
 from modelo.estado import Estado
 from protocolofiltrodistancias import ProtocoloFiltroDistancia
-from protocoloresultados import ProtocoloResultado
+from protocolo_resultados_servidor import ProtocoloResultado
 
 class FiltroDistancia:
     def __init__(self, port, listen_backlog):

@@ -4,7 +4,7 @@ from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from protocolofiltroescalas import ProtocoloFiltroEscalas
-from protocoloresultados import ProtocoloResultado
+from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from protocolovelocidad import ProtocoloFiltroVelocidad
 
 
@@ -12,7 +12,7 @@ class FiltroEscalas:
     def __init__(self):
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroEscalas()
-       self._protocoloResultado = ProtocoloResultado()
+       self._protocoloResultado = ProtocoloResultadosServidor()
        self._protocoloVelocidad = ProtocoloFiltroVelocidad()
        self.vuelos_con_tres_escalas = []
        self.corriendo = True
