@@ -62,8 +62,7 @@ class Server:
 
             #socket_enviar, socket_recibir = client_sock.split()
             
-            enviador_resultados = EnviadorResultados(client_sock)
-            enviador_resultados.enviar_resultados() 
+            
 
             procesos = []
             with Manager() as manager:
@@ -72,22 +71,15 @@ class Server:
                     handler = Handler()
                     handler_process = Process(target=handler.run, args=((vuelos),))
                     handler_process.start()
-                    procesos.append(handler_process)
-
-
-                
-                
+                    procesos.append(handler_process)   
 
                 protocolo_cliente = ProtocoloCliente(client_sock)  
                 self._recibir_aeropuertos(protocolo_cliente)  
                 self._recibir_vuelos(protocolo_cliente, vuelos)
-                
-
-
-
-                
-
-               
+                  
+                enviador_resultados = EnviadorResultados(client_sock)
+                enviador_resultados.enviar_resultados() 
+           
 
                 for proceso in procesos:
                     #proceso.terminate()

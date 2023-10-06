@@ -68,7 +68,8 @@ class Client:
         
 
     def run(self):
-        
+        self._enviar_aeropuertos('airports-codepublic.csv')
+        self._enviar_vuelos('itineraries_short.csv')
 
         logging.error('action: recibir_resultado | estado: esperando')
         estado, resultado = self._protocolo_resultados.recibir_resultado()
@@ -76,9 +77,6 @@ class Client:
             logging.error('action: recibir_resultado | resultado: error')
         else:
             logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
-
-        self._enviar_aeropuertos('airports-codepublic.csv')
-        self._enviar_vuelos('itineraries_short.csv')
 
         self._protocolo.cerrar()
         self._protocolo_resultados.cerrar()

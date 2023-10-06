@@ -38,7 +38,7 @@ class ProtocoloCliente:
             logging.error(f'acción: recibir_vuelo | result: error')
             return STATUS_ERR, None
 
-        logging.error(f'acción: recibir_identificador_mensaje | result: OK | identificador: {identificador_mensaje}')
+        
 
         if identificador_mensaje == IDENTIFICADOR_VUELO:
             formato_mensaje = FORMATO_MENSAJE_VUELO
