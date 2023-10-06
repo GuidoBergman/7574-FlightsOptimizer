@@ -2,9 +2,9 @@
 import logging
 from struct import unpack, pack, calcsize
 import struct
+from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from modelo.Aeropuerto import Aeropuerto
-from modelo.Vuelo import Vuelo
 from modelo.estado import Estado
 
 
@@ -30,17 +30,20 @@ class ProtocoloFiltroEscalas:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.error(f'llego mensaje body:   {body}')
-        #self.procesar_vuelo(self.traducir_vuelo(body))
+        logging.error(f'llego mensaje body: {body}')
+        if body.decode('utf-8').startswith(IDENTIFICADOR_VUELO):
+            self.procesar_vuelo(self.traducir_vuelo(body))
+        else:
+            self.procesar_finvuelo()
 
-    def traducir_vuelo(self):
+    def traducir_vuelo(self, mensaje):
         
         formato_mensaje = FORMATO_MENSAJE_VUELO
-        tamanio_mensaje = calcsize(formato_mensaje)
-        estado, mensaje, _ = self._socket.receive(tamanio_mensaje)
-        cantidad_vuelos, id, origen, destino, escalas, distancia = unpack(formato_mensaje, mensaje)
-
+        tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, escalas, duracion = unpack(formato_mensaje, mensaje)
         
+        
+        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, escalas.decode('utf-8').replace('\x00', ''), duracion.decode('utf-8'), 0)
+        return vuelo
 
 
     def iniciar(self, procesar_vuelo, procesar_finvuelo):

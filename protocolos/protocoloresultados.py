@@ -27,7 +27,7 @@ class ProtocoloResultado:
     def enviar_resultado_filtro_distancia(resultado: ResultadoFiltroDistancia):
         print()
         
-    def enviar_resultado_filtro_escalas(vuelo: Vuelo):
+    def enviar_resultado_filtro_escalas(self, vuelo: Vuelo):
         print()
 
     def enviar_resultado_filtro_precio(resultado: ResultadoEstadisticaPrecios):

@@ -5,8 +5,6 @@ from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from protocolofiltroescalas import ProtocoloFiltroEscalas
 from protocoloresultados import ProtocoloResultado
-from protocolos.modelo.Vuelo import Vuelo
-
 from modelo.Vuelo import Vuelo
 
 from protocolovelocidad import ProtocoloFiltroVelocidad
@@ -29,19 +27,22 @@ class FiltroEscalas:
 
         
     def procesar_vuelo(self, vuelo: Vuelo):
-        if len(vuelo.escalas) > 3:
+        
+        
+        logging.error(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
+        if len(vuelo.escalas.split("||")) >= 3:            
+            logging.error(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
             self._protocoloResultado.enviar_resultado_filtro_escalas(vuelo)
             self._protocoloVelocidad.enviar_vuelo(vuelo)
 
-    def procesar_finvuelo(self, vuelo: Vuelo):
+    def procesar_finvuelo(self):        
+        logging.error(f'FIN DE VUELOS')
         self._protocoloVelocidad.enviar_fin_vuelos()
 
-            
-        
     def run(self):
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
-          #self._protocoloResultado.iniciar()
-          #self._protocoloVelocidad.iniciar()
+          self._protocoloResultado.iniciar()
+          self._protocoloVelocidad.iniciar()
           while self._protocolo.corriendo:
               a = 1
           return

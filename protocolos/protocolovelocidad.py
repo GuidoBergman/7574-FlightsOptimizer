@@ -1,3 +1,4 @@
+import logging
 import struct
 from manejador_colas import ManejadorColas
 from modelo.Aeropuerto import Aeropuerto
@@ -15,7 +16,6 @@ ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
-
 
 class ProtocoloFiltroVelocidad:
     
@@ -46,7 +46,8 @@ class ProtocoloFiltroVelocidad:
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
         tamanio_batch = 1
-
+        
+        logging.error(f'Protocolo Velocidad: Enviando el vuelo { vuelo.id_vuelo }')
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
                                       tipo_mensaje,
                                       tamanio_batch,
@@ -58,11 +59,11 @@ class ProtocoloFiltroVelocidad:
                                       )
     
 
-        self._colas.enviar_mensaje(mensaje_empaquetado)
+        self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
 
 
 
-    def enviar_fin_vuelos(self):
-        self._socket.send(IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+    def enviar_fin_vuelos(self):        
+        self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO)
 
 
