@@ -6,8 +6,8 @@ FORMATO = '!32s7sH50s8s'
 
 
 class ResultadoVuelosRapidos:
-    def __init__(self, id: str, trayecto: str, escalas: int, duracion: str):
-        self.id_vuelo = id
+    def __init__(self, id: str, trayecto: str, escalas: str, duracion: str):
+        self.id = id
         self.trayecto = trayecto
         self.escalas = escalas
         self.duracion = duracion
@@ -18,7 +18,7 @@ class ResultadoVuelosRapidos:
         bytes = pack(FORMATO, 
             self.id.encode(STRING_ENCODING), self.trayecto.encode(STRING_ENCODING), 
             len(self.escalas), self.escalas.encode(STRING_ENCODING), 
-            self.duracion
+            self.duracion.encode(STRING_ENCODING)
         )
         return tamanio, bytes
 
@@ -31,6 +31,7 @@ class ResultadoVuelosRapidos:
         id = id.decode(STRING_ENCODING)
         trayecto = trayecto.decode(STRING_ENCODING)
         escalas = escalas[0:longitud_escalas].decode(STRING_ENCODING)
+        duracion = duracion.decode(STRING_ENCODING)
 
         return ResultadoVuelosRapidos(id, trayecto, escalas, duracion)
 

@@ -24,27 +24,50 @@ class ProtocoloResultadosCliente:
 
 
     def enviar_resultado_vuelos_rapidos(self, resultado: ResultadoVuelosRapidos):
-        print()
+        return self._enviar_resultado(resultado, 'vuelos_rapidos', IDENTIFICADOR_RESULTADO_RAPIDOS)
 
     def enviar_resultado_filtro_distancia(self, resultado: ResultadoFiltroDistancia):
-        print()
+        return self._enviar_resultado(resultado, 'filtro_distancia', IDENTIFICADOR_RESULTADO_DISTANCIA)
         
     def enviar_resultado_filtro_escalas(self, resultado: ResultadoFiltroEscalas):
-        estado = self._socket.send(IDENTIFICADOR_RESULTADO_ESCALAS.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_RESULTADO)
+        return self._enviar_resultado(resultado, 'filtro_escalas', IDENTIFICADOR_RESULTADO_ESCALAS)
+
+    def enviar_resultado_filtro_precio(self, resultado: ResultadoEstadisticaPrecios):
+        return self._enviar_resultado(resultado, 'estadisticas_precios', IDENTIFICADOR_RESULTADO_PRECIO)
+
+    def _enviar_resultado(self, resultado, nombre_resultado, identificador_resultado):
+        estado = self._socket.send(identificador_resultado.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_RESULTADO)
         if estado == STATUS_ERR:
-            logging.error("acción: enviar_resultado_filtro_escalas | resultado: error")
+            logging.error(f"acción: enviar_resultado_{nombre_resultado} | resultado: error")
             return STATUS_ERR
 
         tamanio, mensaje = resultado.serializar()
         estado = self._socket.send(mensaje, tamanio)
         if estado == STATUS_ERR:
-            logging.error("acción: enviar_resultado_filtro_escalas | resultado: error")
+            logging.error(f"acción: enviar_resultado_{nombre_resultado} | resultado: error")
             return STATUS_ERR
 
         return STATUS_OK
 
-    def enviar_resultado_filtro_precio(self, resultado: ResultadoEstadisticaPrecios):
-        print()
+    def enviar_fin_resultados_rapidos(self):
+        return self._enviar_fin_resultados(IDENTIFICADOR_FIN_RAPIDOS, 'vuelos_rapidos')
+
+    def enviar_fin_resultados_distancia(self):
+        return self._enviar_fin_resultados(IDENTIFICADOR_FIN_DISTANCIA, 'filtro_distancia')
+
+    def enviar_fin_resultados_escalas(self):
+        return self._enviar_fin_resultados(IDENTIFICADOR_FIN_ESCALAS, 'filtro_escalas')
+    
+    def enviar_fin_resultados_filtro_precio(self):
+        return self._enviar_fin_resultados(IDENTIFICADOR_FIN_PRECIO, 'estadisticas_precios')
+
+
+    def _enviar_fin_resultados(self, identificador_fin, nombre_resultado):
+        estado = self._socket.send(identificador_fin.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_RESULTADO)
+        if estado == STATUS_ERR:
+            logging.error(f"acción: enviar_fin_resultados_{nombre_resultado} | resultado: error")
+            return STATUS_ERR
+        return STATUS_OK
 
 
        
@@ -55,8 +78,22 @@ class ProtocoloResultadosCliente:
         
         identificador_resultado =  mensaje.decode(STRING_ENCODING)
 
-        if identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
+        if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
+            resultado = ResultadoVuelosRapidos
+        elif identificador_resultado == IDENTIFICADOR_RESULTADO_DISTANCIA:
+            resultado = ResultadoFiltroDistancia
+        elif identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
             resultado = ResultadoFiltroEscalas
+        elif identificador_resultado == IDENTIFICADOR_RESULTADO_PRECIO:
+            resultado = ResultadoEstadisticaPrecios
+        elif identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
+            return IDENTIFICADOR_FIN_RAPIDOS, None
+        elif identificador_resultado == IDENTIFICADOR_FIN_DISTANCIA:
+            return IDENTIFICADOR_FIN_DISTANCIA, None
+        elif identificador_resultado == IDENTIFICADOR_FIN_ESCALAS:
+            return IDENTIFICADOR_FIN_ESCALAS, None
+        elif identificador_resultado == IDENTIFICADOR_FIN_PRECIO:
+            return IDENTIFICADOR_FIN_PRECIO, None
         else:
             return STATUS_ERR, None
         

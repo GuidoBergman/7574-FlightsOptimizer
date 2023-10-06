@@ -39,7 +39,7 @@ class SocketComun:
             else:
                 chunk = self._socket.read(size - received_bytes)
             if chunk == b'':
-                return STATUS_ERR, None, None
+                return STATUS_ERR, None
             
             chunks.append(chunk)
             received_bytes += len(chunk)

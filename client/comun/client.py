@@ -4,8 +4,11 @@ from modelo.Aeropuerto import Aeropuerto
 from modelo.Vuelo import Vuelo
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 from protocolo_cliente import ProtocoloCliente
-from protocolo_resultados_cliente import ProtocoloResultadosCliente
+from protocolo_resultados_cliente import (ProtocoloResultadosCliente, 
+            IDENTIFICADOR_FIN_RAPIDOS, IDENTIFICADOR_FIN_DISTANCIA, IDENTIFICADOR_FIN_ESCALAS,
+            IDENTIFICADOR_FIN_PRECIO)
 
+CANT_TIPOS_RESULTADO = 4
 
 class Client:
     def __init__(self, host, port):
@@ -60,6 +63,31 @@ class Client:
 
         self._protocolo.enviar_fin_aeropuertos()
 
+    def _recibir_resultados(self):
+        fines_recibidos = set()
+        while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
+            logging.error('action: recibir_resultado | estado: esperando')
+            estado, resultado = self._protocolo_resultados.recibir_resultado()
+            if estado == STATUS_ERR:
+                logging.error('action: recibir_resultado | resultado: error')
+                break
+            elif estado == IDENTIFICADOR_FIN_RAPIDOS:
+                fines_recibidos.add(estado)
+                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
+            elif estado == IDENTIFICADOR_FIN_DISTANCIA:
+                fines_recibidos.add(estado)
+                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
+            elif estado == IDENTIFICADOR_FIN_ESCALAS:
+                fines_recibidos.add(estado)
+                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
+            elif estado == IDENTIFICADOR_FIN_PRECIO:
+                fines_recibidos.add(estado)
+                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
+            else:
+                logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+
+        logging.error(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
+
 
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('acción: sigterm_recibida')
@@ -71,12 +99,7 @@ class Client:
         self._enviar_aeropuertos('airports-codepublic.csv')
         self._enviar_vuelos('itineraries_short.csv')
 
-        logging.error('action: recibir_resultado | estado: esperando')
-        estado, resultado = self._protocolo_resultados.recibir_resultado()
-        if estado == STATUS_ERR:
-            logging.error('action: recibir_resultado | resultado: error')
-        else:
-            logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+        self._recibir_resultados()
 
         self._protocolo.cerrar()
         self._protocolo_resultados.cerrar()
