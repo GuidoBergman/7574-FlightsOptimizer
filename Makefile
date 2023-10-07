@@ -21,6 +21,7 @@ docker-image:
 	docker build -f ./rabbitmq/Dockerfile -t "rabbitmq:latest" .
 	docker build -f ./filtros/filtro_escalas/Dockerfile -t "filtro_escalas:latest" .
 	docker build -f ./filtros/filtro_velocidad/Dockerfile -t "filtro_velocidad:latest" .
+	docker build -f ./filtros/filtro_distancia/Dockerfile -t "filtro_distancia:latest" .
 	# Execute this command from time to time to clean up intermediate stages generated 
 	# during client build (your hard drive will like this :) ). Don't left uncommented if you 
 	# want to avoid rebuilding client image every time the docker-compose-up command 
