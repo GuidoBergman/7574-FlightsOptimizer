@@ -67,10 +67,7 @@ class FiltroVelocidad:
         
     def run(self):        
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)              
-          while self._protocolo.corriendo:
-              a = 1
-          return
-        
+          
         
         
            

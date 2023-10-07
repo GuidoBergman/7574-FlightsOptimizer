@@ -42,8 +42,4 @@ class FiltroEscalas:
 
     def run(self):
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
-          self._protocoloResultado.iniciar()
-          self._protocoloVelocidad.iniciar()
-          while self._protocolo.corriendo:
-              a = 1
-          return
+          

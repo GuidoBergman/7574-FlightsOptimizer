@@ -64,7 +64,4 @@ class FiltroDistancia:
         
           logging.info(f'Iniciando Filtro Distancia')  
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_aeropuerto, self.procesar_finaeropuerto)
-          self._protocoloResultado.iniciar()
-          while self._protocolo.corriendo:
-              a = 1
-          return
+          
