@@ -5,6 +5,7 @@ from comun.handler import Handler
 from comun.enviador_resultados import EnviadorResultados
 from comun.enviador_fin import EnviadorFin
 from multiprocessing import Process, Manager
+from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 from socket_comun import SocketComun
 
@@ -62,12 +63,17 @@ class Server:
             except OSError:
                 return
 
-            #socket_enviar, socket_recibir = client_sock.split()
+           # socket_enviar, socket_recibir = client_sock.split()
             
             
 
             procesos_handlers = []
             with Manager() as manager:
+                enviador_resultados = ProtocoloResultadosServidor()
+                proceso_enviador = Process(target=enviador_resultados.iniciar, args=((client_sock,)))
+                proceso_enviador.start()
+
+            
                 vuelos = manager.Queue()
                 for i in range(CANT_HANDLERS):
                     handler = Handler()
@@ -79,20 +85,21 @@ class Server:
                 self._recibir_aeropuertos(protocolo_cliente)  
                 self._recibir_vuelos(protocolo_cliente, vuelos)
 
+                
                 for proceso in procesos_handlers:
                     proceso.join()
 
                 enviador_fin = EnviadorFin()
                 enviador_fin.enviar_fin_vuelos()
                   
-                enviador_resultados = EnviadorResultados(client_sock)
-                enviador_resultados.enviar_resultados() 
-           
-
-                
+               # enviador_resultados = EnviadorResultados(socket_enviar)
+                #enviador_resultados.enviar_resultados() 
+              
 
                 protocolo_cliente.cerrar()
-                enviador_resultados.cerrar()
+
+                proceso_enviador.join()
+               # enviador_resultados.parar()
 
             
     
