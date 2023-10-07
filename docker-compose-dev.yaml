@@ -51,7 +51,6 @@ services:
     depends_on:
       - server
     networks:
-      - testing_net
       - rabbit_net
     volumes:
       - type: bind
@@ -70,7 +69,6 @@ services:
     depends_on:
       - server
     networks:
-      - testing_net
       - rabbit_net
     volumes:
       - type: bind

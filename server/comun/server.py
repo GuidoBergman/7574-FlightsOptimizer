@@ -35,11 +35,12 @@ class Server:
             estado, vuelo = protocolo_cliente.recibir_vuelo()
             if estado == ESTADO_FIN_VUELOS:
                 logging.error(f'Acción: recibir_vuelo | estado: se terminarón de recibir todos los vuelos')
-                vuelos.put(EOF_MSG)
+                for i in range(CANT_HANDLERS):
+                    vuelos.put(EOF_MSG)
                 break
             
             vuelos.put(vuelo)
-            logging.error(f'Acción: recibir_vuelo | estado: OK | Vuelo recibido:  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
+            logging.info(f'Acción: recibir_vuelo | estado: OK | Vuelo recibido:  id vuelo: {vuelo.id_vuelo}   origen: {vuelo.origen}   destino: {vuelo.destino}  precio: {vuelo.precio} distancia: {vuelo.distancia} duracion: {vuelo.duracion} escalas: {vuelo.escalas}')
 
 
 
@@ -64,26 +65,29 @@ class Server:
             
             
 
-            procesos = []
+            procesos_handlers = []
             with Manager() as manager:
                 vuelos = manager.Queue()
                 for i in range(CANT_HANDLERS):
                     handler = Handler()
                     handler_process = Process(target=handler.run, args=((vuelos),))
                     handler_process.start()
-                    procesos.append(handler_process)   
+                    procesos_handlers.append(handler_process)   
 
                 protocolo_cliente = ProtocoloCliente(client_sock)  
                 self._recibir_aeropuertos(protocolo_cliente)  
                 self._recibir_vuelos(protocolo_cliente, vuelos)
+
+                for proceso in procesos_handlers:
+                    proceso.join()
+
+                
                   
                 enviador_resultados = EnviadorResultados(client_sock)
                 enviador_resultados.enviar_resultados() 
            
 
-                for proceso in procesos:
-                    #proceso.terminate()
-                    proceso.join()
+                
 
                 protocolo_cliente.cerrar()
                 enviador_resultados.cerrar()
