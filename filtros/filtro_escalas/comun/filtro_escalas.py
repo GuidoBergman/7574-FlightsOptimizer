@@ -5,9 +5,9 @@ from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from protocolofiltroescalas import ProtocoloFiltroEscalas
 from modelo.Vuelo import Vuelo
-
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from protocolovelocidad import ProtocoloFiltroVelocidad
+from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
 
 
 class FiltroEscalas:
@@ -29,7 +29,11 @@ class FiltroEscalas:
         logging.error(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
         if len(vuelo.escalas.split("||")) >= 3:            
             logging.error(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
-            self._protocoloResultado.enviar_resultado_filtro_escalas(vuelo)
+
+            resultado = ResultadoFiltroEscalas(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino,
+                vuelo.precio, vuelo.escalas
+            )
+            self._protocoloResultado.enviar_resultado_filtro_escalas(resultado)
             self._protocoloVelocidad.enviar_vuelo(vuelo)
 
     def procesar_finvuelo(self):        
