@@ -7,6 +7,7 @@ from protocolo_cliente import ProtocoloCliente
 from protocolo_resultados_cliente import (ProtocoloResultadosCliente, 
             IDENTIFICADOR_FIN_RAPIDOS, IDENTIFICADOR_FIN_DISTANCIA, IDENTIFICADOR_FIN_ESCALAS,
             IDENTIFICADOR_FIN_PRECIO)
+from multiprocessing import Process
 
 CANT_TIPOS_RESULTADO = 4
 
@@ -97,12 +98,15 @@ class Client:
 
     def run(self):
         self._enviar_aeropuertos('airports-codepublic.csv')
-        self._enviar_vuelos('itineraries_short.csv')
+
+        handler_proceso = Process(target=self._enviar_vuelos, args=(('itineraries_short.csv'),))
+        handler_proceso.start()
 
         self._recibir_resultados()
 
         self._protocolo.cerrar()
         self._protocolo_resultados.cerrar()
+        handler_proceso.join()
 
 
                 

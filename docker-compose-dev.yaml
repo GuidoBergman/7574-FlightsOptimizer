@@ -27,7 +27,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
+    restart: on-failure
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -47,7 +47,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
+    restart: on-failure
     depends_on:
       - server
     networks:
@@ -65,7 +65,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
+    restart: on-failure
     depends_on:
       - server
     networks:
@@ -83,7 +83,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
+    restart: on-failure
     depends_on:
       - server
     networks:
@@ -100,7 +100,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
+    restart: on-failure
     depends_on:
       - server
     networks:
@@ -122,7 +122,7 @@ services:
       - testing_net
     depends_on:
       - server
-    
+    restart: on-failure
     volumes:
       - type: bind
         source: ./client/config.ini
