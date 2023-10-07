@@ -14,14 +14,20 @@ IDENTIFICADOR_AEROPUERTO = 'A'
 IDENTIFICADOR_FIN_VUELO = 'F'
 IDENTIFICADOR_FIN_AEROPUERTO = 'E'
 
+IDENTIFICADOR_PROMEDIO = 'P'
+IDENTIFICADOR_PROMEDIOGENERAL = 'G'
+
 ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s32s32si'
+FORMATO_MENSAJE_PROMEDIO = '!cH32s32s32si'
 FORMATO_MENSAJE_AEROPUERTO = '!cH3sff'
 
 NOMBRE_COLA = 'cola_distancia'
+NOMBRE_COLAPROMEDIO = 'cola_promedio'
+NOMBRE_COLAPROMEDIOGENERAL = 'cola_promediogeneral'
 HOST_COLAS = 'rabbitmq'
 
 
@@ -34,7 +40,7 @@ class ProtocoloFiltroDistancia:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.info(f'llego mensaje body: {body}')
+        logging.debud(f'llego mensaje body: {body}')
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             self.procesar_vuelo(self.traducir_vuelo(body))
         elif body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):
@@ -61,6 +67,21 @@ class ProtocoloFiltroDistancia:
         
         return vuelo
 
+    
+
+    def enviar_vuelo(self, total, promedio):
+        tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
+        tamanio_batch = 1
+        logging.info(f'Enviando {total}, promedio: {promedio}')
+        mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
+                                      tipo_mensaje,
+                                      tamanio_batch,
+                                      vuelo.id_vuelo.encode(STRING_ENCODING),
+                                      vuelo.origen.encode(STRING_ENCODING),
+                                      vuelo.destino.encode(STRING_ENCODING),
+                                      int(vuelo.distancia)
+                                      )
+    
 
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)

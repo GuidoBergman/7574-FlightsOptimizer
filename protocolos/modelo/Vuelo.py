@@ -18,4 +18,4 @@ class Vuelo:
 
         @property
         def trayecto(self):
-            return f"{self.origen} - {self.destino}"
+            return f"{self.origen}-{self.destino}"

@@ -76,6 +76,23 @@ services:
         target: /config.ini
 
         
+  filtro_precio:
+    container_name: filtro_precio
+    image: filtro_precio:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+    
+    depends_on:
+      - server
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_precio/config.ini
+        target: /config.ini
+
   filtro_distancia:
     container_name: filtro_distancia
     image: filtro_distancia:latest
