@@ -1,4 +1,5 @@
 
+import logging
 from manejador_colas import ManejadorColas
 from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
@@ -23,14 +24,14 @@ class ProtocoloResultadosServidor:
     def parar(self):        
         self.corriendo = False
 
-    def enviar_resultado_vuelos_rapidos(resultado: ResultadoVuelosRapidos):
-        print()
+    def enviar_resultado_vuelos_rapidos(self, resultado: ResultadoVuelosRapidos):
+        logging.error(f"Enviando resultado rapidos: {resultado.trayecto}")
 
-    def enviar_resultado_filtro_distancia(resultado: ResultadoFiltroDistancia):
+    def enviar_resultado_filtro_distancia(self, resultado: ResultadoFiltroDistancia):
         print()
         
     def enviar_resultado_filtro_escalas(self, resultado: ResultadoFiltroEscalas):
         print()
 
-    def enviar_resultado_filtro_precio(resultado: ResultadoEstadisticaPrecios):
-        print()
+    def enviar_resultado_filtro_precio(self, resultado: ResultadoEstadisticaPrecios):
+        logging.error(f"Enviando resultado precio: {resultado.trayecto}")

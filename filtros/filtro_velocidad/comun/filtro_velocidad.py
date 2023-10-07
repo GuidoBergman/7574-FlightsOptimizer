@@ -3,6 +3,7 @@ import signal
 from manejador_colas import ManejadorColas
 from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
+from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 class FiltroVelocidad:
@@ -57,13 +58,15 @@ class FiltroVelocidad:
         logging.info(f"INFO: Procesando fin de vuelo")
         logging.error(f"Procesando fin de vuelo")
         for trayecto, vuelos in self.vuelos_mas_rapido.items():
-            logging.error(f"Enviando trayecto: { trayecto }")
-            self._protocolo.enviar_vuelo(trayecto, vuelos)
+            for vuelo in vuelos:
+                logging.error(f"Enviando trayecto: { trayecto }")
+                id_vuelo = vuelo.id_vuelo            
+                duracion = vuelo.duracion
+                resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, "", duracion)
+                self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultado)
         
-    def run(self):
-        
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)  
-            
+    def run(self):        
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)              
           while self._protocolo.corriendo:
               a = 1
           return
