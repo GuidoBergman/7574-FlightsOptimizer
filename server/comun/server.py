@@ -7,6 +7,7 @@ from comun.enviador_fin import EnviadorFin
 from multiprocessing import Process, Manager
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
+from protocolofiltrodistancia import ProtocoloFiltroDistancia
 from socket_comun import SocketComun
 
 CANT_HANDLERS = 3
@@ -18,7 +19,7 @@ class Server:
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
-        
+        self._protocoloDistancia = ProtocoloFiltroDistancia()
 
         
         
@@ -50,9 +51,11 @@ class Server:
         while True:            
             estado, aeropuerto = protocolo_cliente.recibir_aeropuerto()
             if estado == ESTADO_FIN_AEROPUERTOS:
+                self._protocoloDistancia.enviar_fin_aeropuertos()
                 break
-
+            
             logging.info(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
+            self._protocoloDistancia.enviar_aeropuerto(aeropuerto)
 
 
 

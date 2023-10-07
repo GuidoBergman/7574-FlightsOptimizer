@@ -14,3 +14,8 @@ class Vuelo:
         self.escalas = escalas
         self.duracion = duracion
         self.distancia = distancia
+        
+
+        @property
+        def trayecto(self):
+            return f"{self.origen} - {self.destino}"
