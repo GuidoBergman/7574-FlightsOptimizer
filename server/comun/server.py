@@ -3,6 +3,7 @@ import signal
 from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
 from comun.handler import Handler
 from comun.enviador_resultados import EnviadorResultados
+from comun.enviador_fin import EnviadorFin
 from multiprocessing import Process, Manager
 
 from socket_comun import SocketComun
@@ -81,7 +82,8 @@ class Server:
                 for proceso in procesos_handlers:
                     proceso.join()
 
-                
+                enviador_fin = EnviadorFin()
+                enviador_fin.enviar_fin_vuelos()
                   
                 enviador_resultados = EnviadorResultados(client_sock)
                 enviador_resultados.enviar_resultados() 

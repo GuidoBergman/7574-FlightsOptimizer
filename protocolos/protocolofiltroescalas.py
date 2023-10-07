@@ -78,7 +78,7 @@ class ProtocoloFiltroEscalas:
 
 
     def enviar_fin_vuelos(self):
-        self._socket.send(IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
 
 
 
