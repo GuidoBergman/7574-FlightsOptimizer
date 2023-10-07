@@ -27,7 +27,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    restart: on-failure
+    
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -47,7 +47,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    restart: on-failure
+    
     depends_on:
       - server
     networks:
@@ -65,7 +65,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    restart: on-failure
+    
     depends_on:
       - server
     networks:
@@ -74,6 +74,25 @@ services:
       - type: bind
         source: ./filtros/filtro_velocidad/config.ini
         target: /config.ini
+
+        
+  filtro_distancia:
+    container_name: filtro_distancia
+    image: filtro_distancia:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+    
+    depends_on:
+      - server
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_distancia/config.ini
+        target: /config.ini
+
 
   client:
     container_name: client
@@ -86,7 +105,7 @@ services:
       - testing_net
     depends_on:
       - server
-    restart: on-failure
+    
     volumes:
       - type: bind
         source: ./client/config.ini
