@@ -3,16 +3,16 @@ import signal
 from manejador_colas import ManejadorColas
 from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
-from protocoloresultados import ProtocoloResultado
+from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 class FiltroVelocidad:
     def __init__(self, port, listen_backlog):
        self._colas = ManejadorColas('rabbitmq')
        self._protocolo = ProtocoloFiltroVelocidad()
        
-       self._protocoloResultado = ProtocoloResultado()
+       self._protocoloResultado = ProtocoloResultadosServidor()
        signal.signal(signal.SIGTERM, self.sigterm_handler)
-       self.vuelos_mas_rapido = []
+       self.vuelos_mas_rapido = {}
        
         
 
@@ -21,12 +21,14 @@ class FiltroVelocidad:
 
         
     def procesar_vuelo(self, vuelo: Vuelo):
+        
+        
         # Concatenar origen y destino para obtener el proyecto
         trayecto = vuelo.origen + "-" + vuelo.destino
-
         # Obtener la duración del vuelo actual
         duracion_actual = vuelo.duracion
-
+        logging.error(f"Procesando vuelo trayecto: { trayecto } de duracion { duracion_actual } ")
+        
         # Comprobar si ya hay vuelos registrados para este proyecto
         if trayecto in self.vuelos_mas_rapido:
             # Obtener los vuelos actuales para este proyecto
@@ -52,7 +54,10 @@ class FiltroVelocidad:
 
     def procesar_finvuelo(self):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
+        logging.info(f"INFO: Procesando fin de vuelo")
+        logging.error(f"Procesando fin de vuelo")
         for trayecto, vuelos in self.vuelos_mas_rapido.items():
+            logging.error(f"Enviando trayecto: { trayecto }")
             self._protocolo.enviar_vuelo(trayecto, vuelos)
         
     def run(self):

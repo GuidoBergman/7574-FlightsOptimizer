@@ -59,6 +59,24 @@ services:
         target: /config.ini
 
 
+  filtro_velocidad:
+    container_name: filtro_velocidad
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+    restart: on-failure
+    depends_on:
+      - server
+    networks:
+      - testing_net
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+
   client:
     container_name: client
     image: client:latest

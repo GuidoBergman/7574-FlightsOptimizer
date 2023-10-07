@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 from configparser import ConfigParser
-from filtros.filtro_velocidad.comun.filtro_velocidad import FiltroEscalas, FiltroVelocidad
 import logging
 import os
+
+from comun.filtro_velocidad import FiltroVelocidad
 
 
 def initialize_config():
@@ -35,6 +36,9 @@ def initialize_config():
 
 
 def main():
+    
+
+    logging.error(f"Iniciando Filtro Rapido")
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
     port = config_params["port"]
