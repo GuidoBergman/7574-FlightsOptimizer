@@ -6,17 +6,19 @@ from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
 from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from modelo.Vuelo import Vuelo
 
+HOST_COLAS = 'rabbitmq'
+COLA_RESULTADOS = 'cola_resultados'
 
 class ProtocoloResultadosServidor:
 
     def __init__(self):
-       self._colas = ManejadorColas('rabbitmq')
+       self._colas = ManejadorColas(HOST_COLAS)
        self.corriendo = False
     
     def iniciar(self):        
         self.corriendo = False
-        self._colas.crear_cola('cola')
-        self._colas.consumir_mensajes('cola')
+        self._colas.crear_cola(COLA_RESULTADOS)
+        self._colas.consumir_mensajes(COLA_RESULTADOS)
 
     def parar(self):        
         self.corriendo = False

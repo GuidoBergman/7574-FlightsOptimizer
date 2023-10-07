@@ -7,9 +7,12 @@ from modelo.estado import Estado
 from protocolofiltrodistancias import ProtocoloFiltroDistancia
 from protocolo_resultados_servidor import ProtocoloResultado
 
+HOST_COLAS = 'rabbitmq'
+COLA_DISTANCIA = 'cola_distancia'
+
 class FiltroDistancia:
     def __init__(self, port, listen_backlog):
-       self._colas = ManejadorColas('rabbitmq')
+       self._colas = ManejadorColas(HOST_COLAS )
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocoloResultado = ProtocoloResultado()
        self._protocolo = ProtocoloFiltroDistancia()
@@ -55,8 +58,8 @@ class FiltroDistancia:
 
 
     def run(self):
-          self._colas.crear_cola('cola')
-          self._colas.consumir_mensajes('cola')
+          self._colas.crear_cola(COLA_DISTANCIA)
+          self._colas.consumir_mensajes(COLA_DISTANCIA)
           
           while self.corriendo:
             aeropuerto, estado = self._protocolo.recibir_aeropuerto()

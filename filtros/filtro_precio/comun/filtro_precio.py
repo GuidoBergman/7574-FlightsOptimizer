@@ -7,10 +7,12 @@ from modelo.Vuelo import Vuelo
 from modelo.estado import Estado
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 
+HOST_COLAS = 'rabbitmq'
+COLA_PRECIOS = 'cola_precios'
 
 class FiltroPrecios:
     def __init__(self, port, listen_backlog):
-       self._colas = ManejadorColas('rabbitmq')
+       self._colas = ManejadorColas(HOST_COLAS)
        self._protocolo = ProtocoloFiltroPrecio()
        self.corriendo = True
        signal.signal(signal.SIGTERM, self.sigterm_handler)
@@ -43,8 +45,8 @@ class FiltroPrecios:
             self._protocolo.mandar_resumen(trayecto, resumen)
         
     def run(self):
-          self._colas.crear_cola('cola')
-          self._colas.consumir_mensajes('cola')
+          self._colas.crear_cola(COLA_PRECIOS)
+          self._colas.consumir_mensajes(COLA_PRECIOS)
           
           while self.corriendo:
             vuelo, estado = self._protocolo.recibir_vuelo()
