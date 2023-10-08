@@ -44,11 +44,8 @@ class FiltroVelocidad:
         # Si hay más de 2 vuelos para este proyecto, mantener solo los 2 más rápidos
         if len(self.vuelos_mas_rapido[trayecto]) > 2:
             self.vuelos_mas_rapido[trayecto].sort(key=lambda x: x.duracion)
-            logging.error(f'Voy a vorrar el vuelo: {self.vuelos_mas_rapido[trayecto][2].id_vuelo} ')
             self.vuelos_mas_rapido[trayecto] = self.vuelos_mas_rapido[trayecto][:2]
-            logging.error(f'Quedaron los vuelos: {self.vuelos_mas_rapido[trayecto][0].id_vuelo} y  {self.vuelos_mas_rapido[trayecto][1].id_vuelo} ')
-
-
+           
     def procesar_finvuelo(self):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
         logging.info(f"INFO: Procesando fin de vuelo")
