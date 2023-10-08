@@ -40,7 +40,7 @@ class ProtocoloFiltroDistancia:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.debud(f'llego mensaje body: {body}')
+        logging.debug(f'llego mensaje body: {body}')
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             self.procesar_vuelo(self.traducir_vuelo(body))
         elif body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):

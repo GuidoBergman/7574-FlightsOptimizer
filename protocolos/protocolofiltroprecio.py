@@ -18,7 +18,10 @@ ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH3s3sf'
+FORMATO_MENSAJE_PROMEDIO = '!fi'
 NOMBRE_COLA = 'cola_precios'
+NOMBRE_COLAPROMEDIO = 'cola_promedios'
+NOMBRE_COLAPROMEDIOGENERAL = 'cola_preciosgeneral'
 HOST_COLAS = 'rabbitmq'
 
 
@@ -46,36 +49,67 @@ class ProtocoloFiltroPrecio:
         return vuelo
 
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo):
+    def callback_promedio_general(self, body):
+        # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
+        logging.info(f'llego el promedio general: {body}')
+        pr = unpack("f", body)
+        
+        if type(pr) is tuple:
+            pr = pr[0] 
+        self.procesar_promediogeneral(pr)
+        
+    def callback_promedio(self, body):
+        logging.info(f'llego un promedio: {body}') 
+        un = unpack(FORMATO_MENSAJE_PROMEDIO, body)
+        promedio, cantidad = un
+        self.procesar_promedio(promedio, cantidad)
+
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
-        self._colas.crear_cola(self.nombre_cola)
+        self.procesar_promediogeneral = procesar_promediogeneral
+        
+        self._colas.crear_cola(NOMBRE_COLAPROMEDIOGENERAL)
+        self._colas.prepararconsumir_mensajes2(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)
+
+        self._colas.crear_cola(self.nombre_cola)        
         self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
 
 
-
+    def iniciar_promedio(self, procesar_promedio):
+        self.procesar_promedio =  procesar_promedio        
+        self._colas.crear_cola(NOMBRE_COLAPROMEDIO)
+        self._colas.consumir_mensajes(NOMBRE_COLAPROMEDIO, self.callback_promedio)
+        
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
-        tamanio_batch = 1
-        
+        tamanio_batch = 1        
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
                                       tipo_mensaje,
                                       tamanio_batch,
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
                                       float(vuelo.precio)
-                                      )
-    
-        
+                                      )           
         self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
-
-
-
+        
     def enviar_fin_vuelos(self):
         self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
+        
+    def enviar_promedio(self, promedio: float, cantidad: int):
+        logging.info(f"enviando promedio {promedio} cantidad {cantidad}")
+        mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_PROMEDIO,
+                                      promedio,
+                                      cantidad)           
+        
+        logging.info(f"enviando mensaje {mensaje_empaquetado}")
+        self._colas.enviar_mensaje(NOMBRE_COLAPROMEDIO, mensaje_empaquetado)
 
-
+    def enviar_promediogeneral(self, promedio: float):
+        tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
+        mensaje_empaquetado = struct.pack("f", promedio)           
+        self._colas.enviar_mensaje(NOMBRE_COLAPROMEDIOGENERAL, mensaje_empaquetado)
 
     def parar(self):        
         self.corriendo = False

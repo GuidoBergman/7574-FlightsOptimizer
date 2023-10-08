@@ -5,7 +5,7 @@ import signal
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from modelo.Vuelo import Vuelo
-from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
+from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 
 
 from protocolofiltroprecio import ProtocoloFiltroPrecio
@@ -17,8 +17,11 @@ class FiltroPrecios:
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroPrecio()
        self._protocoloResultado = ProtocoloResultadosServidor()
+
        self.precios_por_trayecto = {}
        self.promedio_por_trayecto = {}
+       self.promedio = 0.0
+       self.cantidad = 0
        
        self.corriendo = True
         
@@ -26,6 +29,17 @@ class FiltroPrecios:
         self._protocolo.parar()
         logging.info('action: sigterm_received')
 
+        
+
+        
+    def agregar_promedio(self, promedio: float, cantidad: int):
+        parte_actual = self.cantidad / (self.cantidad + cantidad)
+        parte_nueva = cantidad / (self.cantidad + cantidad)
+        npromedio = (self.promedio * parte_actual) + (promedio * parte_nueva)
+        
+        self.promedio = npromedio
+        self.cantidad += cantidad
+        
         
     def procesar_vuelo(self, vuelo: Vuelo):
         
@@ -47,8 +61,31 @@ class FiltroPrecios:
         
  
     def procesar_finvuelo(self):        
-        logging.info(f'FIN DE VUELOS')
+        logging.info(f'Calculo el promedio y total')
+        for trayecto, precios in self.precios_por_trayecto.items():
+            self.agregar_promedio(self.promedio_por_trayecto[trayecto], len(precios))
+            
+        self._protocolo.enviar_promedio(self.promedio, self.cantidad)
+        
+    def procesar_promediogeneral(self, promedio):
+        logging.info(f"Envia resultados para el promedio {promedio}")
+        
+        for trayecto, precios in self.precios_por_trayecto.items():
+                        
+            precios_por_encima = [precio for precio in precios if precio > promedio]
+            
+            # Calcula el precio promedio solo para los precios por encima de 'promedio'
+            if precios_por_encima:
+                precio_promedio = sum(precios_por_encima) / len(precios_por_encima)
+                precio_maximo = max(precios_por_encima)
+                res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
+                logging.info(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
+                self._protocoloResultado.enviar_resultado_filtro_precio(res)
+            
+
+        
+
 
     def run(self):
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral)
           

@@ -29,8 +29,10 @@ services:
       - LOGGING_LEVEL=INFO
     
     depends_on:
-      rabbitmq:
-         condition: service_healthy
+      - filtro_escalas
+      - filtro_velocidad
+      - filtro_precio
+      - filtro_distancia
     networks:
       - testing_net
       - rabbit_net
@@ -47,9 +49,9 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
     depends_on:
-      - server
+      rabbitmq:
+         condition: service_healthy
     networks:
       - rabbit_net
     volumes:
@@ -67,12 +69,31 @@ services:
       - LOGGING_LEVEL=INFO
     
     depends_on:
-      - server
+      - calculador_promedio
     networks:
       - rabbit_net
     volumes:
       - type: bind
         source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+
+        
+  calculador_promedio:
+    container_name: calculador_promedio
+    image: calculador_promedio:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/calculador_promedio/config.ini
         target: /config.ini
 
         
@@ -84,8 +105,10 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
     
+
     depends_on:
-      - server
+      rabbitmq:
+         condition: service_healthy
     networks:
       - rabbit_net
     volumes:
@@ -101,8 +124,10 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
     
+
     depends_on:
-      - server
+      rabbitmq:
+         condition: service_healthy
     networks:
       - rabbit_net
     volumes:
