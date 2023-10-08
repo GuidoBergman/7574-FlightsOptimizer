@@ -16,7 +16,6 @@ class Client:
         # Initialize server socket
         server_socket = SocketComun()
         server_socket.connect(host, port)
-        #socket_enviar, socket_recibir = server_socket.split()
         self._protocolo = ProtocoloCliente(server_socket)
         self._protocolo_resultados = ProtocoloResultadosCliente(server_socket)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
@@ -45,6 +44,8 @@ class Client:
                     self._protocolo.enviar_vuelo(vuelo)
 
         self._protocolo.enviar_fin_vuelos()
+
+        self._protocolo.cerrar()
         
        
         
@@ -88,6 +89,7 @@ class Client:
                 logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
         logging.error(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
+        
 
 
     def sigterm_handler(self, _signo, _stack_frame):
@@ -105,7 +107,6 @@ class Client:
         self._recibir_resultados()
 
         self._protocolo.cerrar()
-        self._protocolo_resultados.cerrar()
         handler_proceso.join()
 
 
