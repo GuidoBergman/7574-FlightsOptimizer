@@ -1,12 +1,13 @@
 import logging
 import signal
 from modelo.Aeropuerto import Aeropuerto
-from modelo.Vuelo import Vuelo
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 from protocolo_cliente import ProtocoloCliente
 from protocolo_resultados_cliente import (ProtocoloResultadosCliente, 
             IDENTIFICADOR_FIN_RAPIDOS, IDENTIFICADOR_FIN_DISTANCIA, IDENTIFICADOR_FIN_ESCALAS,
             IDENTIFICADOR_FIN_PRECIO)
+from multiprocessing import Process
+from comun.enviador_vuelos import EnviadorVuelos
 
 CANT_TIPOS_RESULTADO = 4
 
@@ -15,38 +16,10 @@ class Client:
         # Initialize server socket
         server_socket = SocketComun()
         server_socket.connect(host, port)
-        #socket_enviar, socket_recibir = server_socket.split()
         self._protocolo = ProtocoloCliente(server_socket)
         self._protocolo_resultados = ProtocoloResultadosCliente(server_socket)
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
+        signal.signal(signal.SIGTERM, self.sigterm_handler)    
 
-        
-        
-
-    def _enviar_vuelos(self, archivo_csv: str):
-        with open(archivo_csv, 'r', encoding='utf-8') as file:
-            next(file)  # Saltar la primera línea con encabezados
-            for line in file:
-                fields = line.strip().split(',')
-                if len(fields) >= 4:
-                    id_vuelo = fields[0]  # legId
-                    origen = fields[3]  # startingAirport
-                    destino = fields[4]  # destinationAirport
-                    duracion = fields[6] #travelDuration
-                    precio = float(fields[12])  # totalFare
-                    try:
-                        distancia = int(fields[14])  # totalTravelDistance
-                    except ValueError:
-                        distancia = -1
-                    escalas = fields[19]  # segmentsArrivalAirportCode
-                    vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
-                    logging.error(f'accion: leer_vuelo | id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
-                    self._protocolo.enviar_vuelo(vuelo)
-
-        self._protocolo.enviar_fin_vuelos()
-        
-       
-        
 
     def _enviar_aeropuertos(self, nombre_archivo: str):
         with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
@@ -87,22 +60,34 @@ class Client:
                 logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
         logging.error(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
+        
 
 
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('acción: sigterm_recibida')
-        self._server_socket.close()
-        logging.info(f'acción: cerrar_socket_servidor | resultado: OK')
+        self._protocolo.cerrar()
+        if self._handler_proceso:
+            self._handler_proceso.terminate()
+            self._handler_proceso.join()
         
 
     def run(self):
-        self._enviar_aeropuertos('airports-codepublic.csv')
-        self._enviar_vuelos('itineraries_short.csv')
+        try:
+            self._enviar_aeropuertos('airports-codepublic.csv')
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            return
 
-        self._recibir_resultados()
+        enviador_vuelos = EnviadorVuelos(self._protocolo)
+        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('itineraries_short.csv'),))
+        self._handler_proceso.start()
+
+        try:
+            self._recibir_resultados()
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            return
 
         self._protocolo.cerrar()
-        self._protocolo_resultados.cerrar()
+        self._handler_proceso.join()
 
 
                 

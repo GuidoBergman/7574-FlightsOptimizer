@@ -18,6 +18,8 @@ ESTADO_FIN_AEROPUERTOS = 1
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
 
+CANT_FILTROS_VELOCIDAD = 2
+
 class ProtocoloFiltroVelocidad:
     
 
@@ -47,12 +49,12 @@ class ProtocoloFiltroVelocidad:
         return vuelo
 
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, id):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
-        self._colas.crear_cola(self.nombre_cola)
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
+        self._colas.crear_cola_por_topico(self.nombre_cola)
+        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
 
 
 
@@ -70,13 +72,16 @@ class ProtocoloFiltroVelocidad:
                                       vuelo.duracion.encode(STRING_ENCODING)
                                       )
     
+        id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % CANT_FILTROS_VELOCIDAD) + 1
+
         
-        self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
+        self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro_velocidad)
 
 
 
     def enviar_fin_vuelos(self):
-        self._colas.enviar_mensaje(self.nombre_cola,IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
+        for i in range(CANT_FILTROS_VELOCIDAD):
+            self._colas.enviar_mensaje_por_topico(self.nombre_cola,IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), i)
 
 
 
