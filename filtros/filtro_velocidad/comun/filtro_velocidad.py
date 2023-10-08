@@ -26,24 +26,16 @@ class FiltroVelocidad:
     def procesar_vuelo(self, vuelo: Vuelo):
         
         
-        # Concatenar origen y destino para obtener el proyecto
+        # Concatenar origen y destino para obtener el tryecto
         trayecto = vuelo.origen + "-" + vuelo.destino
         # Obtener la duración del vuelo actual
         duracion_actual = vuelo.duracion
         logging.error(f"Procesando vuelo trayecto: { trayecto } de duracion { duracion_actual } ")
         
-        # Comprobar si ya hay vuelos registrados para este proyecto
+        # Comprobar si ya hay vuelos registrados para este trayecto
         if trayecto in self.vuelos_mas_rapido:
-            # Obtener los vuelos actuales para este proyecto
-            vuelos_proyecto = self.vuelos_mas_rapido[trayecto]
-
-            # Ordenar los vuelos por duración (ascendente)
-            vuelos_proyecto.sort(key=lambda x: x.duracion)
-
-            # Verificar si la duración del vuelo actual es menor que la duración del vuelo más lento registrado
-            if duracion_actual < vuelos_proyecto[-1].duracion:
-                # Reemplazar el vuelo más lento con el vuelo actual
-                vuelos_proyecto[-1] = vuelo
+            # Agregar el vuelo a la lista
+            self.vuelos_mas_rapido[trayecto].append(vuelo)
 
         else:
             # Si no hay vuelos registrados para este proyecto, crear una lista con el vuelo actual
@@ -52,7 +44,9 @@ class FiltroVelocidad:
         # Si hay más de 2 vuelos para este proyecto, mantener solo los 2 más rápidos
         if len(self.vuelos_mas_rapido[trayecto]) > 2:
             self.vuelos_mas_rapido[trayecto].sort(key=lambda x: x.duracion)
+            logging.error(f'Voy a vorrar el vuelo: {self.vuelos_mas_rapido[trayecto][2].id_vuelo} ')
             self.vuelos_mas_rapido[trayecto] = self.vuelos_mas_rapido[trayecto][:2]
+            logging.error(f'Quedaron los vuelos: {self.vuelos_mas_rapido[trayecto][0].id_vuelo} y  {self.vuelos_mas_rapido[trayecto][1].id_vuelo} ')
 
 
     def procesar_finvuelo(self):
@@ -64,7 +58,8 @@ class FiltroVelocidad:
                 logging.error(f"Enviando trayecto: { trayecto }")
                 id_vuelo = vuelo.id_vuelo            
                 duracion = vuelo.duracion
-                resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, "", duracion)
+                escalas = vuelo.escalas
+                resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, escalas, duracion)
                 self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultado)
         
     def run(self):        
