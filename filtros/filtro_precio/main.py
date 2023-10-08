@@ -22,8 +22,7 @@ def initialize_config():
 
     config_params = {}
     try:
-        config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
-        config_params["listen_backlog"] = int(os.getenv('SERVER_LISTEN_BACKLOG', config["DEFAULT"]["SERVER_LISTEN_BACKLOG"]))
+        config_params["id"] = int(os.getenv('ID', config["DEFAULT"]["ID"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
@@ -36,20 +35,19 @@ def initialize_config():
 def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
-    port = config_params["port"]
-    listen_backlog = config_params["listen_backlog"]
-
+    id = config_params["id"]
+    
 
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
-    logging.debug(f"action: config | result: success | port: {port} | "
-                  f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
+    logging.debug(f"action: config | result: success | id: {id} | "
+                  "|| logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    filtro_distancia = FiltroPrecios()
-    filtro_distancia.run()
+    filtro_precio = FiltroPrecios(id)
+    filtro_precio.run()
 
 def initialize_log(logging_level):
     """

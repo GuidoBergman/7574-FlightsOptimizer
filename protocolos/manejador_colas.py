@@ -23,11 +23,27 @@ class ManejadorColas:
         self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
 
 
+    def crear_cola_por_topico(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
+    
+    def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico):
+       resultado = self._channel.queue_declare(queue='')
+       nombre_cola_anonima = resultado.method.queue
+       self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))
+
+       self.callback_function = callback_function
+       self._channel.basic_consume(queue=nombre_cola_anonima, on_message_callback=self._callback_wrapper)
+       self._channel.start_consuming() 
+
+    def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
+        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
+
+
     def _callback_wrapper(self, channel, method, properties, body):
         self.callback_function(body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
     def cerrar(self):
-        self._connection.close()
+        self._channel.close()
 

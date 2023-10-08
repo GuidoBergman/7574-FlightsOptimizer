@@ -58,13 +58,14 @@ services:
         target: /config.ini
 
 
-  filtro_velocidad:
-    container_name: filtro_velocidad
+  filtro_velocidad1:
+    container_name: filtro_velocidad1
     image: filtro_velocidad:latest
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
+      - ID=1
     restart: on-failure
     depends_on:
       - server
@@ -75,14 +76,32 @@ services:
         source: ./filtros/filtro_velocidad/config.ini
         target: /config.ini
 
+  filtro_velocidad2:
+    container_name: filtro_velocidad2
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+    restart: on-failure
+    depends_on:
+      - server
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
         
-  filtro_precio:
-    container_name: filtro_precio
+  filtro_precio1:
+    container_name: filtro_precio1
     image: filtro_precio:latest
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
+      - ID=1
     restart: on-failure
     depends_on:
       - server

@@ -7,13 +7,15 @@ from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 class FiltroVelocidad:
-    def __init__(self, port, listen_backlog):
+    def __init__(self, id):
        self._colas = ManejadorColas('rabbitmq')
        self._protocolo = ProtocoloFiltroVelocidad()
        
        self._protocoloResultado = ProtocoloResultadosServidor()
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_mas_rapido = {}
+
+       self._id = id
        
         
 
@@ -66,7 +68,7 @@ class FiltroVelocidad:
                 self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultado)
         
     def run(self):        
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)              
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id)              
           
         
         

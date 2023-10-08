@@ -99,7 +99,7 @@ class Client:
     def run(self):
         self._enviar_aeropuertos('airports-codepublic.csv')
 
-        handler_proceso = Process(target=self._enviar_vuelos, args=(('itineraries_short.csv'),))
+        handler_proceso = Process(target=self._enviar_vuelos, args=(('short1.csv'),))
         handler_proceso.start()
 
         self._recibir_resultados()
