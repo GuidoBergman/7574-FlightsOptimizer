@@ -16,7 +16,7 @@ ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
-FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
+FORMATO_MENSAJE_VUELO = '!cH32s3s3s8s'
 
 
 class ProtocoloFiltroVelocidad:
@@ -46,10 +46,10 @@ class ProtocoloFiltroVelocidad:
     def traducir_vuelo(self, mensaje):
         
         formato_mensaje = FORMATO_MENSAJE_VUELO
-        tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, escalas, duracion = unpack(formato_mensaje, mensaje)
+        tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, duracion = unpack(formato_mensaje, mensaje)
         
         
-        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, escalas.decode('utf-8').replace('\x00', ''), duracion.decode('utf-8'), 0)
+        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, "", duracion.decode('utf-8'), 0)
         return vuelo
 
 
@@ -74,11 +74,12 @@ class ProtocoloFiltroVelocidad:
                                       vuelo.id_vuelo.encode(STRING_ENCODING),
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
-                                      vuelo.escalas.encode(STRING_ENCODING),
                                       vuelo.duracion.encode(STRING_ENCODING)
                                       )
-    
+        
         id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_velocidad) + 1
+        logging.info(f"enviando vuelo con duracion {vuelo.duracion} encode: {vuelo.duracion.encode(STRING_ENCODING)} al filtro {id_filtro_velocidad}")
+
 
         
         self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro_velocidad)
