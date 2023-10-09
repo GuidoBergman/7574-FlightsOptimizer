@@ -40,6 +40,8 @@ class FiltroEscalas:
     def procesar_finvuelo(self):        
         logging.error(f'FIN DE VUELOS')
         self._protocoloVelocidad.enviar_fin_vuelos()
+        self._protocoloResultado.enviar_fin_resultados_escalas()
+        self._protocolo.parar()
 
     def run(self):
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)

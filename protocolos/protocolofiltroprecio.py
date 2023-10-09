@@ -111,7 +111,8 @@ class ProtocoloFiltroPrecio:
         mensaje_empaquetado = struct.pack("f", promedio)           
         self._colas.enviar_mensaje(NOMBRE_COLAPROMEDIOGENERAL, mensaje_empaquetado)
 
-    def parar(self):        
+    def parar_vuelos(self):        
         self.corriendo = False
+        self._colas.dejar_de_consumir(NOMBRE_COLA)
         
         

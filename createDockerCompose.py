@@ -153,6 +153,7 @@ for i in range(1, cantRapidos+1):
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID={i}
+      - CANT_FILTROS_ESCALAS={cantEscalas}
     depends_on:
       - calculador_promedio
     networks:

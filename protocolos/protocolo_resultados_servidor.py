@@ -32,18 +32,24 @@ class ProtocoloResultadosServidor:
     cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):      
         self._corriendo = True
         self._protocolo_resultados_cliente = ProtocoloResultadosCliente(socket_cliente)
-        self._colas.crear_cola(self._nombre_cola)
-        self._colas.consumir_mensajes(self._nombre_cola, self._callback_function)
+        
 
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
         self._cant_filtros_precio = cant_filtros_precio
 
+        self._cant_fines_resultados = {
+            'escalas': 0, 'distancia': 0, 'velocidad': 0, 'precio': 0
+        }
+
+        self._colas.crear_cola(self._nombre_cola)
+        self._colas.consumir_mensajes(self._nombre_cola, self._callback_function)
         
 
     def parar(self):        
         self._corriendo = False
+        self._colas.dejar_de_consumir()
 
     
     def _callback_function(self, body):
@@ -62,13 +68,21 @@ class ProtocoloResultadosServidor:
             resultado = ResultadoEstadisticaPrecios.deserializar(body[1:])
             self._protocolo_resultados_cliente.enviar_resultado_filtro_precio(resultado)
         elif identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
-            self._protocolo_resultados_cliente.enviar_fin_resultados_rapidos()
+            self._cant_fines_resultados['velocidad'] += 1
+            if self._cant_fines_resultados['velocidad'] >= self._cant_filtros_velocidad:
+                self._protocolo_resultados_cliente.enviar_fin_resultados_rapidos()
         elif identificador_resultado == IDENTIFICADOR_FIN_DISTANCIA:
-            self._protocolo_resultados_cliente.enviar_fin_resultados_distancia()
+            self._cant_fines_resultados['distancia'] += 1
+            if self._cant_fines_resultados['distancia'] >= self._cant_filtros_distancia:
+                self._protocolo_resultados_cliente.enviar_fin_resultados_distancia()
         elif identificador_resultado == IDENTIFICADOR_FIN_ESCALAS:
-            self._protocolo_resultados_cliente.enviar_fin_resultados_escalas()
+            self._cant_fines_resultados['escalas'] += 1
+            if self._cant_fines_resultados['escalas'] >= self._cant_filtros_escalas:
+                self._protocolo_resultados_cliente.enviar_fin_resultados_escalas()
         elif identificador_resultado == IDENTIFICADOR_FIN_PRECIO:
-            self._protocolo_resultados_cliente.enviar_fin_resultados_filtro_precio()
+            self._cant_fines_resultados['precio'] += 1
+            if self._cant_fines_resultados['precio'] >= self._cant_filtros_precio:
+                self._protocolo_resultados_cliente.enviar_fin_resultados_filtro_precio()
         else:
             logging.error('acción: recibir_resultado_vuelo | resultado: error')
         

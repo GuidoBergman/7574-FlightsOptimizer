@@ -25,6 +25,7 @@ def initialize_config():
     config_params = {}
     try:
         config_params["id"] = int(os.getenv('ID', config["DEFAULT"]["ID"]))
+        config_params["cant_filtros_escalas"] = int(os.getenv('CANT_FILTROS_ESCALAS', config["DEFAULT"]["CANT_FILTROS_ESCALAS"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
@@ -41,6 +42,7 @@ def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
     id = config_params["id"]
+    cant_filtros_escalas = config_params['cant_filtros_escalas']
    
 
 
@@ -48,11 +50,11 @@ def main():
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
-    logging.debug(f"action: config | result: success | id: {id} | "
+    logging.debug(f"action: config | result: success | id: {id} |  cant filtros escalas: {cant_filtros_escalas}"
                   f" logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    filtro_velocidad = FiltroVelocidad(id)
+    filtro_velocidad = FiltroVelocidad(id, cant_filtros_escalas)
     filtro_velocidad.run()
 
 def initialize_log(logging_level):

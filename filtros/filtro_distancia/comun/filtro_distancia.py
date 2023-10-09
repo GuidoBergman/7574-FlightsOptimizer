@@ -57,6 +57,8 @@ class FiltroDistancia:
 
     def procesar_finvuelo(self):        
         logging.info(f'FIN DE VUELOS')
+        self._protocoloResultado.enviar_fin_resultados_distancia()
+        self._protocolo.parar()
         
     def procesar_finaeropuerto(self):        
         logging.info(f'FIN DE AEROPUERTOS')

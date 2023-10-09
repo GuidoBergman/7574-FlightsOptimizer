@@ -26,15 +26,19 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS=5
-      - CANT_FILTROS_ESCALAS=1
+      - CANT_HANDLERS=3
+      - CANT_FILTROS_ESCALAS=3
       - CANT_FILTROS_DISTANCIA=1
-      - CANT_FILTROS_VELOCIDAD=1
+      - CANT_FILTROS_VELOCIDAD=3
       - CANT_FILTROS_PRECIO=1
     depends_on:
       - filtro_escalas1
+      - filtro_escalas2
+      - filtro_escalas3
       - filtro_distancia1
       - filtro_velocidad1
+      - filtro_velocidad2
+      - filtro_velocidad3
       - filtro_precio1
 
     networks:
@@ -53,7 +57,45 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_FILTROS_VELOCIDAD=1
+      - CANT_FILTROS_VELOCIDAD=3
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_escalas/config.ini
+        target: /config.ini
+    
+  filtro_escalas2:
+    container_name: filtro_escalas2
+    image: filtro_escalas:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_FILTROS_VELOCIDAD=3
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_escalas/config.ini
+        target: /config.ini
+    
+  filtro_escalas3:
+    container_name: filtro_escalas3
+    image: filtro_escalas:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=3
+      - CANT_FILTROS_VELOCIDAD=3
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -91,6 +133,43 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID=1
+      - CANT_FILTROS_ESCALAS=3
+    depends_on:
+      - calculador_promedio
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+    
+  filtro_velocidad2:
+    container_name: filtro_velocidad2
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_FILTROS_ESCALAS=3
+    depends_on:
+      - calculador_promedio
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+    
+  filtro_velocidad3:
+    container_name: filtro_velocidad3
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=3
+      - CANT_FILTROS_ESCALAS=3
     depends_on:
       - calculador_promedio
     networks:
