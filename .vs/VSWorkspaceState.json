@@ -1,7 +1,15 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\client",
+    "\\client\\comun",
+    "\\filtros\\calculador_promedio\\comun",
+    "\\filtros\\filtro_distancia\\comun",
+    "\\filtros\\filtro_precio\\comun",
+    "\\filtros\\filtro_velocidad\\comun",
+    "\\protocolos\\modelo",
+    "\\server\\comun"
   ],
-  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\7574-FlightsOptimizer",
+  "SelectedNode": "\\docker-compose-dev.yaml",
   "PreviewInSolutionExplorer": false
 }
