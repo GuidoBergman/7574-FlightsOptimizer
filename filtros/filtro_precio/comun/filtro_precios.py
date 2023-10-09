@@ -68,6 +68,7 @@ class FiltroPrecios:
             self.agregar_promedio(self.promedio_por_trayecto[trayecto], len(precios))
             
         self._protocolo.enviar_promedio(self.promedio, self.cantidad)
+        self._protocolo.parar_vuelos()
         
     def procesar_promediogeneral(self, promedio):
         logging.info(f"Envia resultados para el promedio {promedio}")
@@ -84,6 +85,7 @@ class FiltroPrecios:
                 logging.info(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
                 self._protocoloResultado.enviar_resultado_filtro_precio(res)
             
+        self._protocoloResultado.enviar_fin_resultados_filtro_precio()
 
         
 

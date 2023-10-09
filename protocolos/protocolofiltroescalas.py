@@ -84,5 +84,6 @@ class ProtocoloFiltroEscalas:
 
     def parar(self):        
         self.corriendo = False
+        self._colas.dejar_de_consumir(NOMBRE_COLA)
         
         

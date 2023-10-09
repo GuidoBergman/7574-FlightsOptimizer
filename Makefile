@@ -23,6 +23,7 @@ docker-image:
 	docker build -f ./filtros/filtro_velocidad/Dockerfile -t "filtro_velocidad:latest" .
 	docker build -f ./filtros/filtro_distancia/Dockerfile -t "filtro_distancia:latest" .
 	docker build -f ./filtros/filtro_precio/Dockerfile -t "filtro_precio:latest" .
+	docker build -f ./filtros/calculador_promedio/Dockerfile -t "calculador_promedio:latest" .
 	# Execute this command from time to time to clean up intermediate stages generated 
 	# during client build (your hard drive will like this :) ). Don't left uncommented if you 
 	# want to avoid rebuilding client image every time the docker-compose-up command 

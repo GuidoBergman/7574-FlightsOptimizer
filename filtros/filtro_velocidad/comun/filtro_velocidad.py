@@ -7,7 +7,7 @@ from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 class FiltroVelocidad:
-    def __init__(self, id):
+    def __init__(self, id, cant_filtros_escalas):
        self._colas = ManejadorColas('rabbitmq')
        self._protocolo = ProtocoloFiltroVelocidad()
        
@@ -16,6 +16,8 @@ class FiltroVelocidad:
        self.vuelos_mas_rapido = {}
 
        self._id = id
+
+       self._cant_filtros_escalas = cant_filtros_escalas
        
         
 
@@ -58,9 +60,11 @@ class FiltroVelocidad:
                 escalas = vuelo.escalas
                 resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, escalas, duracion)
                 self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultado)
+
+        self._protocoloResultado.enviar_fin_resultados_rapidos()
         
     def run(self):        
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id)              
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas)              
           
         
         

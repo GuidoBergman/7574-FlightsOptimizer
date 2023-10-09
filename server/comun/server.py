@@ -80,8 +80,8 @@ class Server:
             with Manager() as manager:
                 enviador_resultados = ProtocoloResultadosServidor()
                 proceso_enviador = Process(target=enviador_resultados.iniciar, args=((client_sock,
-                    self._cant_filtros_escalas, self._cant_filtros_velocidad,
-                    self._cant_filtros_distancia, self._cant_filtros_precio
+                    self._cant_filtros_escalas, self._cant_filtros_distancia,
+                    self._cant_filtros_velocidad, self._cant_filtros_precio
                 )))
                 proceso_enviador.start()
 

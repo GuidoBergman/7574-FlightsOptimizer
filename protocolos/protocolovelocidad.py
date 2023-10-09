@@ -38,7 +38,10 @@ class ProtocoloFiltroVelocidad:
         if body.decode('utf-8').startswith(IDENTIFICADOR_VUELO):
             self.procesar_vuelo(self.traducir_vuelo(body))
         else:
-            self.procesar_finvuelo()
+            logging.error(f'Se recibio un fin de vueulo, se nececitan {self._cant_filtros_escalas}')
+            self._fines_vuelo += 1
+            if self._fines_vuelo >= self._cant_filtros_escalas:
+                self.procesar_finvuelo()
 
     def traducir_vuelo(self, mensaje):
         
@@ -50,10 +53,12 @@ class ProtocoloFiltroVelocidad:
         return vuelo
 
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo, id):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, id, cant_filtros_escalas):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
+        self._cant_filtros_escalas = cant_filtros_escalas
+        self._fines_vuelo = 0
         self._colas.crear_cola_por_topico(self.nombre_cola)
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
 
@@ -81,7 +86,7 @@ class ProtocoloFiltroVelocidad:
 
 
     def enviar_fin_vuelos(self):
-        for i in range(self._cant_filtros_velocidad ):
+        for i in range(1, self._cant_filtros_velocidad + 1):
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), i)
 
 

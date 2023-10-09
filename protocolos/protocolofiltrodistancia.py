@@ -26,8 +26,6 @@ FORMATO_MENSAJE_PROMEDIO = '!cH32s32s32si'
 FORMATO_MENSAJE_AEROPUERTO = '!cH3sff'
 
 NOMBRE_COLA = 'cola_distancia'
-NOMBRE_COLAPROMEDIO = 'cola_promedio'
-NOMBRE_COLAPROMEDIOGENERAL = 'cola_promediogeneral'
 HOST_COLAS = 'rabbitmq'
 
 
@@ -129,5 +127,6 @@ class ProtocoloFiltroDistancia:
 
     def parar(self):        
         self.corriendo = False
+        self._colas.dejar_de_consumir(NOMBRE_COLA)
         
         
