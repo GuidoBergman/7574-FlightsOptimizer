@@ -1,10 +1,12 @@
 import logging
 import signal
+import re
 from manejador_colas import ManejadorColas
 from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
 from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
+
 
 class FiltroVelocidad:
     def __init__(self, id):
@@ -23,15 +25,27 @@ class FiltroVelocidad:
         logging.info('action: sigterm_received')
 
         
+    def calcular_minutos(self, duracion_str):
+        minutos_totales = 0
+        
+        horas = 0
+        minutos = 0
+
+        match = re.match(r'PT(\d+)H?(\d*)M?$', duracion_str)            
+        if match:
+            horas = int(match.group(1))
+            minutos = int(match.group(2)) if match.group(2) else 0
+            minutos_totales += horas * 60 + minutos
+        return minutos_totales
+
     def procesar_vuelo(self, vuelo: Vuelo):
         
         
         # Concatenar origen y destino para obtener el tryecto
         trayecto = vuelo.origen + "-" + vuelo.destino
         # Obtener la duración del vuelo actual
-        duracion_actual = vuelo.duracion
-        logging.error(f"Procesando vuelo trayecto: { trayecto } de duracion { duracion_actual } ")
-        
+        vuelo.duracion_enminutos = self.calcular_minutos(vuelo.duracion)
+        logging.error(f"Procesando vuelo trayecto: { trayecto } de duracion: {vuelo.duracion} en minutos: { vuelo.duracion_enminutos } ")
         # Comprobar si ya hay vuelos registrados para este trayecto
         if trayecto in self.vuelos_mas_rapido:
             # Agregar el vuelo a la lista
@@ -43,7 +57,7 @@ class FiltroVelocidad:
 
         # Si hay más de 2 vuelos para este proyecto, mantener solo los 2 más rápidos
         if len(self.vuelos_mas_rapido[trayecto]) > 2:
-            self.vuelos_mas_rapido[trayecto].sort(key=lambda x: x.duracion)
+            self.vuelos_mas_rapido[trayecto].sort(key=lambda x: x.duracion_enminutos)
             self.vuelos_mas_rapido[trayecto] = self.vuelos_mas_rapido[trayecto][:2]
            
     def procesar_finvuelo(self):
