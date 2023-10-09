@@ -91,5 +91,5 @@ class FiltroPrecios:
 
 
     def run(self):
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral)
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral, self._id)
           

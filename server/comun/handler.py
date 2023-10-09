@@ -8,10 +8,11 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 EOF_MSG = 'EOF'
 
 class Handler:
-    def __init__(self):
+    def __init__(self, cant_filtros_precio):
         self._protocoloEscalas = ProtocoloFiltroEscalas()
         self._protocoloDistancia = ProtocoloFiltroDistancia()
-        self._protocoloPrecio = ProtocoloFiltroPrecio()
+        logging.error(f'CVant filtros precio (handler): {cant_filtros_precio}')
+        self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio)
         
 
     def run(self, vuelos):

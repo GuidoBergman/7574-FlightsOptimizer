@@ -7,7 +7,7 @@ class EnviadorFin:
     def __init__(self, cant_filtros_escalas,
     cant_filtros_distancia, cant_filtros_precio):
         self._protocolo_escalas = ProtocoloFiltroEscalas()        
-        self._protocolo_precio = ProtocoloFiltroPrecio()
+        self._protocolo_precio = ProtocoloFiltroPrecio(cant_filtros_precio)
         self._protocolo_distancia = ProtocoloFiltroDistancia()
         
         self._cant_filtros_escalas = cant_filtros_escalas

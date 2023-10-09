@@ -27,11 +27,13 @@ HOST_COLAS = 'rabbitmq'
 
 class ProtocoloFiltroPrecio:
        
-    def __init__(self):    
+    def __init__(self, cant_filtros_precio=None):    
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas(HOST_COLAS)
        self.corriendo = False
-    
+       
+       if cant_filtros_precio:
+        self._cant_filtros_precio= int(cant_filtros_precio)
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
@@ -64,23 +66,23 @@ class ProtocoloFiltroPrecio:
         promedio, cantidad = un
         self.procesar_promedio(promedio, cantidad)
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral, id):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
         self.procesar_promediogeneral = procesar_promediogeneral
         
-        self._colas.crear_cola(NOMBRE_COLAPROMEDIOGENERAL)
-        self._colas.prepararconsumir_mensajes2(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)
+        self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIOGENERAL)
+        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)
 
-        self._colas.crear_cola(self.nombre_cola)        
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
+        self._colas.crear_cola_por_topico(self.nombre_cola)      
+        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
 
 
     def iniciar_promedio(self, procesar_promedio):
         self.procesar_promedio =  procesar_promedio        
-        self._colas.crear_cola(NOMBRE_COLAPROMEDIO)
-        self._colas.consumir_mensajes(NOMBRE_COLAPROMEDIO, self.callback_promedio)
+        self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIO)
+        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIO, self.callback_promedio, consumir=True)
         
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
@@ -92,10 +94,13 @@ class ProtocoloFiltroPrecio:
                                       vuelo.destino.encode(STRING_ENCODING),
                                       float(vuelo.precio)
                                       )           
-        self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
+
+        id_filtro_precio = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_precio) + 1
+        self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro_precio)
         
     def enviar_fin_vuelos(self):
-        self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
+        for i in range(1, self._cant_filtros_precio + 1):
+            self._colas.enviar_mensaje_por_topico(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), i)
         
     def enviar_promedio(self, promedio: float, cantidad: int):
         logging.info(f"enviando promedio {promedio} cantidad {cantidad}")

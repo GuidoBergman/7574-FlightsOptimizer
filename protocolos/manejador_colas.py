@@ -50,12 +50,20 @@ class ManejadorColas:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
         
+    def crear_cola_subscriptores(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
 
-    def prepararconsumir_mensajes2(self, nombre_cola, callback_function):
+    def subscribirse_cola(self, nombre_cola, callback_function, consumir=False):
+       resultado = self._channel.queue_declare(queue='')
+       nombre_cola_anonima = resultado.method.queue
+       self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)
+
        self.callback_function2 = callback_function
-       self._consumer_tags[nombre_cola] = self._channel.basic_consume(queue=nombre_cola, 
+       self._consumer_tags[nombre_cola] =  self._channel.basic_consume(queue=nombre_cola_anonima, 
         on_message_callback=self._callback_wrapper2)
        
+       if consumir:
+        self._channel.start_consuming() 
 
     def _callback_wrapper2(self, channel, method, properties, body):
         self.callback_function2(body)

@@ -72,9 +72,7 @@ class Server:
                 client_sock, addr = self._server_socket.accept()
             except OSError:
                 return
-
-           # socket_enviar, socket_recibir = client_sock.split()
-            
+ 
             
 
             procesos_handlers = []
@@ -89,7 +87,7 @@ class Server:
             
                 vuelos = manager.Queue()
                 for i in range(self._cant_handlers):
-                    handler = Handler()
+                    handler = Handler(self._cant_filtros_precio)
                     handler_process = Process(target=handler.run, args=((vuelos),))
                     handler_process.start()
                     procesos_handlers.append(handler_process)   
@@ -97,6 +95,8 @@ class Server:
                 protocolo_cliente = ProtocoloCliente(client_sock)  
                 self._recibir_aeropuertos(protocolo_cliente)  
                 self._recibir_vuelos(protocolo_cliente, vuelos)
+
+               
 
                 
                 for proceso in procesos_handlers:

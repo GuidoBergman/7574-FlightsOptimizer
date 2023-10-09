@@ -23,12 +23,12 @@ class ProtocoloFiltroVelocidad:
     
 
 
-    def __init__(self, cant_filtros_velocidad=None):    
+    def __init__(self, cant_filtros_velocidad=1):    
        self._colas = ManejadorColas('rabbitmq')
        self.corriendo = False
        self.nombre_cola = 'cola_FiltroVelocidad'
-       if cant_filtros_velocidad:
-            self._cant_filtros_velocidad = int(cant_filtros_velocidad)
+       
+       self._cant_filtros_velocidad = int(cant_filtros_velocidad)
     
        
 
