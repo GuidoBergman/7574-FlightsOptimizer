@@ -31,7 +31,7 @@ services:
     depends_on:
       - filtro_escalas
       - filtro_velocidad
-      - filtro_precio
+      - filtro_precio1
       - filtro_distancia
     networks:
       - testing_net
@@ -97,15 +97,14 @@ services:
         target: /config.ini
 
         
-  filtro_precio:
-    container_name: filtro_precio
+  filtro_precio1:
+    container_name: filtro_precio1
     image: filtro_precio:latest
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-    
-
+      - ID=1
     depends_on:
       rabbitmq:
          condition: service_healthy

@@ -78,7 +78,7 @@ class Client:
             return
 
         enviador_vuelos = EnviadorVuelos(self._protocolo)
-        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('itineraries_short.csv'),))
+        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('short1.csv'),))
         self._handler_proceso.start()
 
         try:

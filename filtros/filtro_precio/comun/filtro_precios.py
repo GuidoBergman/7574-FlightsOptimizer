@@ -46,7 +46,7 @@ class FiltroPrecios:
     def procesar_vuelo(self, vuelo: Vuelo):
         
         logging.info(f'Inicio el proceso origen { vuelo.origen } precio { vuelo.precio }')
-        trayecto = f'{vuelo.origen}{vuelo.destino}'
+        trayecto = f'{vuelo.origen}-{vuelo.destino}'
         if trayecto not in self.precios_por_trayecto:
             # Si el trayecto no existe en el diccionario, creamos una lista con el precio actual
             self.precios_por_trayecto[trayecto] = [vuelo.precio]
