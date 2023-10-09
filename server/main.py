@@ -26,6 +26,11 @@ def initialize_config():
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["listen_backlog"] = int(os.getenv('SERVER_LISTEN_BACKLOG', config["DEFAULT"]["SERVER_LISTEN_BACKLOG"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["cant_handlers"] = int(os.getenv('CANT_HANDLERS', config["DEFAULT"]["CANT_HANDLERS"]))
+        config_params["cant_filtros_escalas"] = int(os.getenv('CANT_FILTROS_ESCALAS', config["DEFAULT"]["CANT_FILTROS_ESCALAS"]))
+        config_params["cant_filtros_distancia"] = int(os.getenv('CANT_FILTROS_DISTANCIA', config["DEFAULT"]["CANT_FILTROS_DISTANCIA"]))
+        config_params["cant_filtros_velocidad"] = int(os.getenv('CANT_FILTROS_VELOCIDAD', config["DEFAULT"]["CANT_FILTROS_VELOCIDAD"]))
+        config_params["cant_filtros_precio"] = int(os.getenv('CANT_FILTROS_PRECIO', config["DEFAULT"]["CANT_FILTROS_PRECIO"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -40,6 +45,12 @@ def main():
     logging_level = config_params["logging_level"]
     port = config_params["port"]
     listen_backlog = config_params["listen_backlog"]
+    cant_handlers = config_params["cant_handlers"] 
+    cant_filtros_escalas = config_params["cant_filtros_escalas"]
+    cant_filtros_distancia = config_params["cant_filtros_distancia"]
+    cant_filtros_velocidad = config_params["cant_filtros_velocidad"] 
+    cant_filtros_precio = config_params["cant_filtros_precio"] 
+    
 
 
     initialize_log(logging_level)
@@ -47,10 +58,13 @@ def main():
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
     logging.debug(f"action: config | result: success | port: {port} | "
-                  f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
+                  f"listen_backlog: {listen_backlog} | logging_level: {logging_level} |"
+                  f"cant handlers: {cant_handlers} | cant filtros escalas: {cant_filtros_escalas} |"
+                  f"cant filtros distancia: {cant_filtros_distancia} | cant filtros velocidad: {cant_filtros_velocidad} | cant filtros precio: {cant_filtros_precio}")
 
     # Initialize server and start server loop
-    server = Server(port, listen_backlog)
+    server = Server(port, listen_backlog, cant_handlers, cant_filtros_escalas,
+    cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio)
     server.run()
 
 def initialize_log(logging_level):

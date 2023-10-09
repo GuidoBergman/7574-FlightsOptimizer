@@ -13,12 +13,13 @@ from modelo.Aeropuerto import Aeropuerto
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
 
 class FiltroDistancia:
-    def __init__(self):
+    def __init__(self, id):
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroDistancia()
        self._protocoloResultado = ProtocoloResultadosServidor()
        self.aeropuertos = {}
        self.corriendo = True
+       self._id = id
        
         
     def sigterm_handler(self, _signo, _stack_frame):
@@ -49,7 +50,7 @@ class FiltroDistancia:
         
             if (distancia_directa * 4 < vuelo.distancia):
                 logging.info(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
-                resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, f"{vuelo.origen}-{vuelo.destino}", vuelo.distancia)
+                resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
                 self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia)
         except KeyError as e:
             logging.error(f'No se encontro el aeropuero')
