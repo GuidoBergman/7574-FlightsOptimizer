@@ -49,7 +49,7 @@ class FiltroDistancia:
         
             if (distancia_directa * 4 < vuelo.distancia):
                 logging.info(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
-                resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.trayecto, vuelo.distancia)
+                resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, f"{vuelo.origen}-{vuelo.destino}", vuelo.distancia)
                 self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia)
         except KeyError as e:
             logging.error(f'No se encontro el aeropuero')

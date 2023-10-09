@@ -13,8 +13,12 @@ ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
-FORMATO_MENSAJE_VUELO = '!H32s3s3sfH50s8sh'
 FORMATO_MENSAJE_AEROPUERTO = '!H3sff'
+
+
+FORMATO_MENSAJE_VUELO =  '!H32s3s3sfH50s8sh'
+FORMATO_MENSAJE_UNVUELO = '!32s3s3sfH50s8sh'
+FORMATO_TOTAL_VUELOS =  '!H'
 
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 
@@ -64,7 +68,74 @@ class ProtocoloCliente:
             logging.error(f'acción: recibir_vuelo | result: error')
             return STATUS_ERR, None
         
+    def recibir_vuelos(self):
+        ret = []
+        estado, identificador_mensaje = self._recibir_identificador_mensaje()
+        if estado != STATUS_OK:
+            logging.error(f'acción: recibir_vuelo | result: error')
+            return STATUS_ERR, None        
+        
+        #si recibo identificador de vuelo
+        if identificador_mensaje == IDENTIFICADOR_VUELO:
+            formato_mensaje = FORMATO_MENSAJE_VUELO
+            
+            #Recibo la cantidad de vuelos
+            tamanio_mensaje = calcsize(FORMATO_TOTAL_VUELOS)
+            estado, tot_vuelos = self._socket.receive(tamanio_mensaje)
+            if estado != STATUS_OK:
+                logging.error(f'acción: recibir_vuelo | result: error')
+                return STATUS_ERR, None
+            
+                
+            cantidad_vuelos = unpack(FORMATO_TOTAL_VUELOS, tot_vuelos)
+            logging.info(f"recibo {cantidad_vuelos} vuelos")
+            
+            if type(cantidad_vuelos) is tuple:
+                cantidad_vuelos = cantidad_vuelos[0] 
 
+            while cantidad_vuelos > 0:
+                tamanio_mensaje = calcsize(FORMATO_MENSAJE_UNVUELO)    
+                estado, mensaje = self._socket.receive(tamanio_mensaje)
+                if estado != STATUS_OK:
+                    logging.error(f'acción: recibir_vuelo | result: error')
+                    return STATUS_ERR, None
+            
+                id_vuelo, origen, destino, precio, longitud_escalas, escalas, duracion, distancia = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)
+                id_vuelo = id_vuelo.decode(STRING_ENCODING)
+                origen = origen.decode(STRING_ENCODING),
+                destino = destino.decode(STRING_ENCODING)
+                escalas = escalas[0:longitud_escalas].decode(STRING_ENCODING)
+                duracion = duracion.decode(STRING_ENCODING)
+                vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
+                ret.append(vuelo)
+                cantidad_vuelos -= 1
+
+            return STATUS_OK, ret
+        elif identificador_mensaje == IDENTIFICADOR_FIN_VUELO:
+            return ESTADO_FIN_VUELOS, None
+        else:
+            logging.error(f'acción: recibir_vuelo | result: error')
+            return STATUS_ERR, None
+        
+
+        
+    def enviar_vuelos(self, vuelos):
+        self._socket.send(IDENTIFICADOR_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        
+        tamanio_batch = len(vuelos)
+        msg = pack(FORMATO_TOTAL_VUELOS, tamanio_batch)
+        for vuelo in vuelos:
+            msg += pack(FORMATO_MENSAJE_UNVUELO, 
+                vuelo.id_vuelo.encode(STRING_ENCODING), vuelo.origen.encode(STRING_ENCODING), vuelo.destino.encode(STRING_ENCODING),
+                vuelo.precio, len(vuelo.escalas), vuelo.escalas.encode(STRING_ENCODING), 
+                vuelo.duracion.encode(STRING_ENCODING), vuelo.distancia)
+        estado = self._socket.send(msg, len(msg))
+        
+        if estado == STATUS_ERR:
+            logging.error("acción: enviar_vuelo | resultado: error")
+            return STATUS_ERR
+
+        return STATUS_OK
 
     def enviar_vuelo(self, vuelo):
         self._socket.send(IDENTIFICADOR_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)

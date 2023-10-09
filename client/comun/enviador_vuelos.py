@@ -3,8 +3,10 @@ import signal
 from modelo.Vuelo import Vuelo
 from protocolo_cliente import ProtocoloCliente
 
+TAMANIO_LOTE = 300
+    
 class EnviadorVuelos:
-
+    
     def __init__(self, protocoloCliente: ProtocoloCliente):
         self._protocolo = protocoloCliente
 
@@ -22,6 +24,9 @@ class EnviadorVuelos:
             return
 
     def _enviar_vuelos(self, archivo_csv: str):
+        
+        lote = []
+        
         with open(archivo_csv, 'r', encoding='utf-8') as file:
             next(file)  # Saltar la primera línea con encabezados
             for line in file:
@@ -38,8 +43,13 @@ class EnviadorVuelos:
                         distancia = -1
                     escalas = fields[19]  # segmentsArrivalAirportCode
                     vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
-                    logging.error(f'accion: leer_vuelo | id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
-                    self._protocolo.enviar_vuelo(vuelo)
+                    logging.debug(f'accion: leer_vuelo | id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
+                    lote.append(vuelo)
+                    if (len(lote) >= TAMANIO_LOTE):
+                        self._protocolo.enviar_vuelos(lote)
+                        lote = []
+            if len(lote) > 0:
+                self._protocolo.enviar_vuelos(lote)
 
         self._protocolo.enviar_fin_vuelos()
 
