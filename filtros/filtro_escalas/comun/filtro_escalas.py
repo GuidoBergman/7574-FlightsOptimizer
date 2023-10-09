@@ -11,13 +11,14 @@ from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
 
 
 class FiltroEscalas:
-    def __init__(self):
+    def __init__(self, id, cant_filtros_velocidad):
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroEscalas()
        self._protocoloResultado = ProtocoloResultadosServidor()
-       self._protocoloVelocidad = ProtocoloFiltroVelocidad()
+       self._protocoloVelocidad = ProtocoloFiltroVelocidad(cant_filtros_velocidad)
        self.vuelos_con_tres_escalas = []
        self.corriendo = True
+       self._id = id
        
         
     def sigterm_handler(self, _signo, _stack_frame):

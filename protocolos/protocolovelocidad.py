@@ -18,16 +18,17 @@ ESTADO_FIN_AEROPUERTOS = 1
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
 
-CANT_FILTROS_VELOCIDAD = 1
 
 class ProtocoloFiltroVelocidad:
     
 
 
-    def __init__(self):    
+    def __init__(self, cant_filtros_velocidad=None):    
        self._colas = ManejadorColas('rabbitmq')
        self.corriendo = False
        self.nombre_cola = 'cola_FiltroVelocidad'
+       if cant_filtros_velocidad:
+            self._cant_filtros_velocidad = int(cant_filtros_velocidad)
     
        
 
@@ -72,7 +73,7 @@ class ProtocoloFiltroVelocidad:
                                       vuelo.duracion.encode(STRING_ENCODING)
                                       )
     
-        id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % CANT_FILTROS_VELOCIDAD) + 1
+        id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_velocidad) + 1
 
         
         self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro_velocidad)
@@ -80,7 +81,7 @@ class ProtocoloFiltroVelocidad:
 
 
     def enviar_fin_vuelos(self):
-        for i in range(CANT_FILTROS_VELOCIDAD):
+        for i in range(self._cant_filtros_velocidad ):
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), i)
 
 

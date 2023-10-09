@@ -9,16 +9,23 @@ from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from protocolofiltrodistancia import ProtocoloFiltroDistancia
 from socket_comun import SocketComun
 
-CANT_HANDLERS = 3
+
 EOF_MSG = 'EOF'
 
 class Server:
-    def __init__(self, port, listen_backlog):
+    def __init__(self, port, listen_backlog, cant_handlers, cant_filtros_escalas,
+    cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):
         # Initialize server socket
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         self._protocoloDistancia = ProtocoloFiltroDistancia()
+
+        self._cant_handlers = cant_handlers
+        self._cant_filtros_escalas = cant_filtros_escalas
+        self._cant_filtros_distancia = cant_filtros_distancia
+        self._cant_filtros_velocidad = cant_filtros_velocidad
+        self._cant_filtros_precio = cant_filtros_precio
 
         
         
@@ -37,7 +44,7 @@ class Server:
             estado, vuelo = protocolo_cliente.recibir_vuelo()
             if estado == ESTADO_FIN_VUELOS:
                 logging.error(f'Acción: recibir_vuelo | estado: se terminarón de recibir todos los vuelos')
-                for i in range(CANT_HANDLERS):
+                for i in range(self._cant_handlers):
                     vuelos.put(EOF_MSG)
                 break
             
@@ -72,12 +79,15 @@ class Server:
             procesos_handlers = []
             with Manager() as manager:
                 enviador_resultados = ProtocoloResultadosServidor()
-                proceso_enviador = Process(target=enviador_resultados.iniciar, args=((client_sock,)))
+                proceso_enviador = Process(target=enviador_resultados.iniciar, args=((client_sock,
+                    self._cant_filtros_escalas, self._cant_filtros_velocidad,
+                    self._cant_filtros_distancia, self._cant_filtros_precio
+                )))
                 proceso_enviador.start()
 
             
                 vuelos = manager.Queue()
-                for i in range(CANT_HANDLERS):
+                for i in range(self._cant_handlers):
                     handler = Handler()
                     handler_process = Process(target=handler.run, args=((vuelos),))
                     handler_process.start()
@@ -91,7 +101,8 @@ class Server:
                 for proceso in procesos_handlers:
                     proceso.join()
 
-                enviador_fin = EnviadorFin()
+                enviador_fin = EnviadorFin(self._cant_filtros_escalas, self._cant_filtros_distancia,
+                self._cant_filtros_precio)
                 enviador_fin.enviar_fin_vuelos()
                   
                

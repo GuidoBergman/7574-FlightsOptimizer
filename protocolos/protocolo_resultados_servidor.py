@@ -28,11 +28,18 @@ class ProtocoloResultadosServidor:
        self._nombre_cola = COLA_RESULTADOS
 
     # Escuchar los resultados en la cola de resultados del servidor y mandarselos al cliente   
-    def iniciar(self, socket_cliente):      
+    def iniciar(self, socket_cliente, cant_filtros_escalas,
+    cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):      
         self._corriendo = True
         self._protocolo_resultados_cliente = ProtocoloResultadosCliente(socket_cliente)
         self._colas.crear_cola(self._nombre_cola)
         self._colas.consumir_mensajes(self._nombre_cola, self._callback_function)
+
+        self._cant_filtros_escalas = cant_filtros_escalas
+        self._cant_filtros_distancia = cant_filtros_distancia
+        self._cant_filtros_velocidad = cant_filtros_velocidad
+        self._cant_filtros_precio = cant_filtros_precio
+
         
 
     def parar(self):        
