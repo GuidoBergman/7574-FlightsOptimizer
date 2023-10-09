@@ -93,14 +93,17 @@ class ProtocoloCliente:
             if type(cantidad_vuelos) is tuple:
                 cantidad_vuelos = cantidad_vuelos[0] 
 
-            while cantidad_vuelos > 0:
-                tamanio_mensaje = calcsize(FORMATO_MENSAJE_UNVUELO)    
-                estado, mensaje = self._socket.receive(tamanio_mensaje)
-                if estado != STATUS_OK:
+            tamanio_mensaje = calcsize(FORMATO_MENSAJE_UNVUELO)
+            estado, mensaje = self._socket.receive(tamanio_mensaje * cantidad_vuelos)
+            if estado != STATUS_OK:
                     logging.error(f'acción: recibir_vuelo | result: error')
                     return STATUS_ERR, None
-            
-                id_vuelo, origen, destino, precio, longitud_escalas, escalas, duracion, distancia = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)
+            for i in range(cantidad_vuelos):
+                
+                primer_byte = i * tamanio_mensaje
+                ultimo_byte = (i+1) * tamanio_mensaje
+                parte_mensaje = mensaje[primer_byte: ultimo_byte]
+                id_vuelo, origen, destino, precio, longitud_escalas, escalas, duracion, distancia = unpack(FORMATO_MENSAJE_UNVUELO, parte_mensaje)
                 id_vuelo = id_vuelo.decode(STRING_ENCODING)
                 origen = origen.decode(STRING_ENCODING),
                 destino = destino.decode(STRING_ENCODING)
