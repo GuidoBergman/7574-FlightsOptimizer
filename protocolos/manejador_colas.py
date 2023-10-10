@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import queue
 import pika
 import os
 
@@ -19,17 +20,19 @@ class ManejadorColas:
         self._channel.basic_qos(prefetch_count=1)
         self._consumer_tags = {}
         self._wrapers = {}
+        self._nombrecolas = {}
 
     def crear_cola(self, nombre_cola):
         self._channel.queue_declare(queue=nombre_cola)
     
-    def vincular_wrapper(self, nombre_cola, callback_function, nombre_dic = ""):
-       if (nombre_dic == ""):
-            nombre_dic=nombre_cola
+    def vincular_wrapper(self, nombre_cola, callback_function):
+       nombre_queue=nombre_cola
+       if (nombre_cola in self._nombrecolas):
+            nombre_queue=self._nombrecolas[nombre_cola]
        wr = Wrapper(callback_function)
-       self._consumer_tags[nombre_dic] = self._channel.basic_consume(queue=nombre_cola, 
+       self._consumer_tags[nombre_cola] = self._channel.basic_consume(queue=nombre_queue, 
         on_message_callback=wr.funcion_wrapper)
-       self._wrapers[nombre_dic] = wr
+       self._wrapers[nombre_cola] = wr
         
 
     def consumir_mensajes(self, nombre_cola, callback_function):
@@ -38,14 +41,16 @@ class ManejadorColas:
     def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico):
        resultado = self._channel.queue_declare(queue='')
        nombre_cola_anonima = resultado.method.queue
+       self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))       
-       self.vincular_wrapper(nombre_cola_anonima, callback_function, nombre_cola)       
+       self.vincular_wrapper(nombre_cola, callback_function)       
  
     def subscribirse_cola(self, nombre_cola, callback_function):
        resultado = self._channel.queue_declare(queue='')
        nombre_cola_anonima = resultado.method.queue
+       self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
-       self.vincular_wrapper(nombre_cola_anonima, callback_function, nombre_cola) 
+       self.vincular_wrapper(nombre_cola, callback_function) 
 
        
     def dejar_de_consumir(self, nombre_cola):
@@ -56,6 +61,8 @@ class ManejadorColas:
     def crear_cola_por_topico(self, nombre_cola):
         self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
         
+    def crear_cola_subscriptores(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
 
     def consumir(self):
        self._channel.start_consuming()
@@ -63,12 +70,16 @@ class ManejadorColas:
     def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
         self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
 
-
-    def crear_cola_subscriptores(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
+        
+    def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
+        logging.info(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
+        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
 
     def enviar_mensaje(self, nombre_cola, mensaje):
-        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
+        nombre_queue=nombre_cola
+        if (nombre_cola in self._nombrecolas):
+            nombre_queue=self._nombrecolas[nombre_cola]        
+        self._channel.basic_publish(exchange='', routing_key=nombre_queue, body=mensaje)
 
     def cerrar(self):
         self._channel.close()

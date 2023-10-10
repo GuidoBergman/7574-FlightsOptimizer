@@ -61,7 +61,7 @@ class ProtocoloFiltroVelocidad:
         self._fines_vuelo = 0
         self._colas.crear_cola_por_topico(self.nombre_cola)
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
-
+        self._colas.consumir()
 
 
     def enviar_vuelo(self, vuelo):

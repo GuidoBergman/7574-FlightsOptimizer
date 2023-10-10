@@ -25,7 +25,7 @@ FORMATO_MENSAJE_VUELO = '!cH32s32s32si'
 FORMATO_MENSAJE_AEROPUERTO = '!cH3sff'
 
 NOMBRE_COLA = 'cola_distancia'
-NOMBRE_COLAAEROPUERTOS = 'cola_distancia'
+NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
 HOST_COLAS = 'rabbitmq'
 
 
@@ -59,10 +59,12 @@ class ProtocoloFiltroDistancia:
         self.procesar_finvuelo =  procesar_finvuelo
         self.procesar_aeropuerto =  procesar_aeropuerto
         self.procesar_finaeropuerto =  procesar_finaeropuerto
-        self._colas.crear_cola(self.nombre_cola)
-        self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)
+        
+        self._colas.crear_cola(self.nombre_cola)        
+        self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)        
+        
+        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)        
         self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
         self._colas.consumir()
 
 
@@ -111,10 +113,10 @@ class ProtocoloFiltroDistancia:
                                       )
     
         
-        self._colas.enviar_mensaje(NOMBRE_COLAAEROPUERTOS, mensaje_empaquetado)
+        self._colas.enviar_mensaje_suscriptores(NOMBRE_COLAAEROPUERTOS, mensaje_empaquetado)
 
     def enviar_fin_aeropuertos(self):
-        self._colas.enviar_mensaje(NOMBRE_COLAAEROPUERTOS, IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING))
+        self._colas.enviar_mensaje_suscriptores(NOMBRE_COLAAEROPUERTOS, IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING))
 
 
     def parar(self):        

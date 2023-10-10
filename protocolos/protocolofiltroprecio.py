@@ -77,12 +77,14 @@ class ProtocoloFiltroPrecio:
 
         self._colas.crear_cola_por_topico(self.nombre_cola)      
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
+        self._colas.consumir()
 
 
     def iniciar_promedio(self, procesar_promedio):
         self.procesar_promedio =  procesar_promedio        
         self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIO)
-        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIO, self.callback_promedio, consumir=True)
+        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIO, self.callback_promedio)
+        self._colas.consumir()
         
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)

@@ -55,6 +55,7 @@ class ProtocoloFiltroEscalas:
         self.procesar_finvuelo =  procesar_finvuelo
         self._colas.crear_cola(self.nombre_cola)
         self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
+        self._colas.consumir()
 
 
 
