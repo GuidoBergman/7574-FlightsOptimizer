@@ -42,7 +42,8 @@ class ProtocoloFiltroDistancia:
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             self.procesar_vuelo(self.traducir_vuelo(body))
         elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
-            self.procesar_finvuelo()           
+            self.procesar_finvuelo()
+            
             
 
     def callback_functionaero(self, body):
@@ -52,6 +53,8 @@ class ProtocoloFiltroDistancia:
             self.procesar_aeropuerto(self.traducir_aeropuerto(body))
         elif body.startswith(IDENTIFICADOR_FIN_AEROPUERTO.encode('utf-8')):
             self.procesar_finaeropuerto()
+            self._colas.dejar_de_consumir(NOMBRE_COLAAEROPUERTOS)
+            self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
 
     def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto):
         self.corriendo = True
@@ -61,13 +64,15 @@ class ProtocoloFiltroDistancia:
         self.procesar_finaeropuerto =  procesar_finaeropuerto
         
         self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)        
-        self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
-        
         self._colas.crear_cola(self.nombre_cola)        
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)        
+        self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
+        self._colas.consumir()
+        
 
         
-        self._colas.consumir()
+
+        
+        
 
 
     def traducir_vuelo(self, mensaje):        

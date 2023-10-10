@@ -2,10 +2,15 @@
   "ExpandedNodes": [
     "",
     "\\filtros",
-    "\\filtros\\filtro_distancia",
-    "\\filtros\\filtro_distancia\\comun",
-    "\\protocolos"
+    "\\filtros\\calculador_promedio",
+    "\\filtros\\calculador_promedio\\comun",
+    "\\filtros\\filtro_escalas",
+    "\\filtros\\filtro_precio",
+    "\\filtros\\filtro_precio\\comun",
+    "\\protocolos",
+    "\\server",
+    "\\server\\comun"
   ],
-  "SelectedNode": "\\protocolos\\manejador_colas.py",
+  "SelectedNode": "\\filtros\\filtro_escalas\\Dockerfile",
   "PreviewInSolutionExplorer": false
 }
