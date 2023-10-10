@@ -23,6 +23,7 @@ class FiltroDistancia:
        
         
     def sigterm_handler(self, _signo, _stack_frame):
+        self.aeropuertos = {}
         self._protocolo.parar()
         logging.info('action: sigterm_received')
 
@@ -58,6 +59,7 @@ class FiltroDistancia:
     def procesar_finvuelo(self):        
         logging.info(f'FIN DE VUELOS')
         self._protocoloResultado.enviar_fin_resultados_distancia()
+        self.aeropuertos = {}
         self._protocolo.parar()
         
     def procesar_finaeropuerto(self):        

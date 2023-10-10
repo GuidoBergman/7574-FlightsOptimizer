@@ -22,10 +22,10 @@ ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s32s32si'
-FORMATO_MENSAJE_PROMEDIO = '!cH32s32s32si'
 FORMATO_MENSAJE_AEROPUERTO = '!cH3sff'
 
 NOMBRE_COLA = 'cola_distancia'
+NOMBRE_COLAAEROPUERTOS = 'cola_distancia'
 HOST_COLAS = 'rabbitmq'
 
 
@@ -38,13 +38,18 @@ class ProtocoloFiltroDistancia:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.debug(f'llego mensaje body: {body}')
+        logging.debug(f'llego mensaj VUELOS body: {body}')
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             self.procesar_vuelo(self.traducir_vuelo(body))
-        elif body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):
-            self.procesar_aeropuerto(self.traducir_aeropuerto(body))
         elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
-            self.procesar_finvuelo()
+            self.procesar_finvuelo()           
+            
+
+    def callback_functionaero(self, body):
+        # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
+        logging.debug(f'llego mensaje AEROPUERTOS body: {body}')
+        if body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):
+            self.procesar_aeropuerto(self.traducir_aeropuerto(body))
         elif body.startswith(IDENTIFICADOR_FIN_AEROPUERTO.encode('utf-8')):
             self.procesar_finaeropuerto()
 
@@ -55,7 +60,10 @@ class ProtocoloFiltroDistancia:
         self.procesar_aeropuerto =  procesar_aeropuerto
         self.procesar_finaeropuerto =  procesar_finaeropuerto
         self._colas.crear_cola(self.nombre_cola)
+        self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)
+        self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
         self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
+        self._colas.consumir()
 
 
     def traducir_vuelo(self, mensaje):        
@@ -64,22 +72,6 @@ class ProtocoloFiltroDistancia:
         vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8').replace('\x00', ''), destino.decode('utf-8').replace('\x00', ''), 0, "", 0, distancia)
         
         return vuelo
-
-    
-
-    def enviar_vuelo(self, total, promedio):
-        tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
-        tamanio_batch = 1
-        logging.info(f'Enviando {total}, promedio: {promedio}')
-        mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
-                                      tipo_mensaje,
-                                      tamanio_batch,
-                                      vuelo.id_vuelo.encode(STRING_ENCODING),
-                                      vuelo.origen.encode(STRING_ENCODING),
-                                      vuelo.destino.encode(STRING_ENCODING),
-                                      int(vuelo.distancia)
-                                      )
-    
 
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
@@ -99,6 +91,12 @@ class ProtocoloFiltroDistancia:
 
     def enviar_fin_vuelos(self):
         self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
+
+    def traducir_aeropuerto(self, mensaje):        
+        formato_mensaje = FORMATO_MENSAJE_AEROPUERTO
+        tipomensaje, cantidad_aeropuertos, id_aeropuerto, latitud, longitud = unpack(formato_mensaje, mensaje)
+        vuelo = Aeropuerto(id_aeropuerto.decode('utf-8'), latitud, longitud)
+        return vuelo
         
     def enviar_aeropuerto(self, aeropuerto: Aeropuerto):
         tipo_mensaje = IDENTIFICADOR_AEROPUERTO.encode(STRING_ENCODING)
@@ -113,16 +111,10 @@ class ProtocoloFiltroDistancia:
                                       )
     
         
-        self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
-
-    def traducir_aeropuerto(self, mensaje):        
-        formato_mensaje = FORMATO_MENSAJE_AEROPUERTO
-        tipomensaje, cantidad_aeropuertos, id_aeropuerto, latitud, longitud = unpack(formato_mensaje, mensaje)
-        vuelo = Aeropuerto(id_aeropuerto.decode('utf-8'), latitud, longitud)
-        return vuelo
+        self._colas.enviar_mensaje(NOMBRE_COLAAEROPUERTOS, mensaje_empaquetado)
 
     def enviar_fin_aeropuertos(self):
-        self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING))
+        self._colas.enviar_mensaje(NOMBRE_COLAAEROPUERTOS, IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING))
 
 
     def parar(self):        

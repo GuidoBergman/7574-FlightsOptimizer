@@ -1,15 +1,11 @@
 {
   "ExpandedNodes": [
     "",
-    "\\client",
-    "\\client\\comun",
-    "\\filtros\\calculador_promedio\\comun",
+    "\\filtros",
+    "\\filtros\\filtro_distancia",
     "\\filtros\\filtro_distancia\\comun",
-    "\\filtros\\filtro_precio\\comun",
-    "\\filtros\\filtro_velocidad\\comun",
-    "\\protocolos\\modelo",
-    "\\server\\comun"
+    "\\protocolos"
   ],
-  "SelectedNode": "\\docker-compose-dev.yaml",
+  "SelectedNode": "\\protocolos\\manejador_colas.py",
   "PreviewInSolutionExplorer": false
 }
