@@ -29,6 +29,7 @@ class ManejadorColas:
        nombre_queue=nombre_cola
        if (nombre_cola in self._nombrecolas):
             nombre_queue=self._nombrecolas[nombre_cola]
+            
        wr = Wrapper(callback_function)
        self._consumer_tags[nombre_cola] = self._channel.basic_consume(queue=nombre_queue, 
         on_message_callback=wr.funcion_wrapper)
@@ -76,10 +77,8 @@ class ManejadorColas:
         self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
 
     def enviar_mensaje(self, nombre_cola, mensaje):
-        nombre_queue=nombre_cola
-        if (nombre_cola in self._nombrecolas):
-            nombre_queue=self._nombrecolas[nombre_cola]        
-        self._channel.basic_publish(exchange='', routing_key=nombre_queue, body=mensaje)
+        logging.info(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
+        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
 
     def cerrar(self):
         self._channel.close()

@@ -29,7 +29,7 @@ class FiltroDistancia:
 
 
     def procesar_aeropuerto(self, aeropuerto: Aeropuerto):
-        logging.debug(f'Agregando el aeropuerto { aeropuerto.id }')
+        logging.info(f'Agregando el aeropuerto { aeropuerto.id }')
         self.aeropuertos[aeropuerto.id] = aeropuerto
         
     def calcular_distancia(self,aeropuerto1, aeropuerto2):

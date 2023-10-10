@@ -38,7 +38,7 @@ class ProtocoloFiltroDistancia:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.debug(f'llego mensaj VUELOS body: {body}')
+        logging.info(f'llego mensaj VUELOS body: {body}')
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             self.procesar_vuelo(self.traducir_vuelo(body))
         elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
@@ -60,11 +60,13 @@ class ProtocoloFiltroDistancia:
         self.procesar_aeropuerto =  procesar_aeropuerto
         self.procesar_finaeropuerto =  procesar_finaeropuerto
         
-        self._colas.crear_cola(self.nombre_cola)        
         self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)        
-        
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)        
         self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
+        
+        self._colas.crear_cola(self.nombre_cola)        
+        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)        
+
+        
         self._colas.consumir()
 
 
@@ -78,7 +80,7 @@ class ProtocoloFiltroDistancia:
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
         tamanio_batch = 1
-        logging.info(f'Enviando vuelo filtro distancia {vuelo.id_vuelo}')
+        logging.debug(f'Enviando vuelo filtro distancia {vuelo.id_vuelo}')
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
                                       tipo_mensaje,
                                       tamanio_batch,
@@ -87,8 +89,6 @@ class ProtocoloFiltroDistancia:
                                       vuelo.destino.encode(STRING_ENCODING),
                                       int(vuelo.distancia)
                                       )
-    
-        
         self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
 
     def enviar_fin_vuelos(self):
@@ -103,7 +103,7 @@ class ProtocoloFiltroDistancia:
     def enviar_aeropuerto(self, aeropuerto: Aeropuerto):
         tipo_mensaje = IDENTIFICADOR_AEROPUERTO.encode(STRING_ENCODING)
         tamanio_batch = 1
-        logging.info(f'Enviando aeropuerto filtro distancia {aeropuerto.id}')
+        logging.debug(f'Enviando aeropuerto filtro distancia {aeropuerto.id}')
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_AEROPUERTO,
                                       tipo_mensaje,
                                       tamanio_batch,
