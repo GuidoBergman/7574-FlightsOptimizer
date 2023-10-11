@@ -75,12 +75,12 @@ class ManejadorColas:
 
         
     def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
-        logging.info(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
+        logging.debug(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
         self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
 
     def enviar_mensaje(self, nombre_cola, mensaje):
         try:
-            logging.info(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
+            logging.debug(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
             self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
         except pika.exceptions.ConnectionClosedByBroker:
             logging.error('Error al enviar mensaje, se cerró la conexión')

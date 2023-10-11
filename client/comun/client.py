@@ -72,6 +72,7 @@ class Client:
         
 
     def run(self):
+        logging.info("Iniciando cliente")
         try:
             self._enviar_aeropuertos('airports-codepublic.csv')
         except (ConnectionResetError, BrokenPipeError, OSError):

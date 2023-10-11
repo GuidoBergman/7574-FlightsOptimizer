@@ -5,7 +5,7 @@ import os
 from modelo.Vuelo import Vuelo
 from protocolo_cliente import ProtocoloCliente
 
-TAMANIO_LOTE = 4000
+TAMANIO_LOTE = 40
     
 class EnviadorVuelos:
     
@@ -58,7 +58,7 @@ class EnviadorVuelos:
                         self._protocolo.enviar_vuelos(lote)
                         lote = []
                         lotes_enviados += 1
-                        if (lotes_enviados % 10) == 0:
+                        if (lotes_enviados % 1000) == 0:
                             logging.info(f"Lotes enviados: {lotes_enviados} sobre {lotes_estimados} (Estimados)")
             if len(lote) > 0:
                 self._protocolo.enviar_vuelos(lote)

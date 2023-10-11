@@ -24,12 +24,13 @@ class CalculadorPromedio:
 
         
     def procesar_promedio(self, promedio: float, cantidad: int):
-        parte_actual = self.cantidad / (self.cantidad + cantidad)
-        parte_nueva = cantidad / (self.cantidad + cantidad)
-        npromedio = (self.promedio * parte_actual) + (promedio * parte_nueva)
+        if cantidad > 0:
+            parte_actual = self.cantidad / (self.cantidad + cantidad)
+            parte_nueva = cantidad / (self.cantidad + cantidad)
+            npromedio = (self.promedio * parte_actual) + (promedio * parte_nueva)        
+            self.promedio = npromedio
+            self.cantidad += cantidad
         
-        self.promedio = npromedio
-        self.cantidad += cantidad
         logging.debug(f"promedio {self.promedio} cantidad {self.cantidad}")
         self.recibidos += 1
         
