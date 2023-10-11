@@ -76,7 +76,7 @@ class ProtocoloFiltroVelocidad:
                                       )
         
         id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_velocidad) + 1
-        logging.info(f"enviando vuelo con duracion {vuelo.duracion} encode: {vuelo.duracion.encode(STRING_ENCODING)} al filtro {id_filtro_velocidad}")
+        logging.debug(f"enviando vuelo con duracion {vuelo.duracion} encode: {vuelo.duracion.encode(STRING_ENCODING)} al filtro {id_filtro_velocidad}")
 
 
         

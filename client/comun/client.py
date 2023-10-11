@@ -57,7 +57,7 @@ class Client:
                 fines_recibidos.add(estado)
                 logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
             else:
-                logging.info(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+                logging.debug(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
         logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
         

@@ -3,7 +3,7 @@ import signal
 from modelo.Vuelo import Vuelo
 from protocolo_cliente import ProtocoloCliente
 
-TAMANIO_LOTE = 300
+TAMANIO_LOTE = 10000
     
 class EnviadorVuelos:
     

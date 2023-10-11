@@ -67,7 +67,7 @@ class FiltroVelocidad:
         logging.info(f"Procesando fin de vuelo")
         for trayecto, vuelos in self.vuelos_mas_rapido.items():
             for vuelo in vuelos:
-                logging.info(f"Enviando trayecto: { trayecto }")
+                logging.debug(f"Enviando trayecto: { trayecto }")
                 id_vuelo = vuelo.id_vuelo            
                 duracion = vuelo.duracion
                 escalas = vuelo.escalas
@@ -77,6 +77,7 @@ class FiltroVelocidad:
         self._protocoloResultado.enviar_fin_resultados_rapidos()
         
     def run(self):        
+          logging.error("Iniciando filtro velocidad") 
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas)              
           
         

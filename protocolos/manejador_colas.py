@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+from math import log
 import queue
 import pika
 import os
@@ -25,6 +26,14 @@ class ManejadorColas:
     def crear_cola(self, nombre_cola):
         self._channel.queue_declare(queue=nombre_cola)
     
+    def crear_cola_por_topico(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
+        
+    def crear_cola_subscriptores(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
+        
+        
+
     def vincular_wrapper(self, nombre_cola, callback_function):
        nombre_queue=nombre_cola
        if (nombre_cola in self._nombrecolas):
@@ -53,17 +62,10 @@ class ManejadorColas:
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
        self.vincular_wrapper(nombre_cola, callback_function) 
 
-       
     def dejar_de_consumir(self, nombre_cola):
         consumer_tag = self._consumer_tags[nombre_cola]
-        self._channel.basic_cancel(consumer_tag) 
-        del self._wrapers[nombre_cola]
-
-    def crear_cola_por_topico(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
-        
-    def crear_cola_subscriptores(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
+        self._channel.basic_cancel(consumer_tag)
+        #del self._wrapers[nombre_cola]
 
     def consumir(self):
        self._channel.start_consuming()

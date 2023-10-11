@@ -9,17 +9,18 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 
 
 class CalculadorPromedio:
-    def __init__(self):
+    def __init__(self, cant_filtros_precio):
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroPrecio()
        self.corriendo = True
+       self.cant_filtros_precio = cant_filtros_precio
        self.promedio = 0.0
        self.cantidad = 0
        self.recibidos = 0
         
     def sigterm_handler(self, _signo, _stack_frame):
         self._protocolo.parar()
-        logging.info('action: sigterm_received')
+        logging.debug('action: sigterm_received')
 
         
     def procesar_promedio(self, promedio: float, cantidad: int):
@@ -29,10 +30,13 @@ class CalculadorPromedio:
         
         self.promedio = npromedio
         self.cantidad += cantidad
-        logging.info(f"promedio {self.promedio} cantidad {self.cantidad}")
-        self.cantidad += 1
-        #Al alcanzar el total envia promedio general
-        self._protocolo.enviar_promediogeneral(self.promedio)
+        logging.debug(f"promedio {self.promedio} cantidad {self.cantidad}")
+        self.recibidos += 1
+        
+        logging.info(f"Procesa promedio: {self.recibidos} / {self.cant_filtros_precio}")
+        if (self.recibidos >= self.cant_filtros_precio):
+            logging.info(f"Envia promedio: {self.promedio}")
+            self._protocolo.enviar_promediogeneral(self.promedio)
         
         
     def run(self):

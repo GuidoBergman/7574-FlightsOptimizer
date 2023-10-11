@@ -45,7 +45,7 @@ class FiltroPrecios:
         
     def procesar_vuelo(self, vuelo: Vuelo):
         
-        logging.info(f'Inicio el proceso origen { vuelo.origen } precio { vuelo.precio }')
+        logging.debug(f'Inicio el proceso origen { vuelo.origen } precio { vuelo.precio }')
         trayecto = f'{vuelo.origen}-{vuelo.destino}'
         if trayecto not in self.precios_por_trayecto:
             # Si el trayecto no existe en el diccionario, creamos una lista con el precio actual
@@ -57,9 +57,9 @@ class FiltroPrecios:
             # Calculamos el nuevo promedio basado en el valor actual, la cantidad de elementos y el nuevo valor
             n = len(self.precios_por_trayecto[trayecto])
             self.promedio_por_trayecto[trayecto] = (self.promedio_por_trayecto[trayecto] * ((n - 1) / n)) + (vuelo.precio / n)
-            logging.info(f'trayecto {trayecto} promedio calculado {self.promedio_por_trayecto[trayecto]}')
+            logging.debug(f'trayecto {trayecto} promedio calculado {self.promedio_por_trayecto[trayecto]}')
             
-        logging.info(f'Procesado el trayecto { trayecto } precio { vuelo.precio }')
+        logging.debug(f'Procesado el trayecto { trayecto } precio { vuelo.precio }')
         
  
     def procesar_finvuelo(self):        
@@ -82,7 +82,7 @@ class FiltroPrecios:
                 precio_promedio = sum(precios_por_encima) / len(precios_por_encima)
                 precio_maximo = max(precios_por_encima)
                 res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
-                logging.info(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
+                logging.debug(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
                 self._protocoloResultado.enviar_resultado_filtro_precio(res)
             
         self._protocoloResultado.enviar_fin_resultados_filtro_precio()

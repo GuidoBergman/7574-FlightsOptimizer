@@ -67,7 +67,7 @@ class Server:
                     self._vuelos.put(EOF_MSG)
                 break
             
-            logging.info(f'Acción: recibir_vuelo | estado: OK | Vuelos recibidos:   {len(vuelos_rec)}')
+            logging.debug(f'Acción: recibir_vuelo | estado: OK | Vuelos recibidos:   {len(vuelos_rec)}')
             for vuelo in vuelos_rec:
                 self._vuelos.put(vuelo)
             
@@ -80,7 +80,7 @@ class Server:
                 self._protocoloDistancia.enviar_fin_aeropuertos()
                 break
             
-            logging.info(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
+            logging.debug(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
             self._protocoloDistancia.enviar_aeropuerto(aeropuerto)
 
 
