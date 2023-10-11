@@ -1,9 +1,11 @@
 import logging
 import signal
+import os
+
 from modelo.Vuelo import Vuelo
 from protocolo_cliente import ProtocoloCliente
 
-TAMANIO_LOTE = 10000
+TAMANIO_LOTE = 4000
     
 class EnviadorVuelos:
     
@@ -25,8 +27,13 @@ class EnviadorVuelos:
 
     def _enviar_vuelos(self, archivo_csv: str):
         
-        lote = []
+        # Obtiene el tamaño del archivo en bytes
+        tamanio_bytes = os.path.getsize(archivo_csv)
+        lotes_estimados = int((tamanio_bytes / 396) / TAMANIO_LOTE)
+        logging.info(f"Lotes estimados: {lotes_estimados}")
+        lotes_enviados = 0;
         
+        lote = []        
         with open(archivo_csv, 'r', encoding='utf-8') as file:
             next(file)  # Saltar la primera línea con encabezados
             for line in file:
@@ -47,9 +54,12 @@ class EnviadorVuelos:
                     lote.append(vuelo)
                     if (len(lote) >= TAMANIO_LOTE):
                         
-                        logging.info(f"Envio lote de {TAMANIO_LOTE}")
+                        logging.debug(f"Envio lote {lotes_enviados} de {TAMANIO_LOTE}")
                         self._protocolo.enviar_vuelos(lote)
                         lote = []
+                        lotes_enviados += 1
+                        if (lotes_enviados % 10) == 0:
+                            logging.info(f"Lotes enviados: {lotes_enviados} sobre {lotes_estimados} (Estimados)")
             if len(lote) > 0:
                 self._protocolo.enviar_vuelos(lote)
         logging.info("Envio todos los vuelos")

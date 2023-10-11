@@ -88,7 +88,7 @@ class ProtocoloCliente:
             
                 
             cantidad_vuelos = unpack(FORMATO_TOTAL_VUELOS, tot_vuelos)
-            logging.info(f"recibo {cantidad_vuelos} vuelos")
+            logging.debug(f"recibo {cantidad_vuelos} vuelos")
             
             if type(cantidad_vuelos) is tuple:
                 cantidad_vuelos = cantidad_vuelos[0] 
