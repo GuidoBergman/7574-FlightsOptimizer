@@ -27,9 +27,9 @@ class FiltroEscalas:
 
         
     def procesar_vuelo(self, vuelo: Vuelo):
-        logging.error(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
+        logging.debug(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
         if len(vuelo.escalas.split("||")) >= 3:            
-            logging.error(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
+            logging.info(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
 
             resultado = ResultadoFiltroEscalas(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino,
                 vuelo.precio, vuelo.escalas
@@ -38,7 +38,7 @@ class FiltroEscalas:
             self._protocoloVelocidad.enviar_vuelo(vuelo)
 
     def procesar_finvuelo(self):        
-        logging.error(f'FIN DE VUELOS')
+        logging.info(f'FIN DE VUELOS')
         self._protocoloVelocidad.enviar_fin_vuelos()
         self._protocoloResultado.enviar_fin_resultados_escalas()
         self._protocolo.parar()

@@ -15,7 +15,6 @@ EOF_MSG = 'EOF'
 class Server:
     def __init__(self, port, listen_backlog, cant_handlers, cant_filtros_escalas,
     cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):
-        # Initialize server socket
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
@@ -33,30 +32,50 @@ class Server:
         
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.info('action: sigterm_received')
-        self._server_socket.close()
-        logging.info(f'action: close_server_socket | result: success')
+        logging.error('sigterm_received')
+        if self._server_socket:
+            self._server_socket.close()
+            logging.error('Cerrando socket server')
+        
+        if self._client_sock:
+            self._client_sock.close()
+            logging.error('Cerrando socket client')
+
+        if self._vuelos:
+            self._vuelos.close()
+            logging.error('Cerrando la cola de vuelos')
+
+
+        if self._proceso_enviador:
+            self._proceso_enviador.terminate()
+            self._proceso_enviador.join()
+            logging.error('Cerrando proceos enviador')
+
+        if self._procesos_handlers:
+            for proceso in self._procesos_handlers:
+                logging.error('Cerrando proceso handler')
+                proceso.terminate()
+                proceso.join()
         
 
-    def _recibir_vuelos(self, protocolo_cliente, vuelos):
+    def _recibir_vuelos(self):
         while True:
-            logging.error(f'Acción: recibir_vuelo | estado: en curso')
-            estado, vuelos_rec = protocolo_cliente.recibir_vuelos()
+            estado, vuelos_rec = self._protocolo_cliente.recibir_vuelos()
             if estado == ESTADO_FIN_VUELOS:
-                logging.error(f'Acción: recibir_vuelo | estado: se terminarón de recibir todos los vuelos')
+                logging.info(f'Se terminarón de recibir todos los vuelos')
                 for i in range(self._cant_handlers):
-                    vuelos.put(EOF_MSG)
+                    self._vuelos.put(EOF_MSG)
                 break
             
             logging.info(f'Acción: recibir_vuelo | estado: OK | Vuelos recibidos:   {len(vuelos_rec)}')
             for vuelo in vuelos_rec:
-                vuelos.put(vuelo)
+                self._vuelos.put(vuelo)
             
 
 
-    def _recibir_aeropuertos(self, protocolo_cliente):
+    def _recibir_aeropuertos(self):
         while True:            
-            estado, aeropuerto = protocolo_cliente.recibir_aeropuerto()
+            estado, aeropuerto = self._protocolo_cliente.recibir_aeropuerto()
             if estado == ESTADO_FIN_AEROPUERTOS:
                 self._protocoloDistancia.enviar_fin_aeropuertos()
                 break
@@ -65,48 +84,50 @@ class Server:
             self._protocoloDistancia.enviar_aeropuerto(aeropuerto)
 
 
-
+    # Run wrapper para el manejo de sigterm
     def run(self):
-            
-            try:
-                client_sock, addr = self._server_socket.accept()
-            except OSError:
-                return
- 
-            
+        try:
+            self._run()
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            return
 
-            procesos_handlers = []
+    def _run(self):
+            self._client_sock, addr = self._server_socket.accept()
+            
+            self._procesos_handlers = []
             with Manager() as manager:
                 enviador_resultados = ProtocoloResultadosServidor()
-                proceso_enviador = Process(target=enviador_resultados.iniciar, args=((client_sock,
+                self._proceso_enviador = Process(target=enviador_resultados.iniciar, args=((self._client_sock,
                     self._cant_filtros_escalas, self._cant_filtros_distancia,
                     self._cant_filtros_velocidad, self._cant_filtros_precio
                 )))
-                proceso_enviador.start()
+                self._proceso_enviador.start()
 
             
-                vuelos = manager.Queue()
+                self._vuelos = manager.Queue()
                 for i in range(self._cant_handlers):
                     handler = Handler(self._cant_filtros_precio)
-                    handler_process = Process(target=handler.run, args=((vuelos),))
+                    handler_process = Process(target=handler.run, args=((self._vuelos),))
                     handler_process.start()
-                    procesos_handlers.append(handler_process)   
+                    self._procesos_handlers.append(handler_process)   
 
-                protocolo_cliente = ProtocoloCliente(client_sock)  
-                self._recibir_aeropuertos(protocolo_cliente)  
-                self._recibir_vuelos(protocolo_cliente, vuelos)
-
-               
+                self._protocolo_cliente = ProtocoloCliente(self._client_sock)  
+                self._recibir_aeropuertos()  
+                self._recibir_vuelos()
 
                 
-                for proceso in procesos_handlers:
+                for proceso in self._procesos_handlers:
                     proceso.join()
 
                 enviador_fin = EnviadorFin(self._cant_filtros_escalas, self._cant_filtros_distancia,
                 self._cant_filtros_precio)
                 enviador_fin.enviar_fin_vuelos()
-                protocolo_cliente.cerrar()
-                proceso_enviador.join()
+
+                self._proceso_enviador.join()
+
+                self._client_sock.close()
+                self._server_socket.close()
+
               
 
             

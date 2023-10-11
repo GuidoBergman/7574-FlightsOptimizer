@@ -47,7 +47,7 @@ class FiltroVelocidad:
         trayecto = vuelo.origen + "-" + vuelo.destino
         # Obtener la duración del vuelo actual
         vuelo.duracion_enminutos = self.calcular_minutos(vuelo.duracion)
-        logging.error(f"Procesando vuelo trayecto: { trayecto } de duracion: {vuelo.duracion} en minutos: { vuelo.duracion_enminutos } ")
+        logging.debug(f"Procesando vuelo trayecto: { trayecto } de duracion: {vuelo.duracion} en minutos: { vuelo.duracion_enminutos } ")
         # Comprobar si ya hay vuelos registrados para este trayecto
         if trayecto in self.vuelos_mas_rapido:
             # Agregar el vuelo a la lista
@@ -64,11 +64,10 @@ class FiltroVelocidad:
            
     def procesar_finvuelo(self):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
-        logging.info(f"INFO: Procesando fin de vuelo")
-        logging.error(f"Procesando fin de vuelo")
+        logging.info(f"Procesando fin de vuelo")
         for trayecto, vuelos in self.vuelos_mas_rapido.items():
             for vuelo in vuelos:
-                logging.error(f"Enviando trayecto: { trayecto }")
+                logging.info(f"Enviando trayecto: { trayecto }")
                 id_vuelo = vuelo.id_vuelo            
                 duracion = vuelo.duracion
                 escalas = vuelo.escalas

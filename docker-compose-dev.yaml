@@ -25,17 +25,15 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS=5
+      - LOGGING_LEVEL=ERROR
+      - CANT_HANDLERS=3
       - CANT_FILTROS_ESCALAS=1
-      - CANT_FILTROS_DISTANCIA=3
+      - CANT_FILTROS_DISTANCIA=1
       - CANT_FILTROS_VELOCIDAD=1
       - CANT_FILTROS_PRECIO=1
     depends_on:
       - filtro_escalas1
       - filtro_distancia1
-      - filtro_distancia2
-      - filtro_distancia3
       - filtro_velocidad1
       - filtro_precio1
 
@@ -53,7 +51,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
+      - LOGGING_LEVEL=ERROR
       - ID=1
       - CANT_FILTROS_VELOCIDAD=1
     depends_on:
@@ -72,46 +70,8 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
+      - LOGGING_LEVEL=ERROR
       - ID=1
-    depends_on:
-      rabbitmq:
-         condition: service_healthy
-    networks:
-      - rabbit_net
-    volumes:
-      - type: bind
-        source: ./filtros/filtro_distancia/config.ini
-        target: /config.ini
-
-    
-  filtro_distancia2:
-    container_name: filtro_distancia2
-    image: filtro_distancia:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
-      - ID=2
-    depends_on:
-      rabbitmq:
-         condition: service_healthy
-    networks:
-      - rabbit_net
-    volumes:
-      - type: bind
-        source: ./filtros/filtro_distancia/config.ini
-        target: /config.ini
-
-    
-  filtro_distancia3:
-    container_name: filtro_distancia3
-    image: filtro_distancia:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
-      - ID=3
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -129,7 +89,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
+      - LOGGING_LEVEL=ERROR
       - ID=1
       - CANT_FILTROS_ESCALAS=1
     depends_on:
@@ -147,7 +107,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
+      - LOGGING_LEVEL=ERROR
       - ID=1
     depends_on:
       rabbitmq:
@@ -165,7 +125,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
+      - LOGGING_LEVEL=ERROR
 
     depends_on:
       rabbitmq:
@@ -183,7 +143,7 @@ services:
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
+      - LOGGING_LEVEL=ERROR
     networks:
       - testing_net
     depends_on:

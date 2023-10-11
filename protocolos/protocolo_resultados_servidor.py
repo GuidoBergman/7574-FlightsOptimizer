@@ -1,6 +1,7 @@
 from protocolo_resultados_cliente import ProtocoloResultadosCliente
 from manejador_colas import ManejadorColas
 import logging
+import signal
 from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
 from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
@@ -26,11 +27,11 @@ class ProtocoloResultadosServidor:
        self._colas = ManejadorColas(HOST_COLAS)
        self._corriendo = False
        self._nombre_cola = COLA_RESULTADOS
+       signal.signal(signal.SIGTERM, self._sigterm_handler)
 
     # Escuchar los resultados en la cola de resultados del servidor y mandarselos al cliente   
     def iniciar(self, socket_cliente, cant_filtros_escalas,
     cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):      
-        self._corriendo = True
         self._protocolo_resultados_cliente = ProtocoloResultadosCliente(socket_cliente)
         
 
@@ -47,9 +48,14 @@ class ProtocoloResultadosServidor:
         self._colas.consumir_mensajes(self._nombre_cola, self._callback_function)
         
 
+    def _sigterm_handler(self, _signo, _stack_frame):
+        logging.error('Sigterm recibida (enviador resultados)')
+        self.parar()
+        self._colas.cerrar()
+        self._protocolo_resultados_cliente.cerrar()
+
     def parar(self):        
-        self._corriendo = False
-        self._colas.dejar_de_consumir()
+        self._colas.dejar_de_consumir(COLA_RESULTADOS)
 
     
     def _callback_function(self, body):

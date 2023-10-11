@@ -124,8 +124,15 @@ class ProtocoloFiltroDistancia:
         self._colas.enviar_mensaje_suscriptores(NOMBRE_COLAAEROPUERTOS, IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING))
 
 
-    def parar(self):        
-        self.corriendo = False
+    def parar_vuelos(self):        
         self._colas.dejar_de_consumir(NOMBRE_COLA)
+
+    def parar(self):        
+        self._colas.dejar_de_consumir(NOMBRE_COLA)
+        self._colas.dejar_de_consumir(NOMBRE_COLAAEROPUERTOS)
+
+    def cerrar(self):
+        self._colas.cerrar()
+        
         
         

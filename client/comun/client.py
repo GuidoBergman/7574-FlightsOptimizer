@@ -39,27 +39,27 @@ class Client:
     def _recibir_resultados(self):
         fines_recibidos = set()
         while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
-            logging.error('action: recibir_resultado | estado: esperando')
+            logging.info('action: recibir_resultado | estado: esperando')
             estado, resultado = self._protocolo_resultados.recibir_resultado()
             if estado == STATUS_ERR:
-                logging.error('action: recibir_resultado | resultado: error')
+                logging.info('action: recibir_resultado | resultado: error')
                 break
             elif estado == IDENTIFICADOR_FIN_RAPIDOS:
                 fines_recibidos.add(estado)
-                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
             elif estado == IDENTIFICADOR_FIN_DISTANCIA:
                 fines_recibidos.add(estado)
-                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
             elif estado == IDENTIFICADOR_FIN_ESCALAS:
                 fines_recibidos.add(estado)
-                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
             elif estado == IDENTIFICADOR_FIN_PRECIO:
                 fines_recibidos.add(estado)
-                logging.error('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
             else:
-                logging.error(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+                logging.info(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
-        logging.error(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
+        logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
         
 
 
@@ -78,7 +78,7 @@ class Client:
             return
 
         enviador_vuelos = EnviadorVuelos(self._protocolo)
-        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('short1.csv'),))
+        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('itineraries_random_2M.csv'),))
         self._handler_proceso.start()
 
         try:
