@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+from math import log
 import queue
 import pika
 import os
@@ -25,6 +26,25 @@ class ManejadorColas:
     def crear_cola(self, nombre_cola):
         self._channel.queue_declare(queue=nombre_cola)
     
+    def crear_cola_por_topico(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
+        
+    def crear_cola_subscriptores(self, nombre_cola):
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
+        
+    def enviar_mensaje(self, nombre_cola, mensaje):
+        logging.debug(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
+        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
+
+
+    def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
+        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
+
+        
+    def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
+        logging.debug(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
+        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
+
     def vincular_wrapper(self, nombre_cola, callback_function):
        nombre_queue=nombre_cola
        if (nombre_cola in self._nombrecolas):
@@ -53,32 +73,13 @@ class ManejadorColas:
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
        self.vincular_wrapper(nombre_cola, callback_function) 
 
-       
     def dejar_de_consumir(self, nombre_cola):
         consumer_tag = self._consumer_tags[nombre_cola]
-        self._channel.basic_cancel(consumer_tag) 
-        del self._wrapers[nombre_cola]
-
-    def crear_cola_por_topico(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
-        
-    def crear_cola_subscriptores(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
+        self._channel.basic_cancel(consumer_tag)
+        #del self._wrapers[nombre_cola]
 
     def consumir(self):
        self._channel.start_consuming()
-
-    def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
-        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
-
-        
-    def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
-        logging.info(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
-        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
-
-    def enviar_mensaje(self, nombre_cola, mensaje):
-        logging.info(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
-        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
 
     def cerrar(self):
         self._channel.close()

@@ -203,15 +203,15 @@ cliente = """
         target: /config.ini
 """
 
-calculadorPromedio = """
+calculadorPromedio = f"""
   calculador_promedio:
     container_name: calculador_promedio
     image: calculador_promedio:latest
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=INFO
-
+      - LOGGING_LEVEL=INFO      
+      - CANT_FILTROS_PRECIO={cantPrecios}
     depends_on:
       rabbitmq:
          condition: service_healthy

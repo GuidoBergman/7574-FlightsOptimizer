@@ -41,6 +41,9 @@ class ProtocoloFiltroPrecio:
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             self.procesar_vuelo(self.traducir_vuelo(body))
         else:
+            self._colas.dejar_de_consumir(self.nombre_cola)
+            self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIOGENERAL)
+            self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)
             self.procesar_finvuelo()
 
     def traducir_vuelo(self, mensaje):
@@ -53,7 +56,7 @@ class ProtocoloFiltroPrecio:
 
     def callback_promedio_general(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.info(f'llego el promedio general: {body}')
+        logging.debug(f'llego el promedio general: {body}')
         pr = unpack("f", body)
         
         if type(pr) is tuple:
@@ -61,7 +64,7 @@ class ProtocoloFiltroPrecio:
         self.procesar_promediogeneral(pr)
         
     def callback_promedio(self, body):
-        logging.info(f'llego un promedio: {body}') 
+        logging.debug(f'llego un promedio: {body}') 
         un = unpack(FORMATO_MENSAJE_PROMEDIO, body)
         promedio, cantidad = un
         self.procesar_promedio(promedio, cantidad)
@@ -72,9 +75,7 @@ class ProtocoloFiltroPrecio:
         self.procesar_finvuelo =  procesar_finvuelo
         self.procesar_promediogeneral = procesar_promediogeneral
         
-        self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIOGENERAL)
-        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)
-
+        
         self._colas.crear_cola_por_topico(self.nombre_cola)      
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
         self._colas.consumir()
@@ -82,8 +83,8 @@ class ProtocoloFiltroPrecio:
 
     def iniciar_promedio(self, procesar_promedio):
         self.procesar_promedio =  procesar_promedio        
-        self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIO)
-        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIO, self.callback_promedio)
+        self._colas.crear_cola(NOMBRE_COLAPROMEDIO)
+        self._colas.consumir_mensajes(NOMBRE_COLAPROMEDIO, self.callback_promedio)
         self._colas.consumir()
         
     def enviar_vuelo(self, vuelo):
@@ -98,6 +99,7 @@ class ProtocoloFiltroPrecio:
                                       )           
 
         id_filtro_precio = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_precio) + 1
+        logging.debug(f"Enviando vuelo con precio al filtro {id_filtro_precio}")
         self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro_precio)
         
     def enviar_fin_vuelos(self):
@@ -105,18 +107,18 @@ class ProtocoloFiltroPrecio:
             self._colas.enviar_mensaje_por_topico(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), i)
         
     def enviar_promedio(self, promedio: float, cantidad: int):
-        logging.info(f"enviando promedio {promedio} cantidad {cantidad}")
+        logging.debug(f"enviando promedio {promedio} cantidad {cantidad}")
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_PROMEDIO,
                                       promedio,
                                       cantidad)           
         
-        logging.info(f"enviando mensaje {mensaje_empaquetado}")
+        logging.debug(f"enviando mensaje {mensaje_empaquetado}")
         self._colas.enviar_mensaje(NOMBRE_COLAPROMEDIO, mensaje_empaquetado)
 
     def enviar_promediogeneral(self, promedio: float):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
         mensaje_empaquetado = struct.pack("f", promedio)           
-        self._colas.enviar_mensaje(NOMBRE_COLAPROMEDIOGENERAL, mensaje_empaquetado)
+        self._colas.enviar_mensaje_suscriptores(NOMBRE_COLAPROMEDIOGENERAL, mensaje_empaquetado)
 
     def parar_vuelos(self):        
         self.corriendo = False

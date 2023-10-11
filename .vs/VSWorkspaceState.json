@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\filtros",
+    "\\client",
+    "\\client\\comun",
     "\\filtros\\calculador_promedio",
     "\\filtros\\calculador_promedio\\comun",
     "\\filtros\\filtro_escalas",
@@ -11,6 +12,6 @@
     "\\server",
     "\\server\\comun"
   ],
-  "SelectedNode": "\\filtros\\filtro_escalas\\Dockerfile",
+  "SelectedNode": "\\client\\comun\\client.py",
   "PreviewInSolutionExplorer": false
 }

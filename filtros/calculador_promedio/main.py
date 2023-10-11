@@ -23,6 +23,7 @@ def initialize_config():
     config_params = {}
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["cant_filtros_precio"] = int(os.getenv('CANT_FILTROS_PRECIO', config["DEFAULT"]["CANT_FILTROS_PRECIO"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -33,8 +34,9 @@ def initialize_config():
 
 def main():
     config_params = initialize_config()
-    logging_level = config_params["logging_level"]
-
+    logging_level = config_params["logging_level"]    
+    cant_filtros_precio = config_params["cant_filtros_precio"] 
+    
 
 
     initialize_log(logging_level)
@@ -44,7 +46,7 @@ def main():
     logging.debug(f"action: config | result: success |  logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    calculador_promedio = CalculadorPromedio()
+    calculador_promedio = CalculadorPromedio(cant_filtros_precio)
     calculador_promedio.run()
 
 def initialize_log(logging_level):
