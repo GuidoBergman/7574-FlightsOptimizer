@@ -165,7 +165,7 @@ class ProtocoloCliente:
             logging.error("acción: enviar_fin_vuelos | resultado: error")
             return STATUS_ERR
 
-        logging.error(f'acción: enviar_fin_vuelos | resultado: OK')
+        logging.debug(f'acción: enviar_fin_vuelos | resultado: OK')
         return STATUS_OK
 
 
@@ -217,7 +217,7 @@ class ProtocoloCliente:
             logging.error("acción: enviar_fin_aeorpuertos | resultado: error")
             return STATUS_ERR
 
-        logging.error(f'acción: enviar_fin_aeorpuertos | resultado: OK')
+        logging.debug(f'acción: enviar_fin_aeorpuertos | resultado: OK')
         return STATUS_OK
 
     def cerrar(self):

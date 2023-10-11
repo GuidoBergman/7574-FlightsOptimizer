@@ -34,11 +34,11 @@ class ProtocoloFiltroVelocidad:
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.error(f'llego mensaje body: {body}')
+        logging.debug(f'llego mensaje body: {body}')
         if body.decode('utf-8').startswith(IDENTIFICADOR_VUELO):
             self.procesar_vuelo(self.traducir_vuelo(body))
         else:
-            logging.error(f'Se recibio un fin de vueulo, se nececitan {self._cant_filtros_escalas}')
+            logging.debug(f'Se recibio un fin de vuelo, se nececitan {self._cant_filtros_escalas}')
             self._fines_vuelo += 1
             if self._fines_vuelo >= self._cant_filtros_escalas:
                 self.procesar_finvuelo()
@@ -78,7 +78,7 @@ class ProtocoloFiltroVelocidad:
                                       )
         
         id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_velocidad) + 1
-        logging.info(f"enviando vuelo con duracion {vuelo.duracion} encode: {vuelo.duracion.encode(STRING_ENCODING)} al filtro {id_filtro_velocidad}")
+        logging.debug(f"enviando vuelo con duracion {vuelo.duracion} encode: {vuelo.duracion.encode(STRING_ENCODING)} al filtro {id_filtro_velocidad}")
 
 
         

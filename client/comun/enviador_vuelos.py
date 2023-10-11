@@ -52,7 +52,7 @@ class EnviadorVuelos:
                         lote = []
             if len(lote) > 0:
                 self._protocolo.enviar_vuelos(lote)
-        logging.error("Envio todos los vuelos")
+        logging.info("Envio todos los vuelos")
         self._protocolo.enviar_fin_vuelos()
 
         self._protocolo.cerrar()

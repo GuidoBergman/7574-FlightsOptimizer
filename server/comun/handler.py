@@ -11,7 +11,7 @@ class Handler:
     def __init__(self, cant_filtros_precio):
         self._protocoloEscalas = ProtocoloFiltroEscalas()
         self._protocoloDistancia = ProtocoloFiltroDistancia()
-        logging.error(f'CVant filtros precio (handler): {cant_filtros_precio}')
+        logging.debug(f'Iniciando (handler): {cant_filtros_precio}')
         self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio)
         
 

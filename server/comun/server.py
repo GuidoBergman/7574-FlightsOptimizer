@@ -40,15 +40,15 @@ class Server:
 
     def _recibir_vuelos(self, protocolo_cliente, vuelos):
         while True:
-            logging.error(f'Acción: recibir_vuelo | estado: en curso')
+            logging.debug(f'Acción: recibir_vuelo | estado: en curso')
             estado, vuelos_rec = protocolo_cliente.recibir_vuelos()
             if estado == ESTADO_FIN_VUELOS:
-                logging.error(f'Acción: recibir_vuelo | estado: se terminarón de recibir todos los vuelos')
+                logging.info(f'Acción: recibir_vuelo | estado: se terminarón de recibir todos los vuelos')
                 for i in range(self._cant_handlers):
                     vuelos.put(EOF_MSG)
                 break
             
-            logging.info(f'Acción: recibir_vuelo | estado: OK | Vuelos recibidos:   {len(vuelos_rec)}')
+            logging.debug(f'Acción: recibir_vuelo | estado: OK | Vuelos recibidos:   {len(vuelos_rec)}')
             for vuelo in vuelos_rec:
                 vuelos.put(vuelo)
             
@@ -61,7 +61,7 @@ class Server:
                 self._protocoloDistancia.enviar_fin_aeropuertos()
                 break
             
-            logging.info(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
+            logging.debug(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
             self._protocoloDistancia.enviar_aeropuerto(aeropuerto)
 
 

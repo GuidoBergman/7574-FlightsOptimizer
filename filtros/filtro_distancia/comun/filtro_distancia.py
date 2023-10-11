@@ -29,7 +29,7 @@ class FiltroDistancia:
 
 
     def procesar_aeropuerto(self, aeropuerto: Aeropuerto):
-        logging.info(f'Agregando el aeropuerto { aeropuerto.id }')
+        logging.debug(f'Agregando el aeropuerto { aeropuerto.id }')
         self.aeropuertos[aeropuerto.id] = aeropuerto
         
     def calcular_distancia(self,aeropuerto1, aeropuerto2):
@@ -39,18 +39,18 @@ class FiltroDistancia:
         return int(distancia)
     
     def procesar_vuelo(self, vuelo: Vuelo):
-        logging.info(f'Procesando vuelo{ vuelo.id_vuelo } distancia { vuelo.distancia } origen {vuelo.origen} destino {vuelo.destino}')
+        logging.debug(f'Procesando vuelo{ vuelo.id_vuelo } distancia { vuelo.distancia } origen {vuelo.origen} destino {vuelo.destino}')
         try:
             ae_origen = self.aeropuertos[vuelo.origen]
             ae_destino = self.aeropuertos[vuelo.destino]
-            logging.info(f'Aeropuerto origen latitud { ae_origen.latitud } longitud { ae_origen.longitud }')
-            logging.info(f'Aeropuerto destino latitud { ae_destino.latitud } longitud { ae_destino.longitud }')
+            logging.debug(f'Aeropuerto origen latitud { ae_origen.latitud } longitud { ae_origen.longitud }')
+            logging.debug(f'Aeropuerto destino latitud { ae_destino.latitud } longitud { ae_destino.longitud }')
         
             distancia_directa = self.calcular_distancia(ae_origen, ae_destino)
-            logging.info(f'Distancia directa: { distancia_directa }')
+            logging.debug(f'Distancia directa: { distancia_directa }')
         
             if (distancia_directa * 4 < vuelo.distancia):
-                logging.info(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
+                logging.debug(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
                 resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
                 self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia)
         except KeyError as e:
