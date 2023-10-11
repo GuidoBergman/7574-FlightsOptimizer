@@ -123,5 +123,9 @@ class ProtocoloFiltroPrecio:
     def parar_vuelos(self):        
         self.corriendo = False
         self._colas.dejar_de_consumir(NOMBRE_COLA)
+
+    def cerrar(self):
+        self._colas.cerrar()
+        
         
         

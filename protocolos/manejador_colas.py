@@ -32,18 +32,7 @@ class ManejadorColas:
     def crear_cola_subscriptores(self, nombre_cola):
         self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
         
-    def enviar_mensaje(self, nombre_cola, mensaje):
-        logging.debug(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
-        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
-
-
-    def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
-        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
-
         
-    def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
-        logging.debug(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
-        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
 
     def vincular_wrapper(self, nombre_cola, callback_function):
        nombre_queue=nombre_cola
@@ -80,6 +69,21 @@ class ManejadorColas:
 
     def consumir(self):
        self._channel.start_consuming()
+
+    def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
+        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
+
+        
+    def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
+        logging.info(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
+        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
+
+    def enviar_mensaje(self, nombre_cola, mensaje):
+        try:
+            logging.info(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
+            self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
+        except pika.exceptions.ConnectionClosedByBroker:
+            logging.error('Error al enviar mensaje, se cerró la conexión')
 
     def cerrar(self):
         self._channel.close()

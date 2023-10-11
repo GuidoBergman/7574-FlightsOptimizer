@@ -11,13 +11,17 @@ class Handler:
     def __init__(self, cant_filtros_precio):
         self._protocoloEscalas = ProtocoloFiltroEscalas()
         self._protocoloDistancia = ProtocoloFiltroDistancia()
-        logging.debug(f'Iniciando (handler): {cant_filtros_precio}')
         self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio)
+        signal.signal(signal.SIGTERM, self._sigterm_handler)
         
 
     def run(self, vuelos):
         while True:
-            vuelo = vuelos.get()  
+            try:
+                vuelo = vuelos.get() 
+            except EOFError:
+                break
+             
             if vuelo == EOF_MSG:
                 break
 
@@ -25,4 +29,12 @@ class Handler:
             self._protocoloEscalas.enviar_vuelo(vuelo)
             self._protocoloDistancia.enviar_vuelo(vuelo)
             self._protocoloPrecio.enviar_vuelo(vuelo)
+            
+
+    def _sigterm_handler(self, _signo, _stack_frame):
+        logging.error('Sigterm recibida (Handler)')
+
+        self._protocoloEscalas.cerrar()
+        self._protocoloDistancia.cerrar()
+        self._protocoloPrecio.cerrar()
             
