@@ -20,14 +20,14 @@ ESTADO_FIN_AEROPUERTOS = 1
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
 NOMBRE_COLA = 'cola_escalas'
-HOST_COLAS = 'rabbitmq'
+
 
 
 class ProtocoloFiltroEscalas:
        
     def __init__(self):    
        self.nombre_cola = NOMBRE_COLA
-       self._colas = ManejadorColas(HOST_COLAS)
+       self._colas = ManejadorColas()
        self.corriendo = False
     
 

@@ -10,7 +10,6 @@ from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 class FiltroVelocidad:
     def __init__(self, id, cant_filtros_escalas):
-       self._colas = ManejadorColas('rabbitmq')
        self._protocolo = ProtocoloFiltroVelocidad()
        
        self._protocoloResultado = ProtocoloResultadosServidor()
@@ -21,10 +20,7 @@ class FiltroVelocidad:
 
        self._cant_filtros_escalas = cant_filtros_escalas
        
-        
-
-    def sigterm_handler(self, _signo, _stack_frame):
-        logging.info('action: sigterm_received')
+ 
 
         
     def calcular_minutos(self, duracion_str):
@@ -78,8 +74,11 @@ class FiltroVelocidad:
         
     def run(self):        
           logging.error("Iniciando filtro velocidad") 
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas)              
-          
-        
-        
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas) 
+
+ 
            
+    def sigterm_handler(self, _signo, _stack_frame):
+        logging.info('SIGTERM recibida')
+        self._protocolo.cerrar()
+        self._protocoloResultado.cerrar()

@@ -24,7 +24,7 @@ class ProtocoloFiltroVelocidad:
 
 
     def __init__(self, cant_filtros_velocidad=1):    
-       self._colas = ManejadorColas('rabbitmq')
+       self._colas = ManejadorColas()
        self.corriendo = False
        self.nombre_cola = 'cola_FiltroVelocidad'
        
@@ -93,4 +93,6 @@ class ProtocoloFiltroVelocidad:
     def parar(self):        
         self.corriendo = False
         
+    def cerrar(self):
+        self._colas.cerrar()
         

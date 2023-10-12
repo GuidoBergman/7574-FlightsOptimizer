@@ -5,6 +5,8 @@ import queue
 import pika
 import os
 
+HOST = 'rabbitmq'
+
 class Wrapper:
     def __init__(self, callback_function):
         self.callback_function = callback_function        
@@ -14,9 +16,9 @@ class Wrapper:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
 class ManejadorColas:
-    def __init__(self, host):
+    def __init__(self):
         connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=host))
+            pika.ConnectionParameters(host=HOST))
         self._channel = connection.channel()
         self._channel.basic_qos(prefetch_count=1)
         self._consumer_tags = {}
@@ -63,9 +65,12 @@ class ManejadorColas:
        self.vincular_wrapper(nombre_cola, callback_function) 
 
     def dejar_de_consumir(self, nombre_cola):
-        consumer_tag = self._consumer_tags[nombre_cola]
-        self._channel.basic_cancel(consumer_tag)
-        #del self._wrapers[nombre_cola]
+        try:
+            consumer_tag = self._consumer_tags[nombre_cola]
+            self._channel.basic_cancel(consumer_tag)
+            #del self._wrapers[nombre_cola]
+        except KeyError:
+            return
 
     def consumir(self):
        self._channel.start_consuming()

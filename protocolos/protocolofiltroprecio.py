@@ -7,6 +7,7 @@ from modelo.Aeropuerto import Aeropuerto
 from modelo.estado import Estado
 
 
+
 TAMANIO_IDENTIFICADOR_MENSAJE = 1
 IDENTIFICADOR_VUELO = 'V'
 IDENTIFICADOR_AEROPUERTO = 'A'
@@ -22,14 +23,14 @@ FORMATO_MENSAJE_PROMEDIO = '!fi'
 NOMBRE_COLA = 'cola_precios'
 NOMBRE_COLAPROMEDIO = 'cola_promedios'
 NOMBRE_COLAPROMEDIOGENERAL = 'cola_preciosgeneral'
-HOST_COLAS = 'rabbitmq'
+
 
 
 class ProtocoloFiltroPrecio:
        
     def __init__(self, cant_filtros_precio=None):    
        self.nombre_cola = NOMBRE_COLA
-       self._colas = ManejadorColas(HOST_COLAS)
+       self._colas = ManejadorColas()
        self.corriendo = False
        
        if cant_filtros_precio:

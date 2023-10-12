@@ -16,7 +16,6 @@ from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 class FiltroPrecios:
     def __init__(self, id):
-       signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroPrecio()
        self._protocoloResultado = ProtocoloResultadosServidor()
        self._id = id
@@ -116,3 +115,8 @@ class FiltroPrecios:
     def run(self):
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral, self._id)
           
+
+    def sigterm_handler(self, _signo, _stack_frame):
+        logging.info('SIGTER recibida')
+        self._protocolo.cerrar()
+        self._protocoloResultado.cerrar()
