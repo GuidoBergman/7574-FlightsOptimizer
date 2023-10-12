@@ -26,6 +26,9 @@ def initialize_config():
         config_params["host"] = os.getenv('SERVER_HOST', config["DEFAULT"]["SERVER_HOST"])
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["archivo_aeropuertos"] = os.getenv('ARCHIVO_AEROPUERTOS', config["DEFAULT"]["ARCHIVO_AEROPUERTOS"])
+        config_params["archivo_vuelos"] = os.getenv('ARCHIVO_VUELOS', config["DEFAULT"]["ARCHIVO_VUELOS"])
+        
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -39,7 +42,8 @@ def main():
     logging_level = config_params["logging_level"]
     host = config_params["host"]
     port = config_params["port"]
-
+    archivo_aeropuertos = config_params["archivo_aeropuertos"]
+    archivo_vuelos = config_params["archivo_vuelos"]
 
     initialize_log(logging_level)
 
@@ -49,7 +53,7 @@ def main():
                   f"logging_level: {logging_level} ")
 
     # Initialize server and start server loop
-    client = Client(host, port)
+    client = Client(host, port, archivo_aeropuertos, archivo_vuelos)
     client.run()
 
 def initialize_log(logging_level):

@@ -122,7 +122,6 @@ class Server:
                 enviador_fin = EnviadorFin(self._cant_filtros_escalas, self._cant_filtros_distancia,
                 self._cant_filtros_precio)
                 enviador_fin.enviar_fin_vuelos()
-
                 self._proceso_enviador.join()
 
                 self._client_sock.close()

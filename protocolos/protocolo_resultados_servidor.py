@@ -46,6 +46,7 @@ class ProtocoloResultadosServidor:
 
         self._colas.crear_cola(self._nombre_cola)
         self._colas.consumir_mensajes(self._nombre_cola, self._callback_function)
+        self._colas.consumir()
         
 
     def _sigterm_handler(self, _signo, _stack_frame):

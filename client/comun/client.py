@@ -12,10 +12,12 @@ from comun.enviador_vuelos import EnviadorVuelos
 CANT_TIPOS_RESULTADO = 4
 
 class Client:
-    def __init__(self, host, port):
+    def __init__(self, host, port, archivo_aeropuertos, archivo_vuelos ):
         # Initialize server socket
         server_socket = SocketComun()
         server_socket.connect(host, port)
+        self.archivo_aeropuertos = archivo_aeropuertos
+        self.archivo_vuelos = archivo_vuelos
         self._protocolo = ProtocoloCliente(server_socket)
         self._protocolo_resultados = ProtocoloResultadosCliente(server_socket)
         signal.signal(signal.SIGTERM, self.sigterm_handler)    
@@ -57,7 +59,7 @@ class Client:
                 fines_recibidos.add(estado)
                 logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
             else:
-                logging.debug(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+                logging.info(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
         logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
         
@@ -74,12 +76,12 @@ class Client:
     def run(self):
         logging.info("Iniciando cliente")
         try:
-            self._enviar_aeropuertos('airports-codepublic.csv')
+            self._enviar_aeropuertos(self.archivo_aeropuertos)
         except (ConnectionResetError, BrokenPipeError, OSError):
             return
 
         enviador_vuelos = EnviadorVuelos(self._protocolo)
-        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('itineraries_short.csv'),))
+        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=((self.archivo_vuelos),))
         self._handler_proceso.start()
 
         try:
