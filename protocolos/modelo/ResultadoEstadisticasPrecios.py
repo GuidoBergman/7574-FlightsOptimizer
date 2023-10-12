@@ -20,7 +20,7 @@ class ResultadoEstadisticaPrecios:
         return tamanio, bytes
 
     def convertir_a_str(self):
-        string = f'Tipo resultado: Estadisticas precios   Trayecto: {self.trayecto}  Precio promedio: {self.precio_promedio} Precio promedio: {self.precio_maximo}'
+        string = f'Tipo resultado: Estadisticas precios   Trayecto: {self.trayecto}  Precio promedio: {self.precio_promedio} Precio máximo: {self.precio_maximo}'
         return string
 
     def deserializar(bytes):    
