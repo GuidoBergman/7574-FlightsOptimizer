@@ -12,7 +12,7 @@ class FiltroVelocidad:
     def __init__(self, id, cant_filtros_escalas):
        self._protocolo = ProtocoloFiltroVelocidad()
        
-       self._protocoloResultado = ProtocoloResultadosServidor()
+      
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_mas_rapido = {}
 
@@ -59,6 +59,7 @@ class FiltroVelocidad:
             self.vuelos_mas_rapido[trayecto] = self.vuelos_mas_rapido[trayecto][:2]
            
     def procesar_finvuelo(self):
+        self._protocoloResultado = ProtocoloResultadosServidor()
         # Recorrer todos los trayectos de vuelos_mas_rapidos
         logging.info(f"Procesando fin de vuelo")
         for trayecto, vuelos in self.vuelos_mas_rapido.items():
@@ -81,4 +82,5 @@ class FiltroVelocidad:
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('SIGTERM recibida')
         self._protocolo.cerrar()
-        self._protocoloResultado.cerrar()
+        if self._protocoloResultado:
+            self._protocoloResultado.cerrar()

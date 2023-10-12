@@ -26,16 +26,24 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS=5
-      - CANT_FILTROS_ESCALAS=1
-      - CANT_FILTROS_DISTANCIA=1
-      - CANT_FILTROS_VELOCIDAD=1
-      - CANT_FILTROS_PRECIO=1
+      - CANT_HANDLERS=1
+      - CANT_FILTROS_ESCALAS=3
+      - CANT_FILTROS_DISTANCIA=3
+      - CANT_FILTROS_VELOCIDAD=3
+      - CANT_FILTROS_PRECIO=3
     depends_on:
       - filtro_escalas1
+      - filtro_escalas2
+      - filtro_escalas3
       - filtro_distancia1
+      - filtro_distancia2
+      - filtro_distancia3
       - filtro_velocidad1
+      - filtro_velocidad2
+      - filtro_velocidad3
       - filtro_precio1
+      - filtro_precio2
+      - filtro_precio3
 
     networks:
       - testing_net
@@ -53,7 +61,45 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_FILTROS_VELOCIDAD=1
+      - CANT_FILTROS_VELOCIDAD=3
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_escalas/config.ini
+        target: /config.ini
+    
+  filtro_escalas2:
+    container_name: filtro_escalas2
+    image: filtro_escalas:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_FILTROS_VELOCIDAD=3
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_escalas/config.ini
+        target: /config.ini
+    
+  filtro_escalas3:
+    container_name: filtro_escalas3
+    image: filtro_escalas:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=3
+      - CANT_FILTROS_VELOCIDAD=3
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -81,7 +127,44 @@ services:
       - type: bind
         source: ./filtros/filtro_distancia/config.ini
         target: /config.ini
-      
+
+    
+  filtro_distancia2:
+    container_name: filtro_distancia2
+    image: filtro_distancia:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_distancia/config.ini
+        target: /config.ini
+
+    
+  filtro_distancia3:
+    container_name: filtro_distancia3
+    image: filtro_distancia:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=3
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_distancia/config.ini
+        target: /config.ini
 
     
   filtro_velocidad1:
@@ -92,7 +175,43 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_FILTROS_ESCALAS=1
+      - CANT_FILTROS_ESCALAS=3
+    depends_on:
+      - calculador_promedio
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+    
+  filtro_velocidad2:
+    container_name: filtro_velocidad2
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_FILTROS_ESCALAS=3
+    depends_on:
+      - calculador_promedio
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+    
+  filtro_velocidad3:
+    container_name: filtro_velocidad3
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=3
+      - CANT_FILTROS_ESCALAS=3
     depends_on:
       - calculador_promedio
     networks:
@@ -120,6 +239,42 @@ services:
         source: ./filtros/filtro_precio/config.ini
         target: /config.ini
     
+  filtro_precio2:
+    container_name: filtro_precio2
+    image: filtro_precio:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=2
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_precio/config.ini
+        target: /config.ini
+    
+  filtro_precio3:
+    container_name: filtro_precio3
+    image: filtro_precio:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO
+      - ID=3
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_precio/config.ini
+        target: /config.ini
+    
   calculador_promedio:
     container_name: calculador_promedio
     image: calculador_promedio:latest
@@ -127,7 +282,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO      
-      - CANT_FILTROS_PRECIO=1
+      - CANT_FILTROS_PRECIO=3
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -154,9 +309,7 @@ services:
       - type: bind
         source: ./client/config.ini
         target: /config.ini
-      - type: bind
-        source: ./data
-        target: /data
+
 networks:
   testing_net:
     ipam:

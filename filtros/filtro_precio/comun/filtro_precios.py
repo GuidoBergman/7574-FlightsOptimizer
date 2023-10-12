@@ -17,7 +17,6 @@ from protocolo_resultados_servidor import ProtocoloResultadosServidor
 class FiltroPrecios:
     def __init__(self, id):
        self._protocolo = ProtocoloFiltroPrecio()
-       self._protocoloResultado = ProtocoloResultadosServidor()
        self._id = id
        self.inicialar()   
        self.corriendo = True
@@ -84,14 +83,15 @@ class FiltroPrecios:
         
         
     def procesar_promediogeneral(self, promedio):
-        logging.info(f"Envia resultados para el promedio {promedio}")
+        logging.debug(f"Envia resultados para el promedio {promedio}")
+        self._protocoloResultado = ProtocoloResultadosServidor()
         
         for trayecto, vuelos in self.vuelos_por_trayecto.items():
             
-            logging.info(f"Abro archivos para trayecto {trayecto}")                 
+            logging.debug(f"Abro archivos para trayecto {trayecto}")                 
             with open(trayecto, 'rb') as archivo:
                 precios_por_encima = []
-                precio_binario = archivo.read(4)  # Leer 4 bytes a la vez (tamaño de un float)
+                precio_binario = archivo.read(4)  # Leer 4 bytes a la vez (tamaï¿½o de un float)
                 while precio_binario:
                     precio = struct.unpack('f', precio_binario)[0]
                     if precio > promedio:
@@ -103,7 +103,7 @@ class FiltroPrecios:
                 precio_promedio = sum(precios_por_encima) / len(precios_por_encima)
                 precio_maximo = max(precios_por_encima)
                 res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
-                logging.info(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
+                logging.debug(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
                 self._protocoloResultado.enviar_resultado_filtro_precio(res)
             
         self._protocoloResultado.enviar_fin_resultados_filtro_precio()
@@ -119,4 +119,5 @@ class FiltroPrecios:
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('SIGTER recibida')
         self._protocolo.cerrar()
-        self._protocoloResultado.cerrar()
+        if self._protocoloResultado:
+            self._protocoloResultado.cerrar()

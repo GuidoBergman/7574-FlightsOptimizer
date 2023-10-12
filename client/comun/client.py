@@ -43,7 +43,7 @@ class Client:
         with open('/data/resultados.txt', 'w') as archivo:
             # Escribe la palabra 'resultado' en el archivo
             while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
-                logging.info('action: recibir_resultado | estado: esperando')
+                logging.debug('action: recibir_resultado | estado: esperando')
                 estado, resultado = self._protocolo_resultados.recibir_resultado()
                 if estado == STATUS_ERR:
                     logging.error('action: recibir_resultado | resultado: error')
