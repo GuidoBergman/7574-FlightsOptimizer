@@ -12,19 +12,13 @@ from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
 
 class FiltroEscalas:
     def __init__(self, id, cant_filtros_velocidad):
-       signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroEscalas()
        self._protocoloResultado = ProtocoloResultadosServidor()
        self._protocoloVelocidad = ProtocoloFiltroVelocidad(cant_filtros_velocidad)
+       signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_con_tres_escalas = []
-       self.corriendo = True
        self._id = id
        
-        
-    def sigterm_handler(self, _signo, _stack_frame):
-        self._protocolo.parar()
-        logging.info('action: sigterm_received')
-
         
     def procesar_vuelo(self, vuelo: Vuelo):
         logging.debug(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
@@ -46,3 +40,9 @@ class FiltroEscalas:
     def run(self):
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
           
+    
+    def sigterm_handler(self, _signo, _stack_frame):
+        logging.info('SIGTERM recibida')
+        self._protocolo.cerrar()
+        self._protocoloResultado.cerrar()
+        self._protocoloVelocidad.cerrar()

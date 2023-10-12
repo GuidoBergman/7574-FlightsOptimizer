@@ -26,14 +26,14 @@ FORMATO_MENSAJE_AEROPUERTO = '!cH3sff'
 
 NOMBRE_COLA = 'cola_distancia'
 NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
-HOST_COLAS = 'rabbitmq'
+
 
 
 class ProtocoloFiltroDistancia:
        
     def __init__(self):    
        self.nombre_cola = NOMBRE_COLA
-       self._colas = ManejadorColas(HOST_COLAS)
+       self._colas = ManejadorColas()
        self.corriendo = False
 
     def callback_function(self, body):

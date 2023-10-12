@@ -17,23 +17,22 @@ from protocolo_resultados_cliente import (TAMANIO_IDENTIFICADOR_RESULTADO,
                                         IDENTIFICADOR_FIN_ESCALAS,
                                         IDENTIFICADOR_FIN_PRECIO)
 
-HOST_COLAS = 'rabbitmq'
+
 COLA_RESULTADOS = 'cola_resultados'
 STRING_ENCODING = 'utf-8'
 
 class ProtocoloResultadosServidor:
 
     def __init__(self):
-       self._colas = ManejadorColas(HOST_COLAS)
+       self._colas = ManejadorColas()
        self._corriendo = False
        self._nombre_cola = COLA_RESULTADOS
-       signal.signal(signal.SIGTERM, self._sigterm_handler)
 
     # Escuchar los resultados en la cola de resultados del servidor y mandarselos al cliente   
     def iniciar(self, socket_cliente, cant_filtros_escalas,
     cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):      
         self._protocolo_resultados_cliente = ProtocoloResultadosCliente(socket_cliente)
-        
+        signal.signal(signal.SIGTERM, self._sigterm_handler)
 
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
@@ -130,3 +129,5 @@ class ProtocoloResultadosServidor:
 
    
        
+    def cerrar(self):
+        self._colas.cerrar()

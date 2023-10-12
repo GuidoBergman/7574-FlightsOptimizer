@@ -10,18 +10,14 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 
 class CalculadorPromedio:
     def __init__(self, cant_filtros_precio):
-       signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroPrecio()
+       signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.corriendo = True
        self.cant_filtros_precio = cant_filtros_precio
        self.promedio = 0.0
        self.cantidad = 0
        self.recibidos = 0
         
-    def sigterm_handler(self, _signo, _stack_frame):
-        self._protocolo.parar()
-        logging.debug('action: sigterm_received')
-
         
     def procesar_promedio(self, promedio: float, cantidad: int):
         if cantidad > 0:
@@ -44,3 +40,8 @@ class CalculadorPromedio:
           logging.info(f"Iniciando promedios")  
           self._protocolo.iniciar_promedio(self.procesar_promedio)
           
+    
+    def sigterm_handler(self, _signo, _stack_frame):
+        logging.error('SIGTERM recibida')
+        self._protocolo.cerrar()
+        
