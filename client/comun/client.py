@@ -24,7 +24,7 @@ class Client:
 
 
     def _enviar_aeropuertos(self, nombre_archivo: str):
-        with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+        with open('/data/' + nombre_archivo, 'r', encoding='utf-8') as archivo:
             next(archivo)  # Saltar la primera línea con encabezados
             for linea in archivo:
                 campos = linea.strip().split(';')
@@ -40,27 +40,29 @@ class Client:
 
     def _recibir_resultados(self):
         fines_recibidos = set()
-        while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
-            logging.info('action: recibir_resultado | estado: esperando')
-            estado, resultado = self._protocolo_resultados.recibir_resultado()
-            if estado == STATUS_ERR:
-                logging.error('action: recibir_resultado | resultado: error')
-                return
-            elif estado == IDENTIFICADOR_FIN_RAPIDOS:
-                fines_recibidos.add(estado)
-                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
-            elif estado == IDENTIFICADOR_FIN_DISTANCIA:
-                fines_recibidos.add(estado)
-                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
-            elif estado == IDENTIFICADOR_FIN_ESCALAS:
-                fines_recibidos.add(estado)
-                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
-            elif estado == IDENTIFICADOR_FIN_PRECIO:
-                fines_recibidos.add(estado)
-                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
-            else:
-                logging.info(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
-
+        with open('/data/resultados.txt', 'w') as archivo:
+            # Escribe la palabra 'resultado' en el archivo
+            while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
+                logging.info('action: recibir_resultado | estado: esperando')
+                estado, resultado = self._protocolo_resultados.recibir_resultado()
+                if estado == STATUS_ERR:
+                    logging.error('action: recibir_resultado | resultado: error')
+                    return
+                elif estado == IDENTIFICADOR_FIN_RAPIDOS:
+                    fines_recibidos.add(estado)
+                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
+                elif estado == IDENTIFICADOR_FIN_DISTANCIA:
+                    fines_recibidos.add(estado)
+                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
+                elif estado == IDENTIFICADOR_FIN_ESCALAS:
+                    fines_recibidos.add(estado)
+                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
+                elif estado == IDENTIFICADOR_FIN_PRECIO:
+                    fines_recibidos.add(estado)
+                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
+                else:
+                    archivo.write(resultado.convertir_a_str())
+        
         logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
         
 
@@ -75,13 +77,20 @@ class Client:
 
     def run(self):
         logging.info("Iniciando cliente")
+        
+        logging.info("Enviando Aeropuertos")
         try:
             self._enviar_aeropuertos(self.archivo_aeropuertos)
-        except (ConnectionResetError, BrokenPipeError, OSError):
+        except (ConnectionResetError, BrokenPipeError, OSError) as e:
+            error_type = type(e).__name__  # Obtiene el nombre del tipo de excepción
+            error_message = str(e)          # Obtiene el mensaje de error
+            logging.error(f"Error conectando: {error_type} - {error_message}")
             return
 
+
+        logging.info("Enviando Vuelos")
         enviador_vuelos = EnviadorVuelos(self._protocolo)
-        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=((self.archivo_vuelos),))
+        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('/data/' + self.archivo_vuelos),))
         self._handler_proceso.start()
 
         try:
