@@ -50,7 +50,7 @@ class EnviadorVuelos:
                         distancia = -1
                     escalas = fields[19]  # segmentsArrivalAirportCode
                     vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
-                    logging.debug(f'accion: leer_vuelo | id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
+                    logging.info(f'accion: leer_vuelo | id vuelo: {id_vuelo}   origen: {origen}   destino: {destino}  precio: {precio} distancia: {distancia} duracion: {duracion} escalas: {escalas}')
                     lote.append(vuelo)
                     if (len(lote) >= TAMANIO_LOTE):
                         
@@ -58,7 +58,7 @@ class EnviadorVuelos:
                         self._protocolo.enviar_vuelos(lote)
                         lote = []
                         lotes_enviados += 1
-                        if (lotes_enviados % 1000) == 0:
+                        if (lotes_enviados % 100) == 0:
                             logging.info(f"Lotes enviados: {lotes_enviados} sobre {lotes_estimados} (Estimados)")
             if len(lote) > 0:
                 self._protocolo.enviar_vuelos(lote)

@@ -42,8 +42,8 @@ class Client:
             logging.info('action: recibir_resultado | estado: esperando')
             estado, resultado = self._protocolo_resultados.recibir_resultado()
             if estado == STATUS_ERR:
-                logging.info('action: recibir_resultado | resultado: error')
-                break
+                logging.error('action: recibir_resultado | resultado: error')
+                return
             elif estado == IDENTIFICADOR_FIN_RAPIDOS:
                 fines_recibidos.add(estado)
                 logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
@@ -57,7 +57,7 @@ class Client:
                 fines_recibidos.add(estado)
                 logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
             else:
-                logging.debug(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
+                logging.info(f'action: recibir_resultado | resultado: OK  | {resultado.convertir_a_str()}')
 
         logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
         
@@ -79,7 +79,7 @@ class Client:
             return
 
         enviador_vuelos = EnviadorVuelos(self._protocolo)
-        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('itineraries_random_2M.csv'),))
+        self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('short1.csv'),))
         self._handler_proceso.start()
 
         try:
