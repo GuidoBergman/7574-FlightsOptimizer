@@ -59,7 +59,7 @@ class FiltroPrecios:
         if trayecto not in self.archivos_por_trayecto:
             # Si el trayecto no existe en el diccionario, creamos una lista con el precio actual
             archivo = open(trayecto, 'ab')
-            self.archivos_por_trayecto[trayecto] = open(trayecto, 'ab')
+            self.archivos_por_trayecto[trayecto] = archivo
             self.total_por_trayecto[trayecto] = vuelo.precio
             self.vuelos_por_trayecto[trayecto] = 1
         else:
@@ -134,3 +134,5 @@ class FiltroPrecios:
         self._protocolo.cerrar()
         if self._protocoloResultado:
             self._protocoloResultado.cerrar()
+
+        self.cerrar_archivos()
