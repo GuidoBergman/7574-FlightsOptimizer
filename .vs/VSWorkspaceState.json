@@ -1,17 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\client",
-    "\\client\\comun",
-    "\\filtros\\calculador_promedio",
-    "\\filtros\\calculador_promedio\\comun",
-    "\\filtros\\filtro_escalas",
-    "\\filtros\\filtro_precio",
-    "\\filtros\\filtro_precio\\comun",
-    "\\protocolos",
-    "\\server",
-    "\\server\\comun"
+    ""
   ],
-  "SelectedNode": "\\client\\comun\\client.py",
+  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\ObtenidoRepo",
   "PreviewInSolutionExplorer": false
 }
