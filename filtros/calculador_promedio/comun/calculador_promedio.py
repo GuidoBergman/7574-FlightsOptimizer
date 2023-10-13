@@ -27,10 +27,9 @@ class CalculadorPromedio:
             self.promedio = npromedio
             self.cantidad += cantidad
         
-        logging.debug(f"promedio {self.promedio} cantidad {self.cantidad}")
         self.recibidos += 1
         
-        logging.info(f"Procesa promedio: {self.recibidos} / {self.cant_filtros_precio}")
+        logging.info(f"Procesa promedio: {self.recibidos} / {self.cant_filtros_precio} | promedio {self.promedio} cantidad {self.cantidad}")
         if (self.recibidos >= self.cant_filtros_precio):
             logging.info(f"Envia promedio: {self.promedio}")
             self._protocolo.enviar_promediogeneral(self.promedio)

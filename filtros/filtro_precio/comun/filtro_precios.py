@@ -27,6 +27,8 @@ class FiltroPrecios:
        self.total_por_trayecto = {}
        self.promedio = 0.0
        self.cantidad = 0    
+       self.vuelos_procesados = 0
+       self.resultados_enviados = 0
 
         
     def sigterm_handler(self, _signo, _stack_frame):
@@ -48,6 +50,10 @@ class FiltroPrecios:
         
     def procesar_vuelo(self, vuelo: Vuelo):
         
+        self.vuelos_procesados += 1;
+        if (self.vuelos_procesados % 3000) == 1:
+            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
+        
         logging.debug(f'Inicio el proceso origen { vuelo.origen } precio { vuelo.precio }')
         trayecto = f'{vuelo.origen}-{vuelo.destino}'
         if trayecto not in self.archivos_por_trayecto:
@@ -67,15 +73,17 @@ class FiltroPrecios:
         
  
     def cerrar_archivos(self):
+        logging.info("Cerrando archivos")
         for trayecto, archivo in self.archivos_por_trayecto.items():
             archivo.close()
 
-    def borrar_archivos(self):
+    def borrar_archivos(self):        
+        logging.info("Borrando archivos")
         for trayecto, archivo in self.archivos_por_trayecto.items():
             os.remove(trayecto)
             
     def procesar_finvuelo(self):        
-        logging.info(f'Calculo el promedio y total')
+        logging.info(f'Calculo el promedio y lo envia')
         self.cerrar_archivos()
         for trayecto, archivo in self.archivos_por_trayecto.items():
             self.agregar_promedio(self.total_por_trayecto[trayecto] / self.vuelos_por_trayecto[trayecto], self.vuelos_por_trayecto[trayecto])
@@ -83,9 +91,9 @@ class FiltroPrecios:
         
         
     def procesar_promediogeneral(self, promedio):
-        logging.debug(f"Envia resultados para el promedio {promedio}")
-        self._protocoloResultado = ProtocoloResultadosServidor()
+        logging.info(f"Recibe el promedio {promedio}")
         
+        self._protocoloResultado = ProtocoloResultadosServidor()
         for trayecto, vuelos in self.vuelos_por_trayecto.items():
             
             logging.debug(f"Abro archivos para trayecto {trayecto}")                 
@@ -103,9 +111,14 @@ class FiltroPrecios:
                 precio_promedio = sum(precios_por_encima) / len(precios_por_encima)
                 precio_maximo = max(precios_por_encima)
                 res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
+
+                self.resultados_enviados += 1
+                if (self.resultados_enviados % 100) == 1:
+                    logging.info(f'Enviando resultados: {self.resultados_enviados}')
+                    
                 logging.debug(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
                 self._protocoloResultado.enviar_resultado_filtro_precio(res)
-            
+        logging.info(f'Resultados enviados: {self.resultados_enviados}')
         self._protocoloResultado.enviar_fin_resultados_filtro_precio()
         self.borrar_archivos()
 

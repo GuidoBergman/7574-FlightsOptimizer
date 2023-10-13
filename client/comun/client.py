@@ -1,6 +1,12 @@
 import logging
 import signal
+import os
 from modelo.Aeropuerto import Aeropuerto
+from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
+from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
+from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
+from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
+
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 from protocolo_cliente import ProtocoloCliente
 from protocolo_resultados_cliente import (ProtocoloResultadosCliente, 
@@ -40,30 +46,57 @@ class Client:
 
     def _recibir_resultados(self):
         fines_recibidos = set()
-        with open('/data/resultados.txt', 'w') as archivo:
-            # Escribe la palabra 'resultado' en el archivo
-            while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
-                logging.debug('action: recibir_resultado | estado: esperando')
-                estado, resultado = self._protocolo_resultados.recibir_resultado()
-                if estado == STATUS_ERR:
-                    logging.error('action: recibir_resultado | resultado: error')
-                    return
-                elif estado == IDENTIFICADOR_FIN_RAPIDOS:
-                    fines_recibidos.add(estado)
-                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
-                elif estado == IDENTIFICADOR_FIN_DISTANCIA:
-                    fines_recibidos.add(estado)
-                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
-                elif estado == IDENTIFICADOR_FIN_ESCALAS:
-                    fines_recibidos.add(estado)
-                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
-                elif estado == IDENTIFICADOR_FIN_PRECIO:
-                    fines_recibidos.add(estado)
-                    logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
-                else:
-                    archivo.write(resultado.convertir_a_str())
-        
-        logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados')
+        resultados_recibidos = 0
+        archivo_ResultadoFiltroDistancia = '/data/ResultadoFiltroDistancia.txt'
+        archivo_ResultadoFiltroEscalas = '/data/ResultadoFiltroEscalas.txt'    
+        archivo_ResultadoVuelosRapidos = '/data/ResultadoVuelosRapidos.txt'    
+        archivo_ResultadoEstadisticaPrecios = '/data/ResultadoEstadisticaPrecios.txt'
+
+        if os.path.exists(archivo_ResultadoFiltroDistancia):
+            os.remove(archivo_ResultadoFiltroDistancia)      
+        if os.path.exists(archivo_ResultadoFiltroEscalas):
+            os.remove(archivo_ResultadoFiltroEscalas)
+        if os.path.exists(archivo_ResultadoVuelosRapidos):
+            os.remove(archivo_ResultadoVuelosRapidos)
+        if os.path.exists(archivo_ResultadoEstadisticaPrecios):
+            os.remove(archivo_ResultadoEstadisticaPrecios)
+
+        with open(archivo_ResultadoFiltroDistancia, 'w') as aResultadoFiltroDistancia:
+            with open(archivo_ResultadoFiltroEscalas, 'w') as aResultadoFiltroEscalas:
+                with open(archivo_ResultadoVuelosRapidos, 'w') as aResultadoVuelosRapidos:
+                    with open(archivo_ResultadoEstadisticaPrecios, 'w') as aResultadoEstadisticaPrecios:
+                        while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
+                            logging.debug('action: recibir_resultado | estado: esperando')
+                            estado, resultado = self._protocolo_resultados.recibir_resultado()
+                            if estado == STATUS_ERR:
+                                logging.error('action: recibir_resultado | resultado: error')
+                                return
+                            elif estado == IDENTIFICADOR_FIN_RAPIDOS:
+                                fines_recibidos.add(estado)
+                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
+                            elif estado == IDENTIFICADOR_FIN_DISTANCIA:
+                                fines_recibidos.add(estado)
+                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
+                            elif estado == IDENTIFICADOR_FIN_ESCALAS:
+                                fines_recibidos.add(estado)
+                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
+                            elif estado == IDENTIFICADOR_FIN_PRECIO:
+                                fines_recibidos.add(estado)
+                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
+                            else:
+                                resultados_recibidos +=1;
+                                if (resultados_recibidos % 1000) == 1:
+                                    logging.info(f"Resultados recibidos : {resultados_recibidos}")
+                                if type(resultado) is ResultadoFiltroDistancia: 
+                                    aResultadoFiltroDistancia.write(resultado.convertir_a_str() + '\n'),
+                                if type(resultado) is ResultadoFiltroEscalas: 
+                                    aResultadoFiltroEscalas.write(resultado.convertir_a_str() + '\n'),
+                                if type(resultado) is ResultadoVuelosRapidos: 
+                                    aResultadoVuelosRapidos.write(resultado.convertir_a_str() + '\n' ),
+                                if type(resultado) is ResultadoEstadisticaPrecios: 
+                                    aResultadoEstadisticaPrecios.write(resultado.convertir_a_str() + '\n')
+                                    
+        logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados {resultados_recibidos}')
         
 
 

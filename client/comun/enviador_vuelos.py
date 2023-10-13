@@ -1,4 +1,5 @@
 import logging
+from re import L
 import signal
 import os
 
@@ -13,7 +14,7 @@ class EnviadorVuelos:
         self._protocolo = protocoloCliente
 
     def _sigterm_handler(self, _signo, _stack_frame):
-        logging.info('action: sigterm_recibido (enviador vuelos)')
+        logging.info('action: sigterm_recibida (enviador vuelos)')
         self._protocolo.cerrar()
         
 
@@ -29,7 +30,7 @@ class EnviadorVuelos:
         
         # Obtiene el tamaño del archivo en bytes
         tamanio_bytes = os.path.getsize(archivo_csv)
-        lotes_estimados = int((tamanio_bytes / 396) / TAMANIO_LOTE)
+        lotes_estimados = int((tamanio_bytes / 372.24) / TAMANIO_LOTE)
         logging.info(f"Lotes estimados: {lotes_estimados}")
         lotes_enviados = 0;
         
@@ -58,11 +59,11 @@ class EnviadorVuelos:
                         self._protocolo.enviar_vuelos(lote)
                         lote = []
                         lotes_enviados += 1
-                        if (lotes_enviados % 100) == 0:
+                        if (lotes_enviados % 100) == 1:
                             logging.info(f"Lotes enviados: {lotes_enviados} sobre {lotes_estimados} (Estimados)")
             if len(lote) > 0:
                 self._protocolo.enviar_vuelos(lote)
-        logging.info("Envio todos los vuelos")
+        logging.info(f"Envio todos los vuelos. Lotes enviados: {lotes_enviados}")
         self._protocolo.enviar_fin_vuelos()
 
         self._protocolo.cerrar()

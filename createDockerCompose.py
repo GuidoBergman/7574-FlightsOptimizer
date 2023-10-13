@@ -201,6 +201,9 @@ cliente = """
       - type: bind
         source: ./client/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data
+        target: /data
 """
 
 calculadorPromedio = f"""

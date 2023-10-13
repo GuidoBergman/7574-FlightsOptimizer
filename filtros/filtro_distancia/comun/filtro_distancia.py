@@ -19,11 +19,17 @@ class FiltroDistancia:
        self._protocoloResultado = ProtocoloResultadosServidor()
        self.aeropuertos = {}
        self.corriendo = True
+       self.vuelos_procesados = 0
+       self.aeropuertos_procesados = 0
        self._id = id
        
         
 
     def procesar_aeropuerto(self, aeropuerto: Aeropuerto):
+        self.aeropuertos_procesados += 1
+        if (self.aeropuertos_procesados % 100) == 1:
+            logging.info(f"Procesando aeropuerto: {self.aeropuertos_procesados}")
+        
         logging.debug(f'Agregando el aeropuerto { aeropuerto.id }')
         self.aeropuertos[aeropuerto.id] = aeropuerto
         
@@ -34,6 +40,10 @@ class FiltroDistancia:
         return int(distancia)
     
     def procesar_vuelo(self, vuelo: Vuelo):
+        
+        self.vuelos_procesados += 1;
+        if (self.vuelos_procesados % 3000) == 1:
+            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
         logging.debug(f'Procesando vuelo{ vuelo.id_vuelo } distancia { vuelo.distancia } origen {vuelo.origen} destino {vuelo.destino}')
         try:
             ae_origen = self.aeropuertos[vuelo.origen]
@@ -49,16 +59,16 @@ class FiltroDistancia:
                 resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
                 self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia)
         except KeyError as e:
-            logging.error(f'No se encontro el aeropuero')
+            logging.error(f'AEROPUERTO NO ENCONTRADO')
 
     def procesar_finvuelo(self):        
-        logging.info(f'FIN DE VUELOS')
+        logging.info(f'Fin de vuelos')
         self._protocoloResultado.enviar_fin_resultados_distancia()
         self.aeropuertos = {}
         self._protocolo.parar_vuelos()
         
     def procesar_finaeropuerto(self):        
-        logging.info(f'FIN DE AEROPUERTOS')
+        logging.info(f'Fin de Aeropuertos')
 
     def run(self):
           logging.info(f'Iniciando Filtro Distancia')  

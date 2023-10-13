@@ -309,6 +309,9 @@ services:
       - type: bind
         source: ./client/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data
+        target: /data
 
 networks:
   testing_net:

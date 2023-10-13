@@ -1,3 +1,4 @@
+import chunk
 import logging
 import signal
 from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
@@ -35,30 +36,34 @@ class Server:
         logging.error('sigterm_received')
         if self._server_socket:
             self._server_socket.close()
-            logging.error('Cerrando socket server')
+            logging.info('Cerrando socket server')
         
         if self._client_sock:
             self._client_sock.close()
-            logging.error('Cerrando socket client')
+            logging.info('Cerrando socket client')
 
         if self._vuelos:
             self._vuelos.close()
-            logging.error('Cerrando la cola de vuelos')
+            logging.info('Cerrando la cola de vuelos')
 
-
+            
+        
         if self._proceso_enviador:
+            logging.info('Cerrando procesos enviador')
             self._proceso_enviador.terminate()
             self._proceso_enviador.join()
-            logging.error('Cerrando proceos enviador')
 
         if self._procesos_handlers:
+            
+            logging.info('Cerrando proceso handler')
             for proceso in self._procesos_handlers:
-                logging.error('Cerrando proceso handler')
                 proceso.terminate()
                 proceso.join()
         
 
     def _recibir_vuelos(self):
+        chunk_recibidos = 0
+        logging.info('Recibiendo vuelos')
         while True:
             estado, vuelos_rec = self._protocolo_cliente.recibir_vuelos()
             if estado == ESTADO_FIN_VUELOS:
@@ -68,12 +73,16 @@ class Server:
                 break
             
             logging.debug(f'Acción: recibir_vuelo | estado: OK | Vuelos recibidos:   {len(vuelos_rec)}')
+            chunk_recibidos += 1
+            if (chunk_recibidos % 100) == 1:
+                logging.info(f'Lote de vuelos recibido: {chunk_recibidos}')
             for vuelo in vuelos_rec:
                 self._vuelos.put(vuelo)
             
 
 
     def _recibir_aeropuertos(self):
+        logging.info('Recibiendo aeropuertos')
         while True:            
             estado, aeropuerto = self._protocolo_cliente.recibir_aeropuerto()
             if estado == ESTADO_FIN_AEROPUERTOS:
@@ -87,6 +96,7 @@ class Server:
     # Run wrapper para el manejo de sigterm
     def run(self):
         try:
+            logging.info('Iniciando servidor')
             self._run()
         except (ConnectionResetError, BrokenPipeError, OSError):
             return
@@ -122,6 +132,9 @@ class Server:
                 enviador_fin = EnviadorFin(self._cant_filtros_escalas, self._cant_filtros_distancia,
                 self._cant_filtros_precio)
                 enviador_fin.enviar_fin_vuelos()
+                
+
+                logging.info("Espera terminen los resultados resultados")
                 self._proceso_enviador.join()
 
                 self._client_sock.close()

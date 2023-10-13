@@ -27,6 +27,7 @@ class ProtocoloResultadosServidor:
        self._colas = ManejadorColas()
        self._corriendo = False
        self._nombre_cola = COLA_RESULTADOS
+       self.resultados_recibidos = 0
 
     # Escuchar los resultados en la cola de resultados del servidor y mandarselos al cliente   
     def iniciar(self, socket_cliente, cant_filtros_escalas,
@@ -59,8 +60,13 @@ class ProtocoloResultadosServidor:
 
     
     def _callback_function(self, body):
+        self.resultados_recibidos += 1;
+        if (self.resultados_recibidos % 100) == 1:
+            logging.info(f"Resultados recibidos {self.resultados_recibidos}")
+            
+        
+        
         identificador_resultado = body[0:1].decode(STRING_ENCODING)
-
         if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
             resultado = ResultadoVuelosRapidos.deserializar(body[1:])
             self._protocolo_resultados_cliente.enviar_resultado_vuelos_rapidos(resultado)

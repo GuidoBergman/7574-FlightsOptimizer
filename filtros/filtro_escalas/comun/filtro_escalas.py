@@ -17,14 +17,18 @@ class FiltroEscalas:
        self._protocoloVelocidad = ProtocoloFiltroVelocidad(cant_filtros_velocidad)
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_con_tres_escalas = []
+       self.vuelos_procesados = 0
        self._id = id
        
         
     def procesar_vuelo(self, vuelo: Vuelo):
+        self.vuelos_procesados += 1;
+        if (self.vuelos_procesados % 3000) == 1:
+            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
+        
         logging.debug(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
         if len(vuelo.escalas.split("||")[:-1]) >= 3:            
             logging.debug(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
-
             resultado = ResultadoFiltroEscalas(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino,
                 vuelo.precio, vuelo.escalas
             )
@@ -32,12 +36,13 @@ class FiltroEscalas:
             self._protocoloVelocidad.enviar_vuelo(vuelo)
 
     def procesar_finvuelo(self):        
-        logging.info(f'FIN DE VUELOS')
+        logging.info(f'Fin de vuelos')
         self._protocoloVelocidad.enviar_fin_vuelos()
         self._protocoloResultado.enviar_fin_resultados_escalas()
         self._protocolo.parar()
 
     def run(self):
+          logging.info('Iniciando filtro escalas')  
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
           
     

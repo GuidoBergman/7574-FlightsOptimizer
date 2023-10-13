@@ -38,14 +38,10 @@ def initialize_config():
 def main():
     
 
-    logging.info(f"Iniciando Filtro Rapido")
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
     id = config_params["id"]
     cant_filtros_escalas = config_params['cant_filtros_escalas']
-   
-
-
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration
