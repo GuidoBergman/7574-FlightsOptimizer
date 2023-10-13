@@ -26,7 +26,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS=1
+      - CANT_HANDLERS=2
       - CANT_FILTROS_ESCALAS=3
       - CANT_FILTROS_DISTANCIA=3
       - CANT_FILTROS_VELOCIDAD=3
