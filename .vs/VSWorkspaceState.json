@@ -1,7 +1,15 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\data",
+    "\\filtros",
+    "\\filtros\\filtro_distancia",
+    "\\filtros\\filtro_distancia\\comun",
+    "\\filtros\\filtro_precio",
+    "\\filtros\\filtro_precio\\comun",
+    "\\protocolos",
+    "\\server",
+    "\\server\\comun"
   ],
-  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\ObtenidoRepo",
   "PreviewInSolutionExplorer": false
 }

@@ -18,7 +18,7 @@ ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
-FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8sf'
+FORMATO_MENSAJE_VUELO = '!cH32s3s3s50s8s'
 NOMBRE_COLA = 'cola_escalas'
 
 
@@ -42,10 +42,9 @@ class ProtocoloFiltroEscalas:
     def traducir_vuelo(self, mensaje):
         
         formato_mensaje = FORMATO_MENSAJE_VUELO
-        tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, escalas, duracion, precio = unpack(formato_mensaje, mensaje)
+        tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, escalas, duracion = unpack(formato_mensaje, mensaje)
         
-        
-        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, escalas.decode('utf-8').replace('\x00', ''), duracion.decode('utf-8'), precio)
+        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, escalas.decode('utf-8').replace('\x00', ''), duracion.decode('utf-8'), 0)
         return vuelo
 
 
@@ -70,8 +69,7 @@ class ProtocoloFiltroEscalas:
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
                                       vuelo.escalas.encode(STRING_ENCODING),
-                                      vuelo.duracion.encode(STRING_ENCODING),
-                                      vuelo.precio
+                                      vuelo.duracion.encode(STRING_ENCODING)
                                       )
     
         

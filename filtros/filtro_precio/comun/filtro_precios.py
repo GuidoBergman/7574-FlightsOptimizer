@@ -96,20 +96,26 @@ class FiltroPrecios:
         self._protocoloResultado = ProtocoloResultadosServidor()
         for trayecto, vuelos in self.vuelos_por_trayecto.items():
             
-            logging.debug(f"Abro archivos para trayecto {trayecto}")                 
+            precios_por_encima = 0
+            suma_precios_por_encima = 0 
+            precio_maximo = 0
+            logging.debug(f"Abro archivos para trayecto {trayecto}")            
             with open(trayecto, 'rb') as archivo:
-                precios_por_encima = []
-                precio_binario = archivo.read(4)  # Leer 4 bytes a la vez (tama�o de un float)
+                
+                precio_binario = archivo.read(4)  # Leer 4 bytes a la vez (tamaño de un float)
                 while precio_binario:
                     precio = struct.unpack('f', precio_binario)[0]
                     if precio > promedio:
-                        precios_por_encima.append(precio)
+                        precios_por_encima += 1
+                        suma_precios_por_encima = precio
+                        if precio_maximo < precio:
+                            precio_maximo = precio
+                    
                     precio_binario = archivo.read(4)
 
-            # Calcula el precio promedio solo para los precios por encima de 'promedio'
-            if precios_por_encima:
-                precio_promedio = sum(precios_por_encima) / len(precios_por_encima)
-                precio_maximo = max(precios_por_encima)
+            # Si hay precios por encima de 'promedio' los envia
+            if precios_por_encima > 0:
+                precio_promedio = suma_precios_por_encima / precios_por_encima 
                 res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
 
                 self.resultados_enviados += 1
