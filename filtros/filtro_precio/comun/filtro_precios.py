@@ -14,7 +14,7 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 
-REGISTROS_EN_MEMORIA = 10000
+REGISTROS_EN_MEMORIA = 5
 
 class FiltroPrecios:
     
