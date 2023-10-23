@@ -72,11 +72,10 @@ class FiltroPrecios:
         
         #Si hay muchos en memoria lo guarda a un archivo
         if len(self.vuelos_por_trayecto_memoria[trayecto]) > REGISTROS_EN_MEMORIA:
-            for precios in self.vuelos_por_trayecto_memoria[trayecto]:
+            for precio in self.vuelos_por_trayecto_memoria[trayecto]:
                 archivo = self.archivos_por_trayecto[trayecto]
-                for precio in precios: 
-                    precio_binario = struct.pack('f', precio)
-                    archivo.write(precio_binario)
+                precio_binario = struct.pack('f', precio)
+                archivo.write(precio_binario)
             self.vuelos_por_trayecto_memoria[trayecto] = []
             
         
