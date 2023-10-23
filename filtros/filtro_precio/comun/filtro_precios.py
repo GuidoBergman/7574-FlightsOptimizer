@@ -33,15 +33,7 @@ class FiltroPrecios:
        self.cantidad = 0    
        self.vuelos_procesados = 0
        self.resultados_enviados = 0
-
-        
-    def sigterm_handler(self, _signo, _stack_frame):
-        self.cerrar_archivos()
-        self.borrar_archivos()
-        self._protocolo.parar()
-        logging.info('action: sigterm_received')
-
-        
+ 
 
         
     def agregar_promedio(self, promedio: float, cantidad: int):
@@ -163,7 +155,7 @@ class FiltroPrecios:
           
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.info('SIGTER recibida')
+        logging.info('SIGTERM recibida')
         self._protocolo.cerrar()
         if self._protocoloResultado:
             self._protocoloResultado.cerrar()
