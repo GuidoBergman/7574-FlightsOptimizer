@@ -126,7 +126,7 @@ class FiltroPrecios:
                     precio = struct.unpack('f', precio_binario)[0]
                     if precio > promedio:
                         precios_por_encima += 1
-                        suma_precios_por_encima = precio
+                        suma_precios_por_encima += precio
                         if precio_maximo < precio:
                             precio_maximo = precio
                     
