@@ -44,6 +44,7 @@ class ProtocoloFiltroEscalas:
         formato_mensaje = FORMATO_MENSAJE_VUELO
         tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, escalas, duracion = unpack(formato_mensaje, mensaje)
         
+        
         vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, escalas.decode('utf-8').replace('\x00', ''), duracion.decode('utf-8'), 0)
         return vuelo
 
