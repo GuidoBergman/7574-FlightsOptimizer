@@ -14,7 +14,10 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 
+REGISTROS_EN_MEMORIA = 10000
+
 class FiltroPrecios:
+    
     def __init__(self, id):
        self._protocolo = ProtocoloFiltroPrecio()
        self._id = id
@@ -23,7 +26,8 @@ class FiltroPrecios:
        
     def inicialar(self):
        self.archivos_por_trayecto = {}
-       self.vuelos_por_trayecto = {}
+       self.vuelos_por_trayecto_memoria = {}
+       self.total_vuelos_por_trayecto = {}
        self.total_por_trayecto = {}
        self.promedio = 0.0
        self.cantidad = 0    
@@ -59,17 +63,31 @@ class FiltroPrecios:
         if trayecto not in self.archivos_por_trayecto:
             # Si el trayecto no existe en el diccionario, creamos una lista con el precio actual
             archivo = open(trayecto, 'ab')
-            self.archivos_por_trayecto[trayecto] = archivo
-            self.total_por_trayecto[trayecto] = vuelo.precio
-            self.vuelos_por_trayecto[trayecto] = 1
+            self.vuelos_por_trayecto_memoria[trayecto] = []
+            self.archivos_por_trayecto[trayecto] = archivo            
+            
+            self.vuelos_por_trayecto_memoria[trayecto] = []            
+            self.total_por_trayecto[trayecto] = 0
+            self.total_vuelos_por_trayecto[trayecto] = 0
         else:
             archivo = self.archivos_por_trayecto[trayecto]
-            self.total_por_trayecto[trayecto] += vuelo.precio  
-            self.vuelos_por_trayecto[trayecto] += 1              
-
-        # Escribe el precio en el archivo en formato binario
-        precio_binario = struct.pack('f', vuelo.precio)
-        archivo.write(precio_binario)
+        
+        
+        # Procesa el vuelo
+        self.vuelos_por_trayecto_memoria[trayecto].append(vuelo.precio)
+        self.total_por_trayecto[trayecto] += vuelo.precio
+        self.total_vuelos_por_trayecto[trayecto] += 1
+        
+        #Si hay muchos en memoria lo guarda a un archivo
+        if len(self.vuelos_por_trayecto_memoria[trayecto]) > REGISTROS_EN_MEMORIA:
+            for precios in self.vuelos_por_trayecto_memoria[trayecto]:
+                archivo = self.archivos_por_trayecto[trayecto]
+                for precio in precios: 
+                    precio_binario = struct.pack('f', precio)
+                    archivo.write(precio_binario)
+            self.vuelos_por_trayecto_memoria[trayecto] = []
+            
+        
         
  
     def cerrar_archivos(self):
@@ -84,17 +102,26 @@ class FiltroPrecios:
             
     def procesar_finvuelo(self):        
         logging.info(f'Calculo el promedio y lo envia')
-        self.cerrar_archivos()
+        # Guardo en disco lo que quedo en memoria de cada trayecto
         for trayecto, archivo in self.archivos_por_trayecto.items():
-            self.agregar_promedio(self.total_por_trayecto[trayecto] / self.vuelos_por_trayecto[trayecto], self.vuelos_por_trayecto[trayecto])
+            for precio in self.vuelos_por_trayecto_memoria[trayecto]:
+                precio_binario = struct.pack('f', precio)
+                archivo.write(precio_binario)
+            self.vuelos_por_trayecto_memoria[trayecto] = []
+        self.cerrar_archivos()
+        
+
+        for trayecto, archivo in self.archivos_por_trayecto.items():
+            self.agregar_promedio(self.total_por_trayecto[trayecto] / self.total_vuelos_por_trayecto[trayecto], self.total_vuelos_por_trayecto[trayecto])
         self._protocolo.enviar_promedio(self.promedio, self.cantidad)
+        
         
         
     def procesar_promediogeneral(self, promedio):
         logging.info(f"Recibe el promedio {promedio}")
         
         self._protocoloResultado = ProtocoloResultadosServidor()
-        for trayecto, vuelos in self.vuelos_por_trayecto.items():
+        for trayecto, vuelos in self.total_vuelos_por_trayecto.items():
             
             precios_por_encima = 0
             suma_precios_por_encima = 0 
