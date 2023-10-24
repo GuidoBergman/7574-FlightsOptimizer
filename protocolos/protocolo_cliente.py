@@ -1,6 +1,7 @@
 from modelo.Vuelo import Vuelo
 from modelo.Aeropuerto import Aeropuerto
 from struct import unpack, pack, calcsize
+from serializaAyuda import serializaAyuda
 import logging
 
 TAMANIO_IDENTIFICADOR_MENSAJE = 1
@@ -31,9 +32,7 @@ class ProtocoloCliente:
     def _recibir_identificador_mensaje(self):
         estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
         if estado != STATUS_OK:
-            return STATUS_ERR, None
-
-       
+            return STATUS_ERR, None       
         return estado, mensaje.decode(STRING_ENCODING)
 
     def recibir_vuelo(self):
@@ -42,14 +41,11 @@ class ProtocoloCliente:
             logging.error(f'acción: recibir_vuelo | result: error')
             return STATUS_ERR, None
 
-        
-
         if identificador_mensaje == IDENTIFICADOR_VUELO:
             formato_mensaje = FORMATO_MENSAJE_VUELO
             tamanio_mensaje = calcsize(formato_mensaje)
             estado, mensaje = self._socket.receive(tamanio_mensaje)
-            
-            
+
             if estado != STATUS_OK:
                 logging.error(f'acción: recibir_vuelo | result: error')
                 return STATUS_ERR, None
@@ -128,7 +124,7 @@ class ProtocoloCliente:
         tamanio_batch = len(vuelos)
         msg = pack(FORMATO_TOTAL_VUELOS, tamanio_batch)
         for vuelo in vuelos:
-            msg += pack(FORMATO_MENSAJE_UNVUELO, 
+            msg += serializaAyuda.serializar(FORMATO_MENSAJE_UNVUELO, 
                 vuelo.id_vuelo.encode(STRING_ENCODING), vuelo.origen.encode(STRING_ENCODING), vuelo.destino.encode(STRING_ENCODING),
                 vuelo.precio, len(vuelo.escalas), vuelo.escalas.encode(STRING_ENCODING), 
                 vuelo.duracion.encode(STRING_ENCODING), vuelo.distancia)
