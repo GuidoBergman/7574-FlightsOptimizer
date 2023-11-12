@@ -33,6 +33,8 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False
+       
+       #por ahora es un atributo propio el ID Cliente
        guid = uuid.uuid4()
        self.id_cliente = str(guid)
     

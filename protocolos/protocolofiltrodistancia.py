@@ -1,4 +1,3 @@
-
 import logging
 from struct import unpack, pack, calcsize
 import struct
@@ -6,6 +5,8 @@ from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from modelo.Aeropuerto import Aeropuerto
 from modelo.estado import Estado
+from protocolobase import ProtocoloBase
+import uuid
 
 
 TAMANIO_IDENTIFICADOR_MENSAJE = 1
@@ -16,35 +17,41 @@ IDENTIFICADOR_FIN_AEROPUERTO = 'E'
 
 IDENTIFICADOR_PROMEDIO = 'P'
 IDENTIFICADOR_PROMEDIOGENERAL = 'G'
-
 ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
-
 STRING_ENCODING = 'utf-8'
-FORMATO_MENSAJE_VUELO = '!cH32s32s32si'
+FORMATO_MENSAJE_UNVUELO = '!32s32s32si'
 FORMATO_MENSAJE_AEROPUERTO = '!cH3sff'
-
 NOMBRE_COLA = 'cola_distancia'
 NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
 
 
 
-class ProtocoloFiltroDistancia:
+class ProtocoloFiltroDistancia(ProtocoloBase):
        
     def __init__(self):    
+       
+       self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False
+       
+       #por ahora es un atributo propio el ID Cliente
+       guid = uuid.uuid4()
+       self.id_cliente = str(guid)
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
         logging.debug(f'llego mensajo VUELOS body: {body}')
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
-            self.procesar_vuelo(self.traducir_vuelo(body))
+            self.procesar_vuelo(self.decodificar_vuelos(body))
         elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
             self.procesar_finvuelo()
-            
-            
+
+    def decodificar_vuelo(self, mensaje):        
+        id_vuelo, origen, destino, distancia = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)        
+        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8').replace('\x00', ''), destino.decode('utf-8').replace('\x00', ''), 0, "", 0, distancia)
+        return vuelo
 
     def callback_functionaero(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
@@ -67,35 +74,18 @@ class ProtocoloFiltroDistancia:
         self._colas.crear_cola(self.nombre_cola)        
         self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
         self._colas.consumir()
-        
 
-        
-
-        
-        
-
-
-    def traducir_vuelo(self, mensaje):        
-        formato_mensaje = FORMATO_MENSAJE_VUELO
-        tipomensaje, cantidad_vuelos, id_vuelo, origen, destino, distancia = unpack(formato_mensaje, mensaje)        
-        vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8').replace('\x00', ''), destino.decode('utf-8').replace('\x00', ''), 0, "", 0, distancia)
-        
-        return vuelo
-
-    def enviar_vuelo(self, vuelo):
-        tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
-        tamanio_batch = 1
-        logging.debug(f'Enviando vuelo filtro distancia {vuelo.id_vuelo}')
-        mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_VUELO,
-                                      tipo_mensaje,
-                                      tamanio_batch,
+    def traducir_vuelo(self, vuelo):
+        return  struct.pack(FORMATO_MENSAJE_UNVUELO,
                                       vuelo.id_vuelo.encode(STRING_ENCODING),
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
-                                      int(vuelo.distancia)
-                                      )
-        self._colas.enviar_mensaje(self.nombre_cola, mensaje_empaquetado)
+                                      int(vuelo.distancia))
 
+
+    def enviar_vuelos(self, vuelos):
+        self._colas.enviar_mensaje(self.nombre_cola, self.traducir_vuelos(self.id_cliente, vuelos))
+        
     def enviar_fin_vuelos(self):
         self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
 

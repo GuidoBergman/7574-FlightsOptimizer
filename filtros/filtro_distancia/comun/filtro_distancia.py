@@ -39,27 +39,28 @@ class FiltroDistancia:
         distancia = geodesic(coordenadas_aeropuerto1, coordenadas_aeropuerto2).kilometers
         return int(distancia)
     
-    def procesar_vuelo(self, vuelo: Vuelo):
+    def procesar_vuelo(self, vuelos: Vuelo):
         
         self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 3000) == 1:
+        if (self.vuelos_procesados % 2) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
-        logging.debug(f'Procesando vuelo{ vuelo.id_vuelo } distancia { vuelo.distancia } origen {vuelo.origen} destino {vuelo.destino}')
-        try:
-            ae_origen = self.aeropuertos[vuelo.origen]
-            ae_destino = self.aeropuertos[vuelo.destino]
-            logging.debug(f'Aeropuerto origen latitud { ae_origen.latitud } longitud { ae_origen.longitud }')
-            logging.debug(f'Aeropuerto destino latitud { ae_destino.latitud } longitud { ae_destino.longitud }')
+        for vuelo in vuelos:
+            logging.debug(f'Procesando vuelo{ vuelo.id_vuelo } distancia { vuelo.distancia } origen {vuelo.origen} destino {vuelo.destino}')
+            try:
+                ae_origen = self.aeropuertos[vuelo.origen]
+                ae_destino = self.aeropuertos[vuelo.destino]
+                logging.debug(f'Aeropuerto origen latitud { ae_origen.latitud } longitud { ae_origen.longitud }')
+                logging.debug(f'Aeropuerto destino latitud { ae_destino.latitud } longitud { ae_destino.longitud }')
         
-            distancia_directa = self.calcular_distancia(ae_origen, ae_destino)
-            logging.debug(f'Distancia directa: { distancia_directa }')
+                distancia_directa = self.calcular_distancia(ae_origen, ae_destino)
+                logging.debug(f'Distancia directa: { distancia_directa }')
         
-            if (distancia_directa * 4 < vuelo.distancia):
-                logging.debug(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
-                resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
-                self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia)
-        except KeyError as e:
-            logging.error(f'AEROPUERTO NO ENCONTRADO')
+                if (distancia_directa * 4 < vuelo.distancia):
+                    logging.debug(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
+                    resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
+                    self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia)
+            except KeyError as e:
+                logging.error(f'AEROPUERTO NO ENCONTRADO')
 
     def procesar_finvuelo(self):        
         logging.info(f'Fin de vuelos')
