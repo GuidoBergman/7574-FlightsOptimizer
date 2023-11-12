@@ -1,12 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\data",
-    "\\filtros",
-    "\\filtros\\filtro_distancia",
-    "\\filtros\\filtro_distancia\\comun",
-    "\\filtros\\filtro_precio",
-    "\\filtros\\filtro_precio\\comun",
+    "\\client",
     "\\protocolos",
     "\\server",
     "\\server\\comun"

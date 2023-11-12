@@ -21,19 +21,20 @@ class FiltroEscalas:
        self._id = id
        
         
-    def procesar_vuelo(self, vuelo: Vuelo):
+    def procesar_vuelo(self, vuelos: Vuelo):
         self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 3000) == 1:
+        if (self.vuelos_procesados % 300) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
         
-        logging.debug(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
-        if len(vuelo.escalas.split("||")[:-1]) >= 3:            
-            logging.debug(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
-            resultado = ResultadoFiltroEscalas(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino,
-                vuelo.precio, vuelo.escalas
-            )
-            self._protocoloResultado.enviar_resultado_filtro_escalas(resultado)
-            self._protocoloVelocidad.enviar_vuelo(vuelo)
+        for vuelo in vuelos:
+            logging.debug(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
+            if len(vuelo.escalas.split("||")[:-1]) >= 3:            
+                logging.debug(f'Envia como resultado el vuelo { vuelo.id_vuelo }')
+                resultado = ResultadoFiltroEscalas(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino,
+                    vuelo.precio, vuelo.escalas
+                )
+                self._protocoloResultado.enviar_resultado_filtro_escalas(resultado)
+                self._protocoloVelocidad.enviar_vuelo(vuelo)
 
     def procesar_finvuelo(self):        
         logging.info(f'Fin de vuelos')
