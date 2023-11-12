@@ -1,17 +1,15 @@
+from ast import Import
+import threading
 import chunk
 import logging
 import signal
-from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
 from comun.handler import Handler
 from comun.enviador_fin import EnviadorFin
 from multiprocessing import Process, Manager
-from protocolo_resultados_servidor import ProtocoloResultadosServidor
-
-from protocolofiltroescalas import ProtocoloFiltroEscalas
-from protocolofiltrodistancia import ProtocoloFiltroDistancia
-from protocolofiltroprecio import ProtocoloFiltroPrecio
-
 from socket_comun import SocketComun
+from comun.sesioncliente import SesionCliente
+
+
 
 
 EOF_MSG = 'EOF'
@@ -22,80 +20,36 @@ class Server:
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
-        self._protocoloDistancia = ProtocoloFiltroDistancia()
 
         self._cant_handlers = cant_handlers
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
         self._cant_filtros_precio = cant_filtros_precio
-        
-        self._protocoloEscalas = ProtocoloFiltroEscalas()
-        self._protocoloDistancia = ProtocoloFiltroDistancia()
-        self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio)
-
-        
+        self._hilos_cliente = []
+        self._corriendo = True;
         
 
         
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.error('sigterm_received')
+        logging.error('sigterm_received')        
+        self._corriendo = False;
         if self._server_socket:
             self._server_socket.close()
             logging.info('Cerrando socket server')
         
-        if self._client_sock:
-            self._client_sock.close()
-            logging.info('Cerrando socket client')
+    def borrar_hilos_clientes(self):
+        # Verificar los hilos que han terminado y unirlos
+        borrar_hilos = []
+        for thread in self._hilos_cliente:
+            if not thread.is_alive():
+                thread.join()
+                borrar_hilos.append(thread)
 
-            
-        
-        if self._proceso_enviador:
-            logging.info('Cerrando procesos enviador')
-            self._proceso_enviador.terminate()
-            self._proceso_enviador.join()
-
-        if self._procesos_handlers:
-            
-            logging.info('Cerrando proceso handler')
-            for proceso in self._procesos_handlers:
-                proceso.terminate()
-                proceso.join()
-        
-
-    def _recibir_vuelos(self):
-        chunk_recibidos = 0
-        logging.info('Recibiendo vuelos')
-        while True:
-            estado, vuelos_rec = self._protocolo_cliente.recibir_vuelos()
-            if estado == ESTADO_FIN_VUELOS:
-                logging.info(f'Se terminarón de recibir todos los vuelos')
-                break
-            
-            # Muestra por logs los chunck recibidos
-            logging.debug(f'Acción: recibir_vuelo | estado: OK | Nro chunck: { chunk_recibidos } | Vuelos recibidos:   {len(vuelos_rec)}')
-            chunk_recibidos += 1
-            if (chunk_recibidos % 100) == 1:
-                logging.info(f'Lote de vuelos recibido: {chunk_recibidos}')
-            
-            # Manda los vuelos a los filtros
-            self._protocoloEscalas.enviar_vuelos(vuelos_rec)
-            self._protocoloDistancia.enviar_vuelos(vuelos_rec)
-            self._protocoloPrecio.enviar_vuelos(vuelos_rec)
-            
-
-
-    def _recibir_aeropuertos(self):
-        logging.info('Recibiendo aeropuertos')
-        while True:            
-            estado, aeropuerto = self._protocolo_cliente.recibir_aeropuerto()
-            if estado == ESTADO_FIN_AEROPUERTOS:
-                self._protocoloDistancia.enviar_fin_aeropuertos()
-                break
-            
-            logging.debug(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
-            self._protocoloDistancia.enviar_aeropuerto(aeropuerto)
+        # Eliminar los hilos terminados de la lista
+        for thread in borrar_hilos:
+            self._active_threads.remove(thread)
 
 
     # Run wrapper para el manejo de sigterm
@@ -106,29 +60,37 @@ class Server:
         except (ConnectionResetError, BrokenPipeError, OSError):
             return
 
+
+
+    def _crear_sesion_cliente(self, client_sock):
+        """
+        Read message from a specific client socket and closes the socket
+
+        If a problem arises in the communication with the client, the
+        client socket will also be closed
+        """
+        try:
+            logging.info("Inicia sesion de un nuevo cliente")
+            sesion = SesionCliente(client_sock, self._cant_filtros_escalas ,self._cant_filtros_distancia,
+                                   self._cant_filtros_velocidad, self._cant_filtros_precio)
+            sesion.correr()
+        except OSError as e:
+            logging.error("action: receive_message | result: fail | error: {e}")
+        finally:
+            client_sock.close()
+            
+
+
     def _run(self):
-            self._client_sock, addr = self._server_socket.accept()
-            
-            enviador_resultados = ProtocoloResultadosServidor()
-            self._proceso_enviador = Process(target=enviador_resultados.iniciar, args=((self._client_sock,
-                    self._cant_filtros_escalas, self._cant_filtros_distancia,
-                    self._cant_filtros_velocidad, self._cant_filtros_precio
-                )))
-            self._proceso_enviador.start()
-
-            self._protocolo_cliente = ProtocoloCliente(self._client_sock)  
-            self._recibir_aeropuertos()  
-            self._recibir_vuelos()
+            while self._corriendo:
+                self.borrar_hilos_clientes()
+                client_sock, addr = self._server_socket.accept()
+                hilo = threading.Thread(target=self._crear_sesion_cliente,
+                                        args=(client_sock,))
+                hilo.start()
+                self._active_threads.append(hilo)
 
 
-            enviador_fin = EnviadorFin(self._cant_filtros_escalas, self._cant_filtros_distancia,
-            self._cant_filtros_precio)
-            enviador_fin.enviar_fin_vuelos()
-            
-            logging.info("Espera terminen los resultados resultados")
-            self._proceso_enviador.join()
-
-            self._client_sock.close()
             self._server_socket.close()
 
            

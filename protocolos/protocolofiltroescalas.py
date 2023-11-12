@@ -28,15 +28,12 @@ NOMBRE_COLA = 'cola_escalas'
 
 class ProtocoloFiltroEscalas(ProtocoloBase):
        
-    def __init__(self):    
+    def __init__(self, id_cliente=None):    
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False
-       
-       #por ahora es un atributo propio el ID Cliente
-       guid = uuid.uuid4()
-       self.id_cliente = str(guid)
+       self.id_cliente = id_cliente
     
 
     def callback_function(self, body):

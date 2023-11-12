@@ -6,7 +6,6 @@ from manejador_colas import ManejadorColas
 from modelo.Aeropuerto import Aeropuerto
 from modelo.estado import Estado
 from protocolobase import ProtocoloBase
-import uuid
 
 
 TAMANIO_IDENTIFICADOR_MENSAJE = 1
@@ -29,7 +28,7 @@ NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
 
 class ProtocoloFiltroDistancia(ProtocoloBase):
        
-    def __init__(self):    
+    def __init__(self, id_cliente=None):
        
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
@@ -37,8 +36,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
        self.corriendo = False
        
        #por ahora es un atributo propio el ID Cliente
-       guid = uuid.uuid4()
-       self.id_cliente = str(guid)
+       self.id_cliente = id_cliente
 
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
