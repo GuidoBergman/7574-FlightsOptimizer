@@ -88,6 +88,10 @@ class ProtocoloFiltroPrecio:
         self._colas.consumir_mensajes(NOMBRE_COLAPROMEDIO, self.callback_promedio)
         self._colas.consumir()
         
+    def enviar_vuelos(self, vuelos):
+        for vuelo in vuelos:
+            self.enviar_vuelo(vuelo)
+    
     def enviar_vuelo(self, vuelo):
         tipo_mensaje = IDENTIFICADOR_VUELO.encode(STRING_ENCODING)
         tamanio_batch = 1        

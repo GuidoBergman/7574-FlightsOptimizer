@@ -82,7 +82,7 @@ class Server:
             # Manda los vuelos a los filtros
             self._protocoloEscalas.enviar_vuelos(vuelos_rec)
             self._protocoloDistancia.enviar_vuelos(vuelos_rec)
-            #self._protocoloPrecio.enviar_vuelo(vuelos_rec)
+            self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             
 
 
