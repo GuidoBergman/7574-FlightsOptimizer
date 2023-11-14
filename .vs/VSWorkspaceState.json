@@ -1,10 +1,15 @@
 {
   "ExpandedNodes": [
     "",
-    "\\client",
+    "\\filtros",
+    "\\filtros\\filtro_escalas",
+    "\\filtros\\filtro_escalas\\comun",
+    "\\filtros\\filtro_velocidad",
+    "\\filtros\\filtro_velocidad\\comun",
     "\\protocolos",
-    "\\server",
-    "\\server\\comun"
+    "\\protocolos\\modelo",
+    "\\rabbitmq"
   ],
+  "SelectedNode": "\\protocolos\\protocolovelocidad.py",
   "PreviewInSolutionExplorer": false
 }

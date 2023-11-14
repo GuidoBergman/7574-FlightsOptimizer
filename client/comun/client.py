@@ -15,7 +15,7 @@ from protocolo_resultados_cliente import (ProtocoloResultadosCliente,
 from multiprocessing import Process
 from comun.enviador_vuelos import EnviadorVuelos
 
-CANT_TIPOS_RESULTADO = 1
+CANT_TIPOS_RESULTADO = 2
 
 class Client:
     def __init__(self, host, port, archivo_aeropuertos, archivo_vuelos ):

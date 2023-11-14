@@ -25,7 +25,8 @@ class FiltroEscalas:
         self.vuelos_procesados += 1;
         if (self.vuelos_procesados % 300) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
-        
+
+        vuelos_paravelocidad = []        
         for vuelo in vuelos:
             logging.debug(f'Procesando el vuelo{ vuelo.id_vuelo } escalas { vuelo.escalas }')
             if len(vuelo.escalas.split("||")[:-1]) >= 3:
@@ -34,11 +35,12 @@ class FiltroEscalas:
                     vuelo.precio, vuelo.escalas
                 )
                 self._protocoloResultado.enviar_resultado_filtro_escalas(resultado, id_cliente)
-                #self._protocoloVelocidad.enviar_vuelo(vuelo)
+                vuelos_paravelocidad.append(vuelo)
+        self._protocoloVelocidad.enviar_vuelos(id_cliente, vuelos_paravelocidad)
 
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos Cliente: {id_cliente}')
-        #self._protocoloVelocidad.enviar_fin_vuelos()
+        self._protocoloVelocidad.enviar_fin_vuelos(id_cliente)
         self._protocoloResultado.enviar_fin_resultados_escalas(id_cliente)
 
     def run(self):

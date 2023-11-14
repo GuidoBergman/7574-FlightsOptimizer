@@ -20,7 +20,7 @@ from protocolo_resultados_cliente import (TAMANIO_IDENTIFICADOR_RESULTADO,
 
 COLA_RESULTADOS = 'cola_resultados'
 STRING_ENCODING = 'utf-8'
-CANT_TIPOS_RESULTADO = 1
+CANT_TIPOS_RESULTADO = 2
 
 class ProtocoloResultadosServidor:
 
@@ -126,8 +126,8 @@ class ProtocoloResultadosServidor:
         self._colas.enviar_mensaje(self._nombre_cola + id_cliente, mensaje)
 
         
-    def enviar_fin_resultados_rapidos(self):
-        self._colas.enviar_mensaje(self._nombre_cola, IDENTIFICADOR_FIN_RAPIDOS.encode(STRING_ENCODING))
+    def enviar_fin_resultados_rapidos(self, id_cliente):
+        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_RAPIDOS.encode(STRING_ENCODING))
 
     def enviar_fin_resultados_distancia(self):
         self._colas.enviar_mensaje(self._nombre_cola, IDENTIFICADOR_FIN_DISTANCIA.encode(STRING_ENCODING))
