@@ -22,6 +22,7 @@ ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_UNVUELO = '!32s3s3s50s8s'
+FORMATO_FIN_VUELO = '!c32s'
 NOMBRE_COLA = 'cola_escalas'
 
 
@@ -34,19 +35,17 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
        self._colas = ManejadorColas()
        self.corriendo = False
        self.id_cliente = id_cliente
-    
-
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
         logging.debug(f'llego mensaje body: {body}')
         if body.decode('utf-8').startswith(IDENTIFICADOR_VUELO):
-            
-            self.procesar_vuelo(self.decodificar_vuelos(body))
+            id_cliente, vuelos = self.decodificar_vuelos(body)
+            self.procesar_vuelo(id_cliente, vuelos)
         else:
-            self.procesar_finvuelo()
-
-    def decodificar_vuelo(self, mensaje):        
-        
+            caracter, id_vuelo = unpack(FORMATO_FIN_VUELO, body)            
+            self.procesar_finvuelo(id_vuelo.decode('utf-8'))
+            
+    def decodificar_vuelo(self, mensaje):                
         id_vuelo, origen, destino, escalas, duracion = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)
         vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, escalas.decode('utf-8').replace('\x00', ''), duracion.decode('utf-8'), 0)
         return vuelo
@@ -76,8 +75,9 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
         
 
 
-    def enviar_fin_vuelos(self):
-        self._colas.enviar_mensaje(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING))
+    def enviar_fin_vuelos(self, id_cliente):
+        mensaje = pack(FORMATO_FIN_VUELO, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
+        self._colas.enviar_mensaje(self.nombre_cola, mensaje)
 
 
 

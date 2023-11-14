@@ -8,6 +8,7 @@ from comun.enviador_fin import EnviadorFin
 from multiprocessing import Process, Manager
 from socket_comun import SocketComun
 from comun.sesioncliente import SesionCliente
+from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
 
 
@@ -49,7 +50,7 @@ class Server:
 
         # Eliminar los hilos terminados de la lista
         for thread in borrar_hilos:
-            self._active_threads.remove(thread)
+            self._hilos_cliente.remove(thread)
 
 
     # Run wrapper para el manejo de sigterm
@@ -70,7 +71,6 @@ class Server:
         client socket will also be closed
         """
         try:
-            logging.info("Inicia sesion de un nuevo cliente")
             sesion = SesionCliente(client_sock, self._cant_filtros_escalas ,self._cant_filtros_distancia,
                                    self._cant_filtros_velocidad, self._cant_filtros_precio)
             sesion.correr()
@@ -88,9 +88,8 @@ class Server:
                 hilo = threading.Thread(target=self._crear_sesion_cliente,
                                         args=(client_sock,))
                 hilo.start()
-                self._active_threads.append(hilo)
-
-
-            self._server_socket.close()
+                self._hilos_cliente.append(hilo)
+            self._server_socket.close()            
+            self._proceso_enviador.join()
 
            

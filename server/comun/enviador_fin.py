@@ -14,9 +14,9 @@ class EnviadorFin:
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_precio = cant_filtros_precio
 
-    def enviar_fin_vuelos(self):
+    def enviar_fin_vuelos(self, id_cliente):
         for i in range(self._cant_filtros_escalas):
-            self._protocolo_escalas.enviar_fin_vuelos()
+            self._protocolo_escalas.enviar_fin_vuelos(id_cliente)
 
         for i in range(self._cant_filtros_precio):
             self._protocolo_precio.enviar_fin_vuelos()

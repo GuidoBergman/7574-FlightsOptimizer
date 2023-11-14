@@ -25,9 +25,10 @@ class ProtocoloBase(ABC):
     def decodificar_vuelos(self, mensaje):
         vuelos = []
         offset = calcsize(FORMATOCABECERA_VUELO)
+        caracter, id_cliente, total_vuelos = unpack(FORMATOCABECERA_VUELO, mensaje[0:offset])
         while offset < len(mensaje):
             vuelo_mensaje = mensaje[offset:offset + self.TAMANO_VUELO]
             vuelo = self.decodificar_vuelo(vuelo_mensaje)
             vuelos.append(vuelo)
             offset += self.TAMANO_VUELO
-        return vuelos
+        return id_cliente.decode('utf-8'), vuelos
