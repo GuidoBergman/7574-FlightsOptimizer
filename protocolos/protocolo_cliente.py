@@ -14,11 +14,11 @@ ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
 FORMATO_MENSAJE_AEROPUERTO = '!H3sff'
-
+FORMATO_MENSAJE_UNAEROPUERTO = '3sff'
 
 FORMATO_MENSAJE_VUELO =  '!H32s3s3sfH50s8sh'
 FORMATO_MENSAJE_UNVUELO = '!32s3s3sfH50s8sh'
-FORMATO_TOTAL_VUELOS =  '!H'
+FORMATO_TOTALES =  '!H'
 
 from socket_comun import SocketComun, STATUS_ERR, STATUS_OK
 
@@ -80,14 +80,14 @@ class ProtocoloCliente:
             formato_mensaje = FORMATO_MENSAJE_VUELO
             
             #Recibo la cantidad de vuelos
-            tamanio_mensaje = calcsize(FORMATO_TOTAL_VUELOS)
+            tamanio_mensaje = calcsize(FORMATO_TOTALES)
             estado, tot_vuelos = self._socket.receive(tamanio_mensaje)
             if estado != STATUS_OK:
                 logging.error(f'acción: recibir_vuelo | result: error')
                 return STATUS_ERR, None
             
                 
-            cantidad_vuelos = unpack(FORMATO_TOTAL_VUELOS, tot_vuelos)
+            cantidad_vuelos = unpack(FORMATO_TOTALES, tot_vuelos)
             logging.debug(f"recibo {cantidad_vuelos} vuelos")
             
             if type(cantidad_vuelos) is tuple:
@@ -126,7 +126,7 @@ class ProtocoloCliente:
         self._socket.send(IDENTIFICADOR_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
         
         tamanio_batch = len(vuelos)
-        msg = pack(FORMATO_TOTAL_VUELOS, tamanio_batch)
+        msg = pack(FORMATO_TOTALES, tamanio_batch)
         for vuelo in vuelos:
             msg += pack(FORMATO_MENSAJE_UNVUELO, 
                 vuelo.id_vuelo.encode(STRING_ENCODING), vuelo.origen.encode(STRING_ENCODING), vuelo.destino.encode(STRING_ENCODING),
@@ -170,46 +170,55 @@ class ProtocoloCliente:
 
 
 
-    def recibir_aeropuerto(self):
+    def recibir_aeropuertos(self):
         estado, identificador_mensaje = self._recibir_identificador_mensaje()
         if estado != STATUS_OK:
             logging.error(f'acción: recibir_aeropuerto | result: error')
             return STATUS_ERR, None
 
-        if identificador_mensaje == IDENTIFICADOR_AEROPUERTO:
-            formato_mensaje = FORMATO_MENSAJE_AEROPUERTO
-            tamanio_mensaje = calcsize(formato_mensaje)
-            estado, mensaje = self._socket.receive(tamanio_mensaje)
+        if identificador_mensaje == IDENTIFICADOR_AEROPUERTO:            
+            tamanio_mensaje = calcsize(FORMATO_TOTALES)
+            estado, total_aeropuertos_b = self._socket.receive(tamanio_mensaje)
             if estado != STATUS_OK:
                 logging.error(f'acción: recibir_aeropuerto | result: error')
                 return STATUS_ERR, None
-            cantidad_aeropuertos, id, latitud, longitud = unpack(formato_mensaje, mensaje)
-            id = id.decode(STRING_ENCODING)
-            aeropuerto = Aeropuerto(id, latitud, longitud)
+            total_aeropuertos = unpack(FORMATO_TOTALES, total_aeropuertos_b)
             
-            return STATUS_OK, aeropuerto
+            if type(total_aeropuertos) is tuple:
+                total_aeropuertos = total_aeropuertos[0] 
+            aeropuertos = []            
+            
+            for i in range(total_aeropuertos):
+                # Recibir el mensaje de cada aeropuerto y verificar el estado
+                tamanio_mensaje = calcsize(FORMATO_MENSAJE_UNAEROPUERTO)
+                estado, mensaje = self._socket.receive(tamanio_mensaje)
+                if estado != STATUS_OK:
+                    logging.error(f'acción: recibir_aeropuerto | result: error')
+                    return STATUS_ERR, None
+                # Desempaquetar el mensaje y obtener el id, la latitud y la longitud de cada aeropuerto
+                id_aeropuerto, latitud, longitud = unpack(FORMATO_MENSAJE_UNAEROPUERTO, mensaje)
+                logging.info(f'Desempaca vuelo {id_aeropuerto} - {latitud} - {longitud}')
+                # Crear un objeto aeropuerto con esos datos y agregarlo al vector
+                aeropuerto = Aeropuerto(id_aeropuerto.decode(STRING_ENCODING), latitud, longitud)
+                aeropuertos.append(aeropuerto)
+            return STATUS_OK, aeropuertos
         elif identificador_mensaje == IDENTIFICADOR_FIN_AEROPUERTO:
             return ESTADO_FIN_AEROPUERTOS, None
 
-    def enviar_aeropuerto(self, aeropuerto):
-        estado = self._socket.send(IDENTIFICADOR_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+    def enviar_aeropuertos(self, aeropuertos):
+        logging.info("enviando aeropuertos ...")
+        self._socket.send(IDENTIFICADOR_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        tamanio_batch = len(aeropuertos)
+        msg = pack(FORMATO_TOTALES, tamanio_batch)
+        for aeropuerto in aeropuertos:
+            msg += pack(FORMATO_MENSAJE_UNAEROPUERTO, aeropuerto.id.encode(STRING_ENCODING), aeropuerto.latitud, aeropuerto.longitud)
+        estado = self._socket.send(msg, len(msg))
+        
         if estado == STATUS_ERR:
-            logging.error("acción: enviar_aeropuerto | resultado: error")
-            return STATUS_ERR
-        tamanio_batch = 1
-        formato_mensaje = FORMATO_MENSAJE_AEROPUERTO
-        tamanio_mensaje = calcsize(formato_mensaje)
-        msg = pack(formato_mensaje, tamanio_batch,
-            aeropuerto.id.encode(STRING_ENCODING), aeropuerto.latitud, aeropuerto.longitud
-        )
-        estado = self._socket.send(msg, tamanio_mensaje)
-        if estado == STATUS_ERR:
-            logging.error("acción: enviar_aeropuerto | resultado: error")
+            logging.error("acción: enviar_vuelo | resultado: error")
             return STATUS_ERR
 
         return STATUS_OK
-
-
 
     def enviar_fin_aeropuertos(self):
         estado = self._socket.send(IDENTIFICADOR_FIN_AEROPUERTO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)

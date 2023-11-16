@@ -23,19 +23,21 @@ FORMATO_MENSAJE_PROMEDIO = '!fi'
 NOMBRE_COLA = 'cola_precios'
 NOMBRE_COLAPROMEDIO = 'cola_promedios'
 NOMBRE_COLAPROMEDIOGENERAL = 'cola_preciosgeneral'
+FORMATO_FIN_VUELO = '!c32s'
 
 
 
 class ProtocoloFiltroPrecio:
        
-    def __init__(self, cant_filtros_precio=None):    
+    def __init__(self, cant_filtros_precio=None, id_cliente=None):
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False
        
        if cant_filtros_precio:
         self._cant_filtros_precio= int(cant_filtros_precio)
-
+        
+       self.id_cliente = id_cliente
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
         logging.debug(f'llego mensaje body: {body}')
@@ -107,9 +109,11 @@ class ProtocoloFiltroPrecio:
         logging.debug(f"Enviando vuelo con precio al filtro {id_filtro_precio}")
         self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro_precio)
         
-    def enviar_fin_vuelos(self):
+
+    def enviar_fin_vuelos(self, id_cliente):
+        mensaje = pack(FORMATO_FIN_VUELO, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
         for i in range(1, self._cant_filtros_precio + 1):
-            self._colas.enviar_mensaje_por_topico(self.nombre_cola, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), i)
+            self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje, i)
         
     def enviar_promedio(self, promedio: float, cantidad: int):
         logging.debug(f"enviando promedio {promedio} cantidad {cantidad}")

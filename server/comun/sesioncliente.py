@@ -24,8 +24,8 @@ class SesionCliente:
         
         logging.info(f'Inicia cliente {self.id_cliente}')
         self._protocoloEscalas = ProtocoloFiltroEscalas(self.id_cliente)
-        self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio)  
-        self._protocoloDistancia = ProtocoloFiltroDistancia()
+        self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio, self.id_cliente)
+        self._protocoloDistancia = ProtocoloFiltroDistancia(self.id_cliente)
           
           
     def correr(self):
@@ -52,13 +52,12 @@ class SesionCliente:
     def _recibir_aeropuertos(self):
         logging.info('Recibiendo aeropuertos')
         while True:            
-            estado, aeropuerto = self._protocolo_cliente.recibir_aeropuerto()
+            estado, aeropuertos = self._protocolo_cliente.recibir_aeropuertos()
             if estado == ESTADO_FIN_AEROPUERTOS:
-                self._protocoloDistancia.enviar_fin_aeropuertos()
+                self._protocoloDistancia.enviar_fin_aeropuertos(self.id_cliente)
                 break
-            
-            logging.debug(f'Aeropuerto recibido:  id: {aeropuerto.id}   latitud: {aeropuerto.latitud}   longitud: {aeropuerto.longitud}')
-            self._protocoloDistancia.enviar_aeropuerto(aeropuerto)
+            logging.info(f'Aeropuertos recibidos: { self.id_cliente} total { len(aeropuertos)}')
+            self._protocoloDistancia.enviar_aeropuertos(self.id_cliente, aeropuertos)
             
     def _recibir_vuelos(self):
         chunk_recibidos = 0
@@ -77,6 +76,6 @@ class SesionCliente:
             
             # Manda los vuelos a los filtros
             self._protocoloEscalas.enviar_vuelos(vuelos_rec)
-            #self._protocoloDistancia.enviar_vuelos(vuelos_rec)
+            self._protocoloDistancia.enviar_vuelos(vuelos_rec)
             #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             

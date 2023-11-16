@@ -38,10 +38,10 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
             id_cliente, vuelos = self.decodificar_vuelos(body)
             self.procesar_vuelo(id_cliente, vuelos)
         else:            
-            caracter, id_vuelo = unpack(FORMATO_FIN_VUELO, body)            
+            caracter, id_cliente = unpack(FORMATO_FIN_VUELO, body)            
             self._fines_vuelo += 1
             if self._fines_vuelo >= self._cant_filtros_escalas:
-                self.procesar_finvuelo(id_vuelo.decode('utf-8'))
+                self.procesar_finvuelo(id_cliente.decode('utf-8'))
 
     def decodificar_vuelo(self, mensaje):        
         id_vuelo, origen, destino, duracion = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)

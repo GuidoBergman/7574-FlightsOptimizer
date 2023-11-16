@@ -1,15 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\filtros",
-    "\\filtros\\filtro_escalas",
+    "\\client",
+    "\\client\\comun",
+    "\\filtros\\filtro_distancia",
+    "\\filtros\\filtro_distancia\\comun",
     "\\filtros\\filtro_escalas\\comun",
-    "\\filtros\\filtro_velocidad",
     "\\filtros\\filtro_velocidad\\comun",
     "\\protocolos",
-    "\\protocolos\\modelo",
-    "\\rabbitmq"
+    "\\server",
+    "\\server\\comun"
   ],
-  "SelectedNode": "\\protocolos\\protocolovelocidad.py",
+  "SelectedNode": "\\protocolos\\protocolofiltroprecio.py",
   "PreviewInSolutionExplorer": false
 }

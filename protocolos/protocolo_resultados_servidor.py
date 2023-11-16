@@ -20,7 +20,7 @@ from protocolo_resultados_cliente import (TAMANIO_IDENTIFICADOR_RESULTADO,
 
 COLA_RESULTADOS = 'cola_resultados'
 STRING_ENCODING = 'utf-8'
-CANT_TIPOS_RESULTADO = 2
+CANT_TIPOS_RESULTADO = 3
 
 class ProtocoloResultadosServidor:
 
@@ -129,17 +129,14 @@ class ProtocoloResultadosServidor:
     def enviar_fin_resultados_rapidos(self, id_cliente):
         self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_RAPIDOS.encode(STRING_ENCODING))
 
-    def enviar_fin_resultados_distancia(self):
-        self._colas.enviar_mensaje(self._nombre_cola, IDENTIFICADOR_FIN_DISTANCIA.encode(STRING_ENCODING))
+    def enviar_fin_resultados_distancia(self, id_cliente):
+        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_DISTANCIA.encode(STRING_ENCODING))
 
     def enviar_fin_resultados_escalas(self, id_cliente):
         self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_ESCALAS.encode(STRING_ENCODING))
     
-    def enviar_fin_resultados_filtro_precio(self):
-        self._colas.enviar_mensaje(self._nombre_cola, IDENTIFICADOR_FIN_PRECIO.encode(STRING_ENCODING))
-
-
-   
+    def enviar_fin_resultados_filtro_precio(self, id_cliente):
+        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_PRECIO.encode(STRING_ENCODING))
        
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.error('Sigterm recibida (enviador resultados)')

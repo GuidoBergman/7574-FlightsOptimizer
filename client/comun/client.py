@@ -15,7 +15,8 @@ from protocolo_resultados_cliente import (ProtocoloResultadosCliente,
 from multiprocessing import Process
 from comun.enviador_vuelos import EnviadorVuelos
 
-CANT_TIPOS_RESULTADO = 2
+CANT_TIPOS_RESULTADO = 3
+CHUNK_AEROPUERTOS = 300
 
 class Client:
     def __init__(self, host, port, archivo_aeropuertos, archivo_vuelos ):
@@ -30,6 +31,7 @@ class Client:
 
 
     def _enviar_aeropuertos(self, nombre_archivo: str):
+        aeropuertos = []
         with open('/data/' + nombre_archivo, 'r', encoding='utf-8') as archivo:
             next(archivo)  # Saltar la primera línea con encabezados
             for linea in archivo:
@@ -40,8 +42,14 @@ class Client:
                     longitud = float(campos[6])  # Longitude
 
                     aeropuerto = Aeropuerto(codigo, latitud, longitud)
-                    self._protocolo.enviar_aeropuerto(aeropuerto)
-
+                    aeropuertos.append(aeropuerto)
+                    if (len(aeropuertos) > CHUNK_AEROPUERTOS):
+                        self._protocolo.enviar_aeropuertos(aeropuertos)
+                        aeropuertos = []
+        
+        if (len(aeropuertos) > 0):
+            self._protocolo.enviar_aeropuertos(aeropuertos)
+            aeropuertos = []
         self._protocolo.enviar_fin_aeropuertos()
 
     def _recibir_resultados(self):
