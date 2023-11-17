@@ -4,16 +4,18 @@ from geopy.distance import geodesic
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from modelo.Vuelo import Vuelo
-
+from multiprocessing import Process
 
 
 from protocolofiltrodistancia import ProtocoloFiltroDistancia
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from modelo.Aeropuerto import Aeropuerto
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
+from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_FILTRO_DISTANCIA
+from socket_comun_udp import SocketComunUDP
 
 class FiltroDistancia:
-    def __init__(self, id):
+    def __init__(self, id, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroDistancia()
        self._protocoloResultado = ProtocoloResultadosServidor()
@@ -22,7 +24,11 @@ class FiltroDistancia:
        self.vuelos_procesados = 0
        self.aeropuertos_procesados = 0
        self._id = id
-       
+       socket = SocketComunUDP()
+       self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+        IDENTIFICADOR_FILTRO_DISTANCIA, periodo_heartbeat, id)
+
+      
         
 
     def procesar_aeropuerto(self, id_cliente, aeropuertos_nuevos):
@@ -76,12 +82,25 @@ class FiltroDistancia:
         return int(distancia)
     
     def run(self):
-          logging.info(f'Iniciando Filtro Distancia')  
+        try:
+          logging.info(f'Iniciando Filtro Distancia')
+          self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
+          self._handle_protocolo_heartbeat.start()
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_aeropuerto, self.procesar_finaeropuerto)
-          
+        except:
+            if self._handle_protocolo_heartbeat:
+                self._handle_protocolo_heartbeat.terminate()
+                self._handle_protocolo_heartbeat.join()
+        
 
     def sigterm_handler(self, _signo, _stack_frame):
         logging.info('SIGTERM recibida')
         self._protocolo.cerrar()
         self._protocoloResultado.cerrar()
+        if self._protocolo_heartbeat:
+            self._protocolo_heartbeat.cerrar()
+
+        if self._handle_protocolo_heartbeat:
+            self._handle_protocolo_heartbeat.terminate()
+            self._handle_protocolo_heartbeat.join()
         

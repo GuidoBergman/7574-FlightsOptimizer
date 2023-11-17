@@ -72,6 +72,7 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID=1
+      - CANT_WATCHDOGS=1
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -156,6 +157,29 @@ services:
       - type: bind
         source: ./data
         target: /data
+
+  watchdog1:
+    container_name: watchdog1
+    image: watchdog:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO      
+      - CANT_FILTROS_ESCALAS=1
+      - CANT_FILTROS_DISTANCIA=1
+      - CANT_FILTROS_VELOCIDAD=1
+      - CANT_FILTROS_PRECIO=1
+      - CANT_WATCHDOGS=1
+      - ID=1
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./watchdog/config.ini
+        target: /config.ini
 
 networks:
   testing_net:
