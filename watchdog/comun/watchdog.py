@@ -5,8 +5,9 @@ from protocolo_recibir_heartbeat import (ProtocoloRecibirHeartbeat,
     IDENTIFICADOR_FILTRO_DISTANCIA, IDENTIFICADOR_FILTRO_PRECIO, IDENTIFICADOR_CALCULADOR_PROMEDIO,
     IDENTIFIFICADOR_WATCHDOG, STATUS_OK, STATUS_TIMEOUT)
 from socket_comun_udp import SocketComunUDP
-from time import time, sleep
+from time import time
 
+from multiprocessing import Process
 
 from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat
 
@@ -23,6 +24,7 @@ class Watchdog:
     def __init__(self, timeout_un_mensaje, max_timeout, id, 
     cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio,
     cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
         socket = SocketComunUDP()
         socket.bind('', port_watchdog)
         socket.set_timeout(timeout_un_mensaje)
@@ -31,8 +33,16 @@ class Watchdog:
         self._max_timeout = max_timeout
         self._id = id
         self._cant_watchdogs = cant_watchdogs
-        self._periodo_heartbeat = periodo_heartbeat
 
+        self._crear_timestamps_ultimos_heartbeats(cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, 
+            cant_filtros_precio, cant_watchdogs)
+        
+        self._protocolo_enviar = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+        IDENTIFIFICADOR_WATCHDOG, periodo_heartbeat, id)
+
+
+    def _crear_timestamps_ultimos_heartbeats(self, cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, 
+        cant_filtros_precio, cant_watchdogs):
         self._timestamps_ultimos_heartbeats = {}
         timestamp = time()
         self._timestamps_ultimos_heartbeats[IDENTIFICADOR_SERVER] = timestamp
@@ -47,23 +57,29 @@ class Watchdog:
             self._timestamps_ultimos_heartbeats[IDENTIFICADOR_FILTRO_PRECIO + str(i)] = timestamp
         for i in range(1, cant_watchdogs+1):
             if i != id:
-                self._timestamps_ultimos_heartbeats[IDENTIFIFICADOR_WATCHDOG + str(i)] = timestamp
-        
-        self._protocolo_enviar = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
-        IDENTIFIFICADOR_WATCHDOG, periodo_heartbeat, id)
-
-
-       
+                self._timestamps_ultimos_heartbeats[IDENTIFIFICADOR_WATCHDOG + str(i)] = timestamp  
         
         
     def run(self):
           logging.info(f"Iniciando watchdog")  
+          try:
+            self._handle_protocolo_enviar = Process(target=self._protocolo_enviar.enviar_heartbeats)  
+            self._handle_protocolo_enviar.start()
+            self._run()
+          except:
+            if self._handle_protocolo_enviar:
+                self._handle_protocolo_enviar.terminate()
+                self._handle_protocolo_enviar.join()
+
+
+
+
+
+    def _run(self):
           while True:
-            timestamp_incio_vuelta = time()
-            self._protocolo_enviar.enviar_heartbeat(self._id)
             estado, identificador_tipo, numero = self._protocolo_recibir.recibir_hearbeat()
             if estado == STATUS_OK:
-                logging.info(f"Recibí un heartbeat  | identificador tipo: {identificador_tipo} | numero: {numero}")
+                logging.debug(f"Recibí un heartbeat  | identificador tipo: {identificador_tipo} | numero: {numero}")
                 timestamp = time()
 
                 if numero:
@@ -76,9 +92,6 @@ class Watchdog:
 
             self._revivir_muertos()
             
-            duracion_vuelta = time() - timestamp_incio_vuelta
-            if duracion_vuelta < self._periodo_heartbeat:
-                sleep(self._periodo_heartbeat - duracion_vuelta)
             
 
 
@@ -134,4 +147,11 @@ class Watchdog:
         logging.error('SIGTERM recibida')
         self._protocolo_enviar.cerrar()
         self._protocolo_recibir.cerrar()
+
+        if self._protocolo_enviar:
+            self._protocolo_enviar.cerrar()
+
+        if self._handle_protocolo_enviar:
+            self._handle_protocolo_enviar.terminate()
+            self._handle_protocolo_enviar.join()
         
