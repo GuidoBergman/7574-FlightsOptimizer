@@ -23,7 +23,6 @@ def initialize_config():
     config_params = {}
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
-        config_params["port"] = int(os.getenv('PORT', config["DEFAULT"]["PORT"]))
         config_params["timeout_un_mensaje"] = int(os.getenv('TIMEOUT_UN_MENSAJE', config["DEFAULT"]["TIMEOUT_UN_MENSAJE"]))
         config_params["max_timeout"] = int(os.getenv('MAX_TIMEOUT', config["DEFAULT"]["MAX_TIMEOUT"]))
         config_params["id"] = int(os.getenv('ID', config["DEFAULT"]["ID"]))
@@ -32,6 +31,10 @@ def initialize_config():
         config_params["cant_filtros_velocidad"] = int(os.getenv('CANT_FILTROS_VELOCIDAD', config["DEFAULT"]["CANT_FILTROS_VELOCIDAD"]))
         config_params["cant_filtros_precio"] = int(os.getenv('CANT_FILTROS_PRECIO', config["DEFAULT"]["CANT_FILTROS_PRECIO"]))
         config_params["cant_watchdogs"] = int(os.getenv('CANT_WATCHDOGS', config["DEFAULT"]["CANT_WATCHDOGS"]))
+        config_params["cant_watchdogs"] = int(os.getenv('CANT_WATCHDOGS', config["DEFAULT"]["CANT_WATCHDOGS"]))
+        config_params["periodo_heartbeat"] = int(os.getenv('PERIODO_HEARTBEAT', config["DEFAULT"]["PERIODO_HEARTBEAT"]))
+        config_params["host_watchdog"] = os.getenv('HOST_WATCHDOG', config["DEFAULT"]["HOST_WATCHDOG"])
+        config_params["port_watchdog"] = int(os.getenv('PORT_WATCHDOG', config["DEFAULT"]["PORT_WATCHDOG"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -43,7 +46,6 @@ def initialize_config():
 def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"]    
-    port = config_params["port"] 
     timeout_un_mensaje = config_params["timeout_un_mensaje"] 
     max_timeout = config_params["max_timeout"]
     id = config_params["id"]
@@ -52,6 +54,12 @@ def main():
     cant_filtros_velocidad = config_params["cant_filtros_velocidad"] 
     cant_filtros_precio = config_params["cant_filtros_precio"] 
     cant_watchdogs = config_params["cant_watchdogs"] 
+    cant_watchdogs = config_params["cant_watchdogs"]
+    periodo_heartbeat = config_params["periodo_heartbeat"]
+    host_watchdog = config_params["host_watchdog"] 
+    port_watchdog = config_params["port_watchdog"] 
+
+
 
 
 
@@ -60,8 +68,9 @@ def main():
 
 
     # Initialize server and start server loop
-    watchdog = Watchdog(port, timeout_un_mensaje, max_timeout, id, 
-        cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio, cant_watchdogs)
+    watchdog = Watchdog(timeout_un_mensaje, max_timeout, id, 
+        cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio,
+        cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog)
     watchdog.run()
 
 def initialize_log(logging_level):

@@ -7,9 +7,13 @@ from modelo.estado import Estado
 from modelo.Vuelo import Vuelo
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 
+from multiprocessing import Process
+from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_CALCULADOR_PROMEDIO
+from socket_comun_udp import SocketComunUDP
+
 
 class CalculadorPromedio:
-    def __init__(self, cant_filtros_precio):
+    def __init__(self, cant_filtros_precio, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
        self._protocolo = ProtocoloFiltroPrecio()
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.corriendo = True
@@ -17,6 +21,10 @@ class CalculadorPromedio:
        self.promedio = 0.0
        self.cantidad = 0
        self.recibidos = 0
+
+       socket = SocketComunUDP()
+       self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+        IDENTIFICADOR_CALCULADOR_PROMEDIO, periodo_heartbeat)
         
         
     def procesar_promedio(self, promedio: float, cantidad: int):
@@ -37,10 +45,24 @@ class CalculadorPromedio:
         
     def run(self):
           logging.info(f"Iniciando promedios")  
-          self._protocolo.iniciar_promedio(self.procesar_promedio)
+          try:
+            self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
+            self._handle_protocolo_heartbeat.start()
+            self._protocolo.iniciar_promedio(self.procesar_promedio)
+          except:
+            if self._handle_protocolo_heartbeat:
+                self._handle_protocolo_heartbeat.terminate()
+                self._handle_protocolo_heartbeat.join()
           
     
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('SIGTERM recibida')
         self._protocolo.cerrar()
+
+        if self._protocolo_heartbeat:
+            self._protocolo_heartbeat.cerrar()
+
+        if self._handle_protocolo_heartbeat:
+            self._handle_protocolo_heartbeat.terminate()
+            self._handle_protocolo_heartbeat.join()
         

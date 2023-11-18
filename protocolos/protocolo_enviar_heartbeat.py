@@ -34,7 +34,7 @@ class ProtocoloEnviarHeartbeat:
     
 
 
-    def _enviar_heartbeat(self):
+    def enviar_heartbeat(self, evitar_id=None):
         formato_mensaje = FORMATO_MENSAJE
         tamanio_mensaje = calcsize(formato_mensaje)
         msg = pack(formato_mensaje,
@@ -42,19 +42,24 @@ class ProtocoloEnviarHeartbeat:
         )
 
         for i in range(1, self._cant_watchdogs + 1):
-            try:
+            if evitar_id and i == evitar_id:
+                continue
+            try:                
                 estado = self._socket.send(msg, tamanio_mensaje, (self._host_watchdog + str(i), self._port_watchdog))
+                if estado == STATUS_ERR:
+                    logging.error(f"Error al enviar heartbeat al watchdog {i}")
+                    return STATUS_ERR
             except Exception:
                 logging.error(f"Error al enviar heartbeat al watchdog {i}")
-            if estado == STATUS_ERR:
-                logging.error(f"Error al enviar heartbeat al watchdog {i}")
-                return STATUS_ERR
+
+            logging.info(f'Se envió el heartbeat al watchdog{i}')
+            
 
         return STATUS_OK
 
     def enviar_heartbeats(self):
         while self._seguir_corriendo:
-            estado = self._enviar_heartbeat()
+            estado = self.enviar_heartbeat()
             sleep(self._periodo)
 
     def cerrar(self):

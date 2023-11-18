@@ -31,6 +31,12 @@ def initialize_config():
         config_params["cant_filtros_distancia"] = int(os.getenv('CANT_FILTROS_DISTANCIA', config["DEFAULT"]["CANT_FILTROS_DISTANCIA"]))
         config_params["cant_filtros_velocidad"] = int(os.getenv('CANT_FILTROS_VELOCIDAD', config["DEFAULT"]["CANT_FILTROS_VELOCIDAD"]))
         config_params["cant_filtros_precio"] = int(os.getenv('CANT_FILTROS_PRECIO', config["DEFAULT"]["CANT_FILTROS_PRECIO"]))
+        config_params["cant_watchdogs"] = int(os.getenv('CANT_WATCHDOGS', config["DEFAULT"]["CANT_WATCHDOGS"]))
+        config_params["periodo_heartbeat"] = int(os.getenv('PERIODO_HEARTBEAT', config["DEFAULT"]["PERIODO_HEARTBEAT"]))
+        config_params["host_watchdog"] = os.getenv('HOST_WATCHDOG', config["DEFAULT"]["HOST_WATCHDOG"])
+        config_params["port_watchdog"] = int(os.getenv('PORT_WATCHDOG', config["DEFAULT"]["PORT_WATCHDOG"]))
+
+
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -50,6 +56,10 @@ def main():
     cant_filtros_distancia = config_params["cant_filtros_distancia"]
     cant_filtros_velocidad = config_params["cant_filtros_velocidad"] 
     cant_filtros_precio = config_params["cant_filtros_precio"] 
+    cant_watchdogs = config_params["cant_watchdogs"]
+    periodo_heartbeat = config_params["periodo_heartbeat"]
+    host_watchdog = config_params["host_watchdog"] 
+    port_watchdog = config_params["port_watchdog"] 
     
 
 
@@ -64,7 +74,8 @@ def main():
 
     # Initialize server and start server loop
     server = Server(port, listen_backlog, cant_handlers, cant_filtros_escalas,
-    cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio)
+    cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio, 
+    cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog)
     server.run()
 
 def initialize_log(logging_level):

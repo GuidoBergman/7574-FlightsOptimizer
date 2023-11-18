@@ -7,9 +7,13 @@ from protocolovelocidad import ProtocoloFiltroVelocidad
 from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
+from multiprocessing import Process
+from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_FILTRO_VELOCIDAD
+from socket_comun_udp import SocketComunUDP
+
 
 class FiltroVelocidad:
-    def __init__(self, id, cant_filtros_escalas):
+    def __init__(self, id, cant_filtros_escalas, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
        self._protocolo = ProtocoloFiltroVelocidad()       
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_mas_rapido_cliente = {}
@@ -18,6 +22,10 @@ class FiltroVelocidad:
        self._cant_filtros_escalas = cant_filtros_escalas
        self.vuelos_procesados = 0       
        self.resultados_enviados = 0
+
+       socket = SocketComunUDP()
+       self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+        IDENTIFICADOR_FILTRO_VELOCIDAD, periodo_heartbeat, id)
  
 
         
@@ -86,7 +94,14 @@ class FiltroVelocidad:
         
     def run(self):        
           logging.info("Iniciando filtro velocidad") 
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas) 
+          try:
+            self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
+            self._handle_protocolo_heartbeat.start()
+            self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas) 
+          except:
+            if self._handle_protocolo_heartbeat:
+                self._handle_protocolo_heartbeat.terminate()
+                self._handle_protocolo_heartbeat.join()
 
  
            
@@ -95,3 +110,10 @@ class FiltroVelocidad:
         self._protocolo.cerrar()
         if self._protocoloResultado:
             self._protocoloResultado.cerrar()
+
+        if self._protocolo_heartbeat:
+            self._protocolo_heartbeat.cerrar()
+
+        if self._handle_protocolo_heartbeat:
+            self._handle_protocolo_heartbeat.terminate()
+            self._handle_protocolo_heartbeat.join()
