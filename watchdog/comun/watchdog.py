@@ -69,9 +69,7 @@ class Watchdog:
             self._run()
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
-            if self._handle_protocolo_enviar and self._handle_protocolo_enviar.is_alive():
-                self._handle_protocolo_enviar.terminate()
-                self._handle_protocolo_enviar.join()
+            self.cerrar()
 
 
 
@@ -144,6 +142,11 @@ class Watchdog:
     
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('SIGTERM recibida')
+        self.cerrar()
+        
+
+    def cerrar(self):
+        logging.error('Ejecutando cerrar')
         self._protocolo_enviar.cerrar()
         self._protocolo_recibir.cerrar()
 
