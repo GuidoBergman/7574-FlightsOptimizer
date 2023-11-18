@@ -1,5 +1,4 @@
 from ast import Import
-import threading
 import chunk
 import logging
 import signal
@@ -10,6 +9,8 @@ from socket_comun import SocketComun
 from comun.sesioncliente import SesionCliente
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
+from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_SERVER
+from socket_comun_udp import SocketComunUDP
 
 
 
@@ -29,17 +30,29 @@ class Server:
         self._cant_filtros_velocidad = cant_filtros_velocidad
         self._cant_filtros_precio = cant_filtros_precio
         self._hilos_cliente = []
-        self._corriendo = True;
+        self._corriendo = True
+
+        socket = SocketComunUDP()
+        self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+            IDENTIFICADOR_SERVER, periodo_heartbeat)
+ 
         
 
         
 
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('sigterm_received')        
-        self._corriendo = False;
+        self._corriendo = False
         if self._server_socket:
             self._server_socket.close()
             logging.info('Cerrando socket server')
+
+        if self._protocolo_heartbeat:
+            self._protocolo_heartbeat.cerrar()
+
+        if self._handle_protocolo_heartbeat and self._protocolo_heartbeat.is_alive():
+            self._handle_protocolo_heartbeat.terminate()
+            self._handle_protocolo_heartbeat.join()
         
     def borrar_hilos_clientes(self):
         # Verificar los hilos que han terminado y unirlos
@@ -58,9 +71,13 @@ class Server:
     def run(self):
         try:
             logging.info('Iniciando servidor')
+            self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
+            self._handle_protocolo_heartbeat.start()
             self._run()
-        except (ConnectionResetError, BrokenPipeError, OSError):
-            return
+        except:
+            if self._handle_protocolo_heartbeat:
+                self._handle_protocolo_heartbeat.terminate()
+                self._handle_protocolo_heartbeat.join()
 
 
 
@@ -86,7 +103,7 @@ class Server:
             while self._corriendo:
                 self.borrar_hilos_clientes()
                 client_sock, addr = self._server_socket.accept()
-                hilo = threading.Thread(target=self._crear_sesion_cliente,
+                hilo = Process(target=self._crear_sesion_cliente,
                                         args=(client_sock,))
                 hilo.start()
                 self._hilos_cliente.append(hilo)
