@@ -56,18 +56,20 @@ class Watchdog:
         for i in range(1, cant_filtros_precio+1):
             self._timestamps_ultimos_heartbeats[IDENTIFICADOR_FILTRO_PRECIO + str(i)] = timestamp
         for i in range(1, cant_watchdogs+1):
-            if i != id:
+            if i != self._id:
                 self._timestamps_ultimos_heartbeats[IDENTIFIFICADOR_WATCHDOG + str(i)] = timestamp  
         
+        logging.debug(f'Diccionario timestamps {self._timestamps_ultimos_heartbeats}')
         
     def run(self):
           logging.info(f"Iniciando watchdog")  
           try:
-            self._handle_protocolo_enviar = Process(target=self._protocolo_enviar.enviar_heartbeats)  
+            self._handle_protocolo_enviar = Process(target=self._protocolo_enviar.enviar_heartbeats, args=(self._id,))  
             self._handle_protocolo_enviar.start()
             self._run()
-          except:
-            if self._handle_protocolo_enviar:
+          except Exception as e:
+            logging.error(f'Ocurrió una excepción: {e}')
+            if self._handle_protocolo_enviar and self._handle_protocolo_enviar.is_alive():
                 self._handle_protocolo_enviar.terminate()
                 self._handle_protocolo_enviar.join()
 
@@ -129,11 +131,8 @@ class Watchdog:
     def _debo_revivirlo(self, nombre):
         # Si es un watchdog, lo revivo solo si numero es el siguiente al mio
         if nombre.startswith(NOMBRE_COMPLETO_WATCHDOG):
-            numero_watchdog = nombre[-1:]
-            if (self._id + 1) % self._cant_watchdogs == numero_watchdog:
-                return True
-            else: 
-                return False
+            numero_otro = nombre[-1:]
+            return self._id +1 == int(numero_otro) or self._id+1-self._cant_watchdogs == int(numero_otro)
         else:
             watchdog_que_lo_revive = (hash(nombre) % self._cant_watchdogs) + 1
             if watchdog_que_lo_revive == self._id:
@@ -148,10 +147,7 @@ class Watchdog:
         self._protocolo_enviar.cerrar()
         self._protocolo_recibir.cerrar()
 
-        if self._protocolo_enviar:
-            self._protocolo_enviar.cerrar()
-
-        if self._handle_protocolo_enviar:
+        if self._handle_protocolo_enviar and self._handle_protocolo_enviar.is_alive():
             self._handle_protocolo_enviar.terminate()
             self._handle_protocolo_enviar.join()
         
