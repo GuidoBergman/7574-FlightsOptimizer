@@ -6,34 +6,29 @@ from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from modelo.Vuelo import Vuelo
 from protocolofiltroprecio import ProtocoloFiltroPrecio
+from comun.promedio_cliente import PromedioCliente
 
 
 class CalculadorPromedio:
     def __init__(self, cant_filtros_precio):
-       self._protocolo = ProtocoloFiltroPrecio()
        signal.signal(signal.SIGTERM, self.sigterm_handler)
-       self.corriendo = True
+       self._protocolo = ProtocoloFiltroPrecio()
        self.cant_filtros_precio = cant_filtros_precio
-       self.promedio = 0.0
-       self.cantidad = 0
-       self.recibidos = 0
+       self.corriendo = True
+       self.promedios = {}
         
-        
-    def procesar_promedio(self, promedio: float, cantidad: int):
-        if cantidad > 0:
-            parte_actual = self.cantidad / (self.cantidad + cantidad)
-            parte_nueva = cantidad / (self.cantidad + cantidad)
-            npromedio = (self.promedio * parte_actual) + (promedio * parte_nueva)        
-            self.promedio = npromedio
-            self.cantidad += cantidad
-        
-        self.recibidos += 1
-        
-        logging.info(f"Procesa promedio: {self.recibidos} / {self.cant_filtros_precio} | promedio {self.promedio} cantidad {self.cantidad}")
-        if (self.recibidos >= self.cant_filtros_precio):
-            logging.info(f"Envia promedio: {self.promedio}")
-            self._protocolo.enviar_promediogeneral(self.promedio)
-        
+    def procesar_promedio(self, id_cliente, promedio: float, cantidad: int):
+        logging.info(f"Procesa promedio Cliente  {id_cliente} | Promedio: {promedio} | Cantidad: {cantidad}")
+        if (id_cliente in self.promedios):
+            self.promedios[id_cliente].agregar(promedio, cantidad)
+        else:
+            self.promedios[id_cliente] = PromedioCliente(id_cliente, promedio, cantidad)
+            
+        promedio_cliente = self.promedios[id_cliente]
+        if (promedio_cliente.recibidos >= self.cant_filtros_precio):
+            logging.info(f"Envia promedio: {promedio_cliente.promedio}")
+            self._protocolo.enviar_promediogeneral(id_cliente, promedio_cliente.promedio)
+            del self.promedios[id_cliente]
         
     def run(self):
           logging.info(f"Iniciando promedios")  

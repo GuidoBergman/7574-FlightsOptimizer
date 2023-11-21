@@ -35,8 +35,6 @@ class SesionCliente:
                     self._cant_filtros_velocidad, self._cant_filtros_precio
                 )))            
             self._proceso_enviador.start()
-            
-
             self._protocolo_cliente = ProtocoloCliente(self._client_sock)  
             self._recibir_aeropuertos()  
             self._recibir_vuelos()
@@ -75,7 +73,7 @@ class SesionCliente:
                 logging.info(f'Cliente: {self.id_cliente} Lote de vuelos recibido: {chunk_recibidos}')
             
             # Manda los vuelos a los filtros
+            #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             self._protocoloEscalas.enviar_vuelos(vuelos_rec)
             self._protocoloDistancia.enviar_vuelos(vuelos_rec)
-            #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             

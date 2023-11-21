@@ -13,7 +13,8 @@ class FiltroVelocidad:
        self._protocolo = ProtocoloFiltroVelocidad()       
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_mas_rapido_cliente = {}
-       
+       self._fines_vuelo = 0
+        
        self._id = id
        self._cant_filtros_escalas = cant_filtros_escalas
        self.vuelos_procesados = 0       
@@ -67,6 +68,10 @@ class FiltroVelocidad:
 
     def procesar_finvuelo(self, id_cliente):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
+        self._fines_vuelo += 1
+        if self._fines_vuelo < self._cant_filtros_escalas:
+            return
+     
         logging.info(f"Procesando fin de vuelo")        
         vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
         self._protocoloResultado = ProtocoloResultadosServidor()

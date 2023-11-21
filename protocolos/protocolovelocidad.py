@@ -31,18 +31,6 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
        self._cant_filtros_velocidad = int(cant_filtros_velocidad)
     
        
-
-    def callback_function(self, body):
-        # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        if body.decode('utf-8').startswith(IDENTIFICADOR_VUELO):
-            id_cliente, vuelos = self.decodificar_vuelos(body)
-            self.procesar_vuelo(id_cliente, vuelos)
-        else:            
-            caracter, id_cliente = unpack(FORMATO_FIN_VUELO, body)            
-            self._fines_vuelo += 1
-            if self._fines_vuelo >= self._cant_filtros_escalas:
-                self.procesar_finvuelo(id_cliente.decode('utf-8'))
-
     def decodificar_vuelo(self, mensaje):        
         id_vuelo, origen, destino, duracion = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)
         vuelo = Vuelo(id_vuelo.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), 0, "", duracion.decode('utf-8'), 0)
@@ -54,7 +42,6 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
         self._cant_filtros_escalas = cant_filtros_escalas
-        self._fines_vuelo = 0
         self._colas.crear_cola_por_topico(self.nombre_cola)
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
         self._colas.consumir()
@@ -62,13 +49,15 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
     def enviar_vuelos(self, id_cliente, vuelos):
         if (len(vuelos) == 0):
             return
-        logging.info(f'Envio los vuelos a velocidad del cliente {id_cliente}')
+        #Agrupa los vuelos por filtro
         grupos_de_vuelos = {}          
         for vuelo in vuelos:
             id_filtro_velocidad = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_velocidad) + 1
             if id_filtro_velocidad not in grupos_de_vuelos:
                 grupos_de_vuelos[id_filtro_velocidad] = []
             grupos_de_vuelos[id_filtro_velocidad].append(vuelo)
+            
+        #Envia a cada filtro su mensaje
         for id_filtro, vuelosfiltro in grupos_de_vuelos.items():
             self.enviar_vuelos_filtro(id_cliente, id_filtro, vuelosfiltro)
      

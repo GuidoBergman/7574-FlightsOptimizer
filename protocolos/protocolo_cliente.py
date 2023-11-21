@@ -197,7 +197,7 @@ class ProtocoloCliente:
                     return STATUS_ERR, None
                 # Desempaquetar el mensaje y obtener el id, la latitud y la longitud de cada aeropuerto
                 id_aeropuerto, latitud, longitud = unpack(FORMATO_MENSAJE_UNAEROPUERTO, mensaje)
-                logging.info(f'Desempaca vuelo {id_aeropuerto} - {latitud} - {longitud}')
+                logging.debug(f'Desempaca vuelo {id_aeropuerto} - {latitud} - {longitud}')
                 # Crear un objeto aeropuerto con esos datos y agregarlo al vector
                 aeropuerto = Aeropuerto(id_aeropuerto.decode(STRING_ENCODING), latitud, longitud)
                 aeropuertos.append(aeropuerto)

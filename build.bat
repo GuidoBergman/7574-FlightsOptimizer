@@ -6,6 +6,6 @@
 	docker build -f ./filtros/filtro_distancia/Dockerfile -t "filtro_distancia:latest" .
 	docker build -f ./filtros/filtro_precio/Dockerfile -t "filtro_precio:latest" .
 	docker build -f ./filtros/calculador_promedio/Dockerfile -t "calculador_promedio:latest" .
-
+	docker build -f ./watchdog/Dockerfile -t "watchdog:latest" .
 	
 	docker compose -f docker-compose-dev.yaml up -d --build

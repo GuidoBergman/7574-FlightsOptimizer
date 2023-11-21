@@ -152,7 +152,7 @@ services:
       - server
     volumes:
       - type: bind
-        source: ./client/configmini.ini
+        source: ./client/config.ini
         target: /config.ini
       - type: bind
         source: ./data

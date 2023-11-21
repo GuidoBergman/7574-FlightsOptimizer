@@ -38,15 +38,6 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
        self.corriendo = False
        self.id_cliente = id_cliente
 
-    def callback_function(self, body):
-        # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.debug(f'llego mensajo VUELOS body: {body}')
-        if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
-            id_cliente, vuelos = self.decodificar_vuelos(body)
-            self.procesar_vuelo(id_cliente, vuelos)
-        else:
-            caracter, id_cliente = unpack(FORMATO_FIN, body)            
-            self.procesar_finvuelo(id_cliente.decode('utf-8'))
 
     def decodificar_vuelo(self, mensaje):        
         id_vuelo, origen, destino, distancia = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)        

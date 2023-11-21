@@ -1,16 +1,15 @@
 {
   "ExpandedNodes": [
     "",
-    "\\client",
-    "\\client\\comun",
-    "\\filtros\\filtro_distancia",
+    "\\filtros",
     "\\filtros\\filtro_distancia\\comun",
-    "\\filtros\\filtro_escalas\\comun",
+    "\\filtros\\filtro_precio",
+    "\\filtros\\filtro_precio\\comun",
     "\\filtros\\filtro_velocidad\\comun",
     "\\protocolos",
     "\\server",
     "\\server\\comun"
   ],
-  "SelectedNode": "\\protocolos\\protocolofiltroprecio.py",
+  "SelectedNode": "\\protocolos\\protocolofiltroescalas.py",
   "PreviewInSolutionExplorer": false
 }
