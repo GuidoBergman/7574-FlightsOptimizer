@@ -270,6 +270,7 @@ services:
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
 
   watchdog2:
     container_name: watchdog2
@@ -294,6 +295,7 @@ services:
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   testing_net:
