@@ -6,14 +6,14 @@ FILEPATH='docker-compose-dev.yaml'
 if len(sys.argv) < 6 or sys.argv[1] == '-h':
     print("""
     Debe ingresar las cantidades de los filtros que desea crear. 
-    El formato del comando es  \'createDockerCompose.py <cant handlers server>  <cant filtro escalas> <cant filtro distancia> <cant filtro rapidos> <cant filtro precio>\'
-    Ej: el comando \'createDockerCompose.py 1 2 3 4 5\' creara:
+    El formato del comando es  \'createDockerCompose.py <cant handlers server>  <cant filtro escalas> <cant filtro distancia> <cant filtro rapidos> <cant filtro precio> <cant watchdogs>\'
+    Ej: el comando \'createDockerCompose.py 1 2 3 4 5 6\' creara:
       - 1 handlers para el server
       - 2 filtros de escalas
       - 3 filtros de distancia
       - 4 filtros de vuelos rápidos
       - 5 filtros de estadisticas de precios
-    
+      - 6 watchdogs
     """)
     exit()
 
@@ -23,6 +23,7 @@ cantEscalas = int(sys.argv[2])
 cantDistancias = int(sys.argv[3])
 cantRapidos = int(sys.argv[4])
 cantPrecios = int(sys.argv[5])
+cantWatchdogs = int(sys.argv[6])
     
 
 
@@ -73,6 +74,7 @@ server = f"""
       - CANT_FILTROS_DISTANCIA={cantDistancias}
       - CANT_FILTROS_VELOCIDAD={cantRapidos}
       - CANT_FILTROS_PRECIO={cantPrecios}
+      - CANT_WATCHDOGS={cantWatchdogs}
     depends_on:
 {serverDependencies}
     networks:
@@ -112,6 +114,7 @@ for i in range(1, cantEscalas+1):
       - LOGGING_LEVEL=INFO
       - ID={i}
       - CANT_FILTROS_VELOCIDAD={cantRapidos}
+      - CANT_WATCHDOGS={cantWatchdogs}
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -132,6 +135,7 @@ for i in range(1, cantDistancias+1):
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID={i}
+      - CANT_WATCHDOGS={cantWatchdogs}
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -154,6 +158,7 @@ for i in range(1, cantRapidos+1):
       - LOGGING_LEVEL=INFO
       - ID={i}
       - CANT_FILTROS_ESCALAS={cantEscalas}
+      - CANT_WATCHDOGS={cantWatchdogs}
     depends_on:
       - calculador_promedio
     networks:
@@ -173,6 +178,7 @@ for i in range(1, cantPrecios+1):
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
       - ID={i}
+      - CANT_WATCHDOGS={cantWatchdogs}
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -183,6 +189,34 @@ for i in range(1, cantPrecios+1):
         source: ./filtros/filtro_precio/config.ini
         target: /config.ini
     """
+
+watchdogs=''
+for i in range(1, cantWatchdogs+1):
+  watchdogs += f"""
+  watchdog{i}:
+    container_name: watchdog{i}
+    image: watchdog:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=INFO      
+      - CANT_FILTROS_ESCALAS={cantEscalas}
+      - CANT_FILTROS_DISTANCIA={cantDistancias}
+      - CANT_FILTROS_VELOCIDAD={cantRapidos}
+      - CANT_FILTROS_PRECIO={cantPrecios}
+      - CANT_WATCHDOGS={cantWatchdogs}
+      - ID={i}
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./watchdog/config.ini
+        target: /config.ini
+"""
+
 
 cliente = """
   client:
@@ -215,6 +249,7 @@ calculadorPromedio = f"""
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO      
       - CANT_FILTROS_PRECIO={cantPrecios}
+      - CANT_WATCHDOGS={cantWatchdogs}
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -228,7 +263,7 @@ calculadorPromedio = f"""
 
 dockerComposeFile = open(FILEPATH, 'w')
 fileContent = [textInitialConfig, textRabbitConfig, server, filtros, calculadorPromedio,
-                cliente, textNetworkConfig]
+                cliente, watchdogs, textNetworkConfig]
 
 dockerComposeFile.writelines(fileContent)
  

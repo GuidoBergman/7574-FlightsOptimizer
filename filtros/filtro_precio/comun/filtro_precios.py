@@ -13,16 +13,25 @@ from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 
+from multiprocessing import Process
+from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_FILTRO_PRECIO
+from socket_comun_udp import SocketComunUDP
 
 REGISTROS_EN_MEMORIA = 1000
 
 class FiltroPrecios:
     
-    def __init__(self, id):
+    def __init__(self, id, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
        self._protocolo = ProtocoloFiltroPrecio()
        self._id = id
        self.inicialar()   
        self.corriendo = True
+
+       signal.signal(signal.SIGTERM, self.sigterm_handler)
+
+       socket = SocketComunUDP()
+       self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+        IDENTIFICADOR_FILTRO_PRECIO, periodo_heartbeat, id)
        
     def inicialar(self):
        self.archivos_por_trayecto = {}
@@ -135,13 +144,32 @@ class FiltroPrecios:
         self.borrar_archivos(id_cliente)
 
     def run(self):
+        try:
+          self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
+          self._handle_protocolo_heartbeat.start()
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral, self._id)
+        except Exception as e:
+            logging.error(f'Ocurrió una excepción: {e}')
+            self.cerrar()
           
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.info('SIGTERM recibida')
+        logging.error('SIGTERM recibida')
+        self.cerrar()
+        
+
+    def cerrar(self):
+        logging.error('Cerrando recursos')
         self._protocolo.cerrar()
-        if self._protocoloResultado:
+        if hasattr(self, '_protocoloResultado'):
             self._protocoloResultado.cerrar()
 
         self.cerrar_archivos()
+
+        if hasattr(self, '_protocolo_heartbeat'):
+            self._protocolo_heartbeat.cerrar()
+
+        if hasattr(self, '_handle_protocolo_heartbeat'):
+            if self._handle_protocolo_heartbeat.is_alive():
+                self._handle_protocolo_heartbeat.terminate()
+            self._handle_protocolo_heartbeat.join()

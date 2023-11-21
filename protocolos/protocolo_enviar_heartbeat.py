@@ -34,7 +34,7 @@ class ProtocoloEnviarHeartbeat:
     
 
 
-    def _enviar_heartbeat(self):
+    def enviar_heartbeat(self, evitar_id=None):
         formato_mensaje = FORMATO_MENSAJE
         tamanio_mensaje = calcsize(formato_mensaje)
         msg = pack(formato_mensaje,
@@ -42,24 +42,31 @@ class ProtocoloEnviarHeartbeat:
         )
 
         for i in range(1, self._cant_watchdogs + 1):
-            try:
-                estado = self._socket.send(msg, tamanio_mensaje, (self._host_watchdog + str(i), self._port_watchdog))
-            except Exception:
-                logging.error(f"Error al enviar heartbeat al watchdog {i}")
+            estado = STATUS_OK
+            if evitar_id and i == evitar_id:
+                continue
+
+            estado = self._socket.send(msg, tamanio_mensaje, (self._host_watchdog + str(i), self._port_watchdog))
             if estado == STATUS_ERR:
-                logging.error(f"Error al enviar heartbeat al watchdog {i}")
-                return STATUS_ERR
+                    logging.error(f"Error al enviar heartbeat al watchdog{i}")
+                    estado = STATUS_ERR
+                    continue
 
-        return STATUS_OK
+            logging.info(f'Se envio el heartbeat al watchdog{i}')
 
-    def enviar_heartbeats(self):
+        return estado
+
+    def enviar_heartbeats(self, evitar_id=None):
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
         while self._seguir_corriendo:
-            estado = self._enviar_heartbeat()
+            estado = self.enviar_heartbeat(evitar_id)
             sleep(self._periodo)
 
     def cerrar(self):
+        logging.info('Cerrando socket (protocolo enviar heartbeat)')
+        self._seguir_corriendo = False
         self._socket.close()
 
     def sigterm_handler(self, _signo, _stack_frame):
-        self._seguir_corriendo = False
-        self._cerrar()
+        logging.info('SIGERM recibida (protocolo enviar heartbeat)')
+        self.cerrar()

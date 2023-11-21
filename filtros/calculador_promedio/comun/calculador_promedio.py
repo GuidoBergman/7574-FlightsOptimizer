@@ -8,34 +8,67 @@ from modelo.Vuelo import Vuelo
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 from comun.promedio_cliente import PromedioCliente
 
+from multiprocessing import Process
+from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_CALCULADOR_PROMEDIO
+from socket_comun_udp import SocketComunUDP
+
 
 class CalculadorPromedio:
-    def __init__(self, cant_filtros_precio):
+    def __init__(self, cant_filtros_precio, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
+       self._protocolo = ProtocoloFiltroPrecio()
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroPrecio()
        self.cant_filtros_precio = cant_filtros_precio
-       self.corriendo = True
-       self.promedios = {}
+       self.promedio = 0.0
+       self.cantidad = 0
+       self.recibidos = 0
+
+       socket = SocketComunUDP()
+       self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
+        IDENTIFICADOR_CALCULADOR_PROMEDIO, periodo_heartbeat)
         
-    def procesar_promedio(self, id_cliente, promedio: float, cantidad: int):
-        logging.info(f"Procesa promedio Cliente  {id_cliente} | Promedio: {promedio} | Cantidad: {cantidad}")
-        if (id_cliente in self.promedios):
-            self.promedios[id_cliente].agregar(promedio, cantidad)
-        else:
-            self.promedios[id_cliente] = PromedioCliente(id_cliente, promedio, cantidad)
-            
-        promedio_cliente = self.promedios[id_cliente]
-        if (promedio_cliente.recibidos >= self.cant_filtros_precio):
-            logging.info(f"Envia promedio: {promedio_cliente.promedio}")
-            self._protocolo.enviar_promediogeneral(id_cliente, promedio_cliente.promedio)
-            del self.promedios[id_cliente]
+        
+    def procesar_promedio(self, promedio: float, cantidad: int):
+        if cantidad > 0:
+            parte_actual = self.cantidad / (self.cantidad + cantidad)
+            parte_nueva = cantidad / (self.cantidad + cantidad)
+            npromedio = (self.promedio * parte_actual) + (promedio * parte_nueva)        
+            self.promedio = npromedio
+            self.cantidad += cantidad
+        
+        self.recibidos += 1
+        
+        logging.info(f"Procesa promedio: {self.recibidos} / {self.cant_filtros_precio} | promedio {self.promedio} cantidad {self.cantidad}")
+        if (self.recibidos >= self.cant_filtros_precio):
+            logging.info(f"Envia promedio: {self.promedio}")
+            self._protocolo.enviar_promediogeneral(self.promedio)
+        
         
     def run(self):
           logging.info(f"Iniciando promedios")  
-          self._protocolo.iniciar_promedio(self.procesar_promedio)
+          try:
+            self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
+            self._handle_protocolo_heartbeat.start()
+            self._protocolo.iniciar_promedio(self.procesar_promedio)
+          except Exception as e:
+            logging.error(f'Ocurrió una excepción: {e}')
+            self.cerrar()
           
     
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('SIGTERM recibida')
+        self.cerrar()
+        
+
+    def cerrar(self):
+        logging.error('Cerrando recursos')
         self._protocolo.cerrar()
+
+        if hasattr(self, '_protocolo_heartbeat'):
+            self._protocolo_heartbeat.cerrar()
+
+        if hasattr(self, '_handle_protocolo_heartbeat'):
+            if self._handle_protocolo_heartbeat.is_alive():
+                self._handle_protocolo_heartbeat.terminate()
+            self._handle_protocolo_heartbeat.join()
         

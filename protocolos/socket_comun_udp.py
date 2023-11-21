@@ -33,6 +33,12 @@ class SocketComunUDP:
         return STATUS_OK, buffer
 
     def send(self, buffer, size, address):
+        try:
+            self._send(buffer, size, address)
+        except socket.gaierror:
+            return STATUS_ERR, None
+
+    def _send(self, buffer, size, address):
         sent_bytes = 0
         while sent_bytes < size:
             sent = self._socket.sendto(buffer, address)
