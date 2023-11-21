@@ -73,7 +73,10 @@ class ManejadorColas:
             return
 
     def consumir(self):
-       self._channel.start_consuming()
+        try:
+           self._channel.start_consuming()
+        except (pika.exceptions.ConnectionClosedByBroker, pika.exceptions.StreamLostError, pika.exceptions.ChannelWrongStateError):
+            logging.error('Conexión perdida')
 
     def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
         self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
@@ -87,9 +90,12 @@ class ManejadorColas:
         try:
             logging.debug(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
             self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
-        except pika.exceptions.ConnectionClosedByBroker:
+        except (pika.exceptions.ConnectionClosedByBroker, pika.exceptions.StreamLostError, pika.exceptions.ChannelWrongStateError):
             logging.error('Error al enviar mensaje, se cerró la conexión')
 
     def cerrar(self):
-        self._channel.close()
+        try:
+            self._channel.close()
+        except:
+            pass
 

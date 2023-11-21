@@ -27,6 +27,8 @@ class FiltroPrecios:
        self.inicialar()   
        self.corriendo = True
 
+       signal.signal(signal.SIGTERM, self.sigterm_handler)
+
        socket = SocketComunUDP()
        self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
         IDENTIFICADOR_FILTRO_PRECIO, periodo_heartbeat, id)
@@ -161,23 +163,28 @@ class FiltroPrecios:
           self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
           self._handle_protocolo_heartbeat.start()
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral, self._id)
-        except:
-            if self._handle_protocolo_heartbeat:
-                self._handle_protocolo_heartbeat.terminate()
-                self._handle_protocolo_heartbeat.join()
+        except Exception as e:
+            logging.error(f'Ocurrió una excepción: {e}')
+            self.cerrar()
           
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.info('SIGTERM recibida')
+        logging.error('SIGTERM recibida')
+        self.cerrar()
+        
+
+    def cerrar(self):
+        logging.error('Cerrando recursos')
         self._protocolo.cerrar()
-        if self._protocoloResultado:
+        if hasattr(self, '_protocoloResultado'):
             self._protocoloResultado.cerrar()
 
         self.cerrar_archivos()
 
-        if self._protocolo_heartbeat:
+        if hasattr(self, '_protocolo_heartbeat'):
             self._protocolo_heartbeat.cerrar()
 
-        if self._handle_protocolo_heartbeat:
-            self._handle_protocolo_heartbeat.terminate()
+        if hasattr(self, '_handle_protocolo_heartbeat'):
+            if self._handle_protocolo_heartbeat.is_alive():
+                self._handle_protocolo_heartbeat.terminate()
             self._handle_protocolo_heartbeat.join()

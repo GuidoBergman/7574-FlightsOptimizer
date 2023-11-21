@@ -9,6 +9,7 @@ from multiprocessing import Process
 from socket_comun import SocketComun
 from comun.enviador_fin import EnviadorFin
 from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
+import signal
 
 class SesionCliente:
     def __init__(self, _client_sock, cant_filtros_escalas,
@@ -29,6 +30,7 @@ class SesionCliente:
           
           
     def correr(self):
+            signal.signal(signal.SIGTERM, self.sigterm_handler)
             enviador_resultados = ProtocoloResultadosServidor(self.id_cliente)
             self._proceso_enviador = Process(target=enviador_resultados.iniciar, args=((self._client_sock,
                     self._cant_filtros_escalas, self._cant_filtros_distancia,
@@ -79,3 +81,23 @@ class SesionCliente:
             self._protocoloDistancia.enviar_vuelos(vuelos_rec)
             #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             
+    def sigterm_handler(self, _signo, _stack_frame):
+        logging.error('SIGTERM recibida (sesión cliente)')
+        self.cerrar()
+
+    def cerrar(self):
+        logging.info('Cerrando recursos (sesión cliente)')
+        
+        self._client_sock.close()
+            
+
+        self._protocoloEscalas.cerrar()
+        self._protocoloDistancia.cerrar()
+        self._protocoloPrecio.cerrar()
+        
+        if hasattr(self, '_proceso_enviador'):
+            self._proceso_enviador.terminate()
+            self._proceso_enviador.join()
+
+        if hasattr(self, '_protocolo_cliente'):
+            self._protocolo_cliente.cerrar()

@@ -6,8 +6,9 @@ from protocolo_recibir_heartbeat import (ProtocoloRecibirHeartbeat,
     IDENTIFIFICADOR_WATCHDOG, STATUS_OK, STATUS_TIMEOUT)
 from socket_comun_udp import SocketComunUDP
 from time import time
+from comun.revividor import Revividor
 
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 
 from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat
 
@@ -23,7 +24,7 @@ NOMBRE_COMPLETO_WATCHDOG = 'watchdog'
 class Watchdog:
     def __init__(self, timeout_un_mensaje, max_timeout, id, 
     cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio,
-    cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
+    cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog, tiempo_tolerancia_revivir):
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         socket = SocketComunUDP()
         socket.bind('', port_watchdog)
@@ -33,6 +34,7 @@ class Watchdog:
         self._max_timeout = max_timeout
         self._id = id
         self._cant_watchdogs = cant_watchdogs
+        self._tiempo_tolerancia_revivir = tiempo_tolerancia_revivir
 
         self._crear_timestamps_ultimos_heartbeats(cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, 
             cant_filtros_precio, cant_watchdogs)
@@ -76,24 +78,29 @@ class Watchdog:
 
 
     def _run(self):
-          while True:
-            estado, identificador_tipo, numero = self._protocolo_recibir.recibir_hearbeat()
-            if estado == STATUS_OK:
-                logging.debug(f"Recibí un heartbeat  | identificador tipo: {identificador_tipo} | numero: {numero}")
-                timestamp = time()
+        with Manager() as manager:
+            self._servicios_a_revivir = manager.Queue()
+            revidor = Revividor()
+            self._handle_revividor = Process(target=revidor.run, args=(self._servicios_a_revivir,))  
+            self._handle_revividor.start()
 
-                if numero:
-                    self._timestamps_ultimos_heartbeats[identificador_tipo + str(numero)] = timestamp
-                else:
-                    self._timestamps_ultimos_heartbeats[identificador_tipo] = timestamp
+            while True:
+                estado, identificador_tipo, numero = self._protocolo_recibir.recibir_hearbeat()
+                if estado == STATUS_OK:
+                    logging.debug(f"Recibí un heartbeat  | identificador tipo: {identificador_tipo} | numero: {numero}")
+                    timestamp = time()
 
-            elif estado == STATUS_TIMEOUT:
-                logging.info(f"Timeout en la recepción de heartbeats")
+                    if numero:
+                        self._timestamps_ultimos_heartbeats[identificador_tipo + str(numero)] = timestamp
+                    else:
+                        self._timestamps_ultimos_heartbeats[identificador_tipo] = timestamp
 
-            self._revivir_muertos()
-            
-            
+                elif estado == STATUS_TIMEOUT:
+                    logging.info(f"Timeout en la recepción de heartbeats")
 
+                self._revivir_muertos()
+          
+    
 
 
     def _revivir_muertos(self):
@@ -104,6 +111,8 @@ class Watchdog:
                 nombre_completo = self._identificador_a_nombre_completo(identificador)
                 if self._debo_revivirlo(nombre_completo):
                     logging.info(f"Murió {nombre_completo} y lo tengo que revivir yo")
+                    self._servicios_a_revivir.put(nombre_completo)
+                    self._timestamps_ultimos_heartbeats[identificador] =  timestamp + self._tiempo_tolerancia_revivir
                 else:
                     logging.info(f"Murió {nombre_completo}, pero no lo tengo que revivir yo")
 
@@ -146,11 +155,16 @@ class Watchdog:
         
 
     def cerrar(self):
-        logging.error('Ejecutando cerrar')
+        logging.error('Cerrando recursos')
         self._protocolo_enviar.cerrar()
         self._protocolo_recibir.cerrar()
 
-        if self._handle_protocolo_enviar and self._handle_protocolo_enviar.is_alive():
-            self._handle_protocolo_enviar.terminate()
+        if hasattr(self, '_handle_protocolo_enviar'):
+            if self._handle_protocolo_enviar.is_alive():
+                self._handle_protocolo_enviar.terminate()
             self._handle_protocolo_enviar.join()
         
+        if hasattr(self, '_handle_revividor'):
+            if self._handle_revividor.is_alive():
+                self._handle_revividor.terminate()
+            self._handle_revividor.join()

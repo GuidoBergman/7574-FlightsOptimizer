@@ -35,6 +35,7 @@ def initialize_config():
         config_params["periodo_heartbeat"] = int(os.getenv('PERIODO_HEARTBEAT', config["DEFAULT"]["PERIODO_HEARTBEAT"]))
         config_params["host_watchdog"] = os.getenv('HOST_WATCHDOG', config["DEFAULT"]["HOST_WATCHDOG"])
         config_params["port_watchdog"] = int(os.getenv('PORT_WATCHDOG', config["DEFAULT"]["PORT_WATCHDOG"]))
+        config_params["tiempo_tolerancia_revivir"] = int(os.getenv('TIEMPO_TOLERANCIA_REVIVIR', config["DEFAULT"]["TIEMPO_TOLERANCIA_REVIVIR"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -58,6 +59,7 @@ def main():
     periodo_heartbeat = config_params["periodo_heartbeat"]
     host_watchdog = config_params["host_watchdog"] 
     port_watchdog = config_params["port_watchdog"] 
+    tiempo_tolerancia_revivir = config_params["tiempo_tolerancia_revivir"]
 
 
 
@@ -70,7 +72,7 @@ def main():
     # Initialize server and start server loop
     watchdog = Watchdog(timeout_un_mensaje, max_timeout, id, 
         cant_filtros_escalas, cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio,
-        cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog)
+        cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog, tiempo_tolerancia_revivir)
     watchdog.run()
 
 def initialize_log(logging_level):

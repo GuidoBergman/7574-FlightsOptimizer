@@ -23,7 +23,6 @@ STATUS_ERR = -1
 class ProtocoloEnviarHeartbeat:
 
     def __init__(self, socket, host_watchog, port_watchdog, cant_watchdogs, identificador_tipo, periodo=1, numero=0):
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
         self._socket = socket
         self._host_watchdog = host_watchog
         self._port_watchdog = port_watchdog
@@ -49,21 +48,25 @@ class ProtocoloEnviarHeartbeat:
 
             estado = self._socket.send(msg, tamanio_mensaje, (self._host_watchdog + str(i), self._port_watchdog))
             if estado == STATUS_ERR:
-                    logging.error(f"Error al enviar heartbeat al watchdog {i}")
+                    logging.error(f"Error al enviar heartbeat al watchdog{i}")
                     estado = STATUS_ERR
+                    continue
 
             logging.info(f'Se envio el heartbeat al watchdog{i}')
 
         return estado
 
     def enviar_heartbeats(self, evitar_id=None):
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
         while self._seguir_corriendo:
             estado = self.enviar_heartbeat(evitar_id)
             sleep(self._periodo)
 
     def cerrar(self):
+        logging.info('Cerrando socket (protocolo enviar heartbeat)')
+        self._seguir_corriendo = False
         self._socket.close()
 
     def sigterm_handler(self, _signo, _stack_frame):
-        self._seguir_corriendo = False
+        logging.info('SIGERM recibida (protocolo enviar heartbeat)')
         self.cerrar()
