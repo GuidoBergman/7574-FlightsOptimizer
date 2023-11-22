@@ -78,7 +78,7 @@ class SesionCliente:
             #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             self._protocoloEscalas.enviar_vuelos(vuelos_rec)
             self._protocoloDistancia.enviar_vuelos(vuelos_rec)
-            #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
+            self._protocoloPrecio.enviar_vuelos(vuelos_rec)
             
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('SIGTERM recibida (sesión cliente)')

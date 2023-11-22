@@ -129,16 +129,17 @@ class FiltroPrecios:
                                 precio_maximo = precio                    
                         precio_binario = archivo.read(4)
 
-            # Si hay precios por encima de 'promedio' los envia
-            if precios_por_encima > 0:
-                precio_promedio = suma_precios_por_encima / precios_por_encima 
-                res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
-                self.resultados_enviados += 1
-                if (self.resultados_enviados % 100) == 1:
-                    logging.info(f'Enviando resultados: {self.resultados_enviados}')
+                # Si hay precios por encima de 'promedio' los envia
+                if precios_por_encima > 0:
+                    precio_promedio = suma_precios_por_encima / precios_por_encima 
+                    res = ResultadoEstadisticaPrecios(trayecto, precio_promedio, precio_maximo)
+                    self.resultados_enviados += 1
+                    if (self.resultados_enviados % 100) == 1:
+                        logging.info(f'Enviando resultados: {self.resultados_enviados}')
                     
-                logging.debug(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
-                self._protocoloResultado.enviar_resultado_filtro_precio(res, id_cliente)
+                    logging.debug(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
+                    self._protocoloResultado.enviar_resultado_filtro_precio(res, id_cliente)
+            
         logging.info(f'Resultados enviados: {self.resultados_enviados}')
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente)
         self.borrar_archivos(id_cliente)

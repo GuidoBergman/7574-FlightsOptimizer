@@ -15,7 +15,7 @@ from protocolo_resultados_cliente import (ProtocoloResultadosCliente,
 from multiprocessing import Process
 from comun.enviador_vuelos import EnviadorVuelos
 
-CANT_TIPOS_RESULTADO = 3
+CANT_TIPOS_RESULTADO = 4
 CHUNK_AEROPUERTOS = 300
 
 class Client:

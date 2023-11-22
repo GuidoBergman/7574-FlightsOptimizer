@@ -79,6 +79,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
 
 
     def enviar_vuelos(self, vuelos):
+        
         self._colas.enviar_mensaje(self.nombre_cola, self.traducir_vuelos(self.id_cliente, vuelos))
         
 

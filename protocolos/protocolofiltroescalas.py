@@ -52,7 +52,7 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
         self._colas.consumir()
         
     def traducir_vuelo(self, vuelo):
-        return struct.pack(FORMATO_MENSAJE_UNVUELO,
+        return struct.pack(FORMATO_MENSAJE_UNVUELO.encode(STRING_ENCODING),
                                           vuelo.id_vuelo.encode(STRING_ENCODING),
                                           vuelo.origen.encode(STRING_ENCODING),
                                           vuelo.destino.encode(STRING_ENCODING),

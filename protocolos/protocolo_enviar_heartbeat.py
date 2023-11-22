@@ -52,7 +52,7 @@ class ProtocoloEnviarHeartbeat:
                     estado = STATUS_ERR
                     continue
 
-            logging.info(f'Se envio el heartbeat al watchdog{i}')
+            logging.debug(f'Se envio el heartbeat al watchdog{i}')
 
         return estado
 

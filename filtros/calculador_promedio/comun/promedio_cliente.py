@@ -1,8 +1,7 @@
 
 class PromedioCliente:
     
-    def __init__(self, id_cliente, promedio, cantidad):
-       self.id_cliente = id_cliente
+    def __init__(self, promedio, cantidad):
        self.promedio = promedio
        self.cantidad = cantidad
        self.recibidos = 1

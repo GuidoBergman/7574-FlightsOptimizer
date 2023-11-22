@@ -19,31 +19,27 @@ class CalculadorPromedio:
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self._protocolo = ProtocoloFiltroPrecio()
        self.cant_filtros_precio = cant_filtros_precio
-       self.promedio = 0.0
-       self.cantidad = 0
-       self.recibidos = 0
-
+       self.clientes = {}
        socket = SocketComunUDP()
        self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
         IDENTIFICADOR_CALCULADOR_PROMEDIO, periodo_heartbeat)
         
         
-    def procesar_promedio(self, promedio: float, cantidad: int):
+    def procesar_promedio(self, id_cliente, promedio: float, cantidad: int):
         if cantidad > 0:
-            parte_actual = self.cantidad / (self.cantidad + cantidad)
-            parte_nueva = cantidad / (self.cantidad + cantidad)
-            npromedio = (self.promedio * parte_actual) + (promedio * parte_nueva)        
-            self.promedio = npromedio
-            self.cantidad += cantidad
+            if id_cliente in self.clientes:
+                self.clientes[id_cliente].agregar(promedio, cantidad)
+            else:
+                self.clientes[id_cliente] = PromedioCliente(promedio, cantidad)
         
-        self.recibidos += 1
-        
-        logging.info(f"Procesa promedio: {self.recibidos} / {self.cant_filtros_precio} | promedio {self.promedio} cantidad {self.cantidad}")
-        if (self.recibidos >= self.cant_filtros_precio):
-            logging.info(f"Envia promedio: {self.promedio}")
-            self._protocolo.enviar_promediogeneral(self.promedio)
-        
-        
+        logging.info(f"Procesa promedio {id_cliente} : | promedio { promedio} cantidad { cantidad}")
+        promCliente = self.clientes[id_cliente]
+        logging.info(f"Recibidos {promCliente.recibidos} / { self.cant_filtros_precio} ")
+        if (promCliente.recibidos >= self.cant_filtros_precio):
+            logging.info(f"Envia promedio: {promCliente.promedio}")
+            self._protocolo.enviar_promediogeneral(id_cliente, promCliente.promedio)
+            del self.clientes[id_cliente]
+
     def run(self):
           logging.info(f"Iniciando promedios")  
           try:

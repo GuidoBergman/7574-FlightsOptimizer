@@ -20,7 +20,7 @@ from protocolo_resultados_cliente import (TAMANIO_IDENTIFICADOR_RESULTADO,
 
 COLA_RESULTADOS = 'cola_resultados'
 STRING_ENCODING = 'utf-8'
-CANT_TIPOS_RESULTADO = 3
+CANT_TIPOS_RESULTADO = 4
 
 class ProtocoloResultadosServidor:
 

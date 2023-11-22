@@ -54,7 +54,6 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         
     def callback_promedio(self, body):
         id_cliente, promedio, cantidad = unpack(FORMATO_MENSAJE_PROMEDIO, body)
-        logging.info(f'llego un promedio: {body}') 
         self.procesar_promedio(id_cliente.decode('utf-8'), promedio, cantidad)
 
     def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral, id):
@@ -107,6 +106,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
     def enviar_fin_vuelos(self, id_cliente):
         mensaje = pack(FORMATO_FIN_VUELO, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
         for i in range(1, self._cant_filtros_precio + 1):
+            logging.info(f"Envio fin de vuelto al filtro {i}")
             self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje, i)
         
     def enviar_promedio(self, id_cliente, promedio: float, cantidad: int):
