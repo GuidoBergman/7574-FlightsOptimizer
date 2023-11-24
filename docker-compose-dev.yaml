@@ -226,6 +226,9 @@ services:
       - type: bind
         source: ./filtros/calculador_promedio/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/calculador_promedio
+        target: /data
 
   client:
     container_name: client
@@ -238,7 +241,6 @@ services:
       - testing_net
     depends_on:
       - server
-    
     volumes:
       - type: bind
         source: ./client/config.ini

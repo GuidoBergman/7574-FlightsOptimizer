@@ -17,7 +17,6 @@ class CalculadorPromedio:
     def __init__(self, cant_filtros_precio, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
        self._protocolo = ProtocoloFiltroPrecio()
        signal.signal(signal.SIGTERM, self.sigterm_handler)
-       self._protocolo = ProtocoloFiltroPrecio()
        self.cant_filtros_precio = cant_filtros_precio
        self.clientes = {}
        socket = SocketComunUDP()
