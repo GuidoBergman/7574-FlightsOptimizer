@@ -45,5 +45,5 @@ class ProtocoloBase(ABC):
             id_cliente, vuelos = self.decodificar_vuelos(body)
             self.procesar_vuelo(id_cliente, vuelos)
         else:
-            caracter, id_vuelo = unpack(FORMATO_FIN_VUELO, body)            
-            self.procesar_finvuelo(id_vuelo.decode('utf-8'))
+            caracter, id_cliente = unpack(FORMATO_FIN_VUELO, body)            
+            self.procesar_finvuelo(id_cliente.decode('utf-8'))
