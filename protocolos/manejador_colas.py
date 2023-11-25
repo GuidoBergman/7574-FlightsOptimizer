@@ -34,7 +34,6 @@ class ManejadorColas:
     def crear_cola_subscriptores(self, nombre_cola):
         self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
         
-        
 
     def vincular_wrapper(self, nombre_cola, callback_function):
        nombre_queue=nombre_cola
@@ -99,3 +98,9 @@ class ManejadorColas:
         except:
             pass
 
+
+
+    def recuperar_siguiente_checkpoint(self):
+        mylist = range(0)
+        for i in mylist:
+            yield i
