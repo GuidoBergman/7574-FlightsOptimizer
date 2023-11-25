@@ -74,10 +74,10 @@ class FiltroPrecios:
                     archivo.write(precio_binario)
                 self.vuelos_por_trayecto_memoria[trayecto] = []
             
-    def cerrar_archivos(self, id_cliente):
+    def cerrar_archivos(self, id_cliente=None):
         logging.info("Cerrando archivos")
         for trayecto, archivo in self.archivos_por_trayecto.items():
-            if trayecto.startswith(id_cliente):
+            if id_cliente and trayecto.startswith(id_cliente):
                 archivo.close()
 
     def borrar_archivos(self, id_cliente):
@@ -108,6 +108,8 @@ class FiltroPrecios:
                 promedio = npromedio
                 cantidad = suma_vuelos
         self._protocolo.enviar_promedio(id_cliente, promedio, cantidad)
+
+        return None
         
     def procesar_promediogeneral(self, id_cliente, promedio):
         logging.info(f"Recibe el promedio {promedio} del cliente {id_cliente}")
@@ -146,6 +148,8 @@ class FiltroPrecios:
         self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente)
         self.borrar_archivos(id_cliente)
+
+        return None
 
     def run(self):
         try:

@@ -40,9 +40,13 @@ class FiltroDistancia:
             aero_nuevo[aeropuerto.id] = aeropuerto
         self.aeropuertos[id_cliente] = aero_nuevo
 
+        return None
+
         
     def procesar_finaeropuerto(self, id_cliente):        
         logging.info(f'Fin de Aeropuertos Cliente: {id_cliente}')
+
+        return None
     
     def procesar_vuelo(self, id_cliente, vuelos):        
         self.vuelos_procesados += 1;
@@ -70,10 +74,14 @@ class FiltroDistancia:
                 logging.error(f'AEROPUERTO NO ENCONTRADO')
         self._protocoloResultado.enviar_resultado_filtro_distancia(resultados, id_cliente)
 
+        return None
+
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos {id_cliente}')
         self._protocoloResultado.enviar_fin_resultados_distancia(id_cliente)
         del self.aeropuertos[id_cliente]        
+
+        return None
 
     def calcular_distancia(self,aeropuerto1, aeropuerto2):
         coordenadas_aeropuerto1 = (aeropuerto1.latitud, aeropuerto1.longitud)
