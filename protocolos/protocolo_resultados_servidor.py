@@ -1,3 +1,4 @@
+from struct import unpack, pack, calcsize
 from protocolo_resultados_cliente import ProtocoloResultadosCliente
 from manejador_colas import ManejadorColas
 import logging
@@ -21,6 +22,8 @@ from protocolo_resultados_cliente import (TAMANIO_IDENTIFICADOR_RESULTADO,
 COLA_RESULTADOS = 'cola_resultados'
 STRING_ENCODING = 'utf-8'
 CANT_TIPOS_RESULTADO = 4
+
+FORMATOCABECERA_RESULTADOS = '!cH'
 
 class ProtocoloResultadosServidor:
 
@@ -62,22 +65,15 @@ class ProtocoloResultadosServidor:
         self.resultados_recibidos += 1;
         if (self.resultados_recibidos % 100) == 1:
             logging.info(f"Resultados recibidos {self.resultados_recibidos}")
-            
-        
-        
         identificador_resultado = body[0:1].decode(STRING_ENCODING)
         if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
-            resultado = ResultadoVuelosRapidos.deserializar(body[1:])
-            self._protocolo_resultados_cliente.enviar_resultado_vuelos_rapidos(resultado)
+            self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_DISTANCIA:
-            resultado = ResultadoFiltroDistancia.deserializar(body[1:])
-            self._protocolo_resultados_cliente.enviar_resultado_filtro_distancia(resultado)
+            self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
-            resultado = ResultadoFiltroEscalas.deserializar(body[1:])
-            self._protocolo_resultados_cliente.enviar_resultado_filtro_escalas(resultado)
+            self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_PRECIO:
-            resultado = ResultadoEstadisticaPrecios.deserializar(body[1:])
-            self._protocolo_resultados_cliente.enviar_resultado_filtro_precio(resultado)
+            self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
             self._cant_fines_resultados['velocidad'] += 1
             if self._cant_fines_resultados['velocidad'] >= self._cant_filtros_velocidad:
@@ -107,23 +103,26 @@ class ProtocoloResultadosServidor:
 
   
     def enviar_resultado_vuelos_rapidos(self, resultado: ResultadoVuelosRapidos, id_cliente):
-        return self._enviar_resultado(resultado, IDENTIFICADOR_RESULTADO_RAPIDOS, id_cliente)
+        return self._enviar_resultados(resultado, IDENTIFICADOR_RESULTADO_RAPIDOS, id_cliente)
 
     def enviar_resultado_filtro_distancia(self, resultado: ResultadoFiltroDistancia, id_cliente):
-        return self._enviar_resultado(resultado, IDENTIFICADOR_RESULTADO_DISTANCIA, id_cliente)
+        return self._enviar_resultados(resultado, IDENTIFICADOR_RESULTADO_DISTANCIA, id_cliente)
         
     def enviar_resultado_filtro_escalas(self, resultado: ResultadoFiltroEscalas, id_cliente):
-        return self._enviar_resultado(resultado, IDENTIFICADOR_RESULTADO_ESCALAS, id_cliente)
+        return self._enviar_resultados(resultado, IDENTIFICADOR_RESULTADO_ESCALAS, id_cliente)
 
     def enviar_resultado_filtro_precio(self, resultado: ResultadoEstadisticaPrecios, id_cliente):
-        return self._enviar_resultado(resultado, IDENTIFICADOR_RESULTADO_PRECIO, id_cliente)
+        return self._enviar_resultados(resultado, IDENTIFICADOR_RESULTADO_PRECIO, id_cliente)
 
-    def _enviar_resultado(self, resultado, identificador_resultado, id_cliente):
-        bytes_identificador = identificador_resultado.encode(STRING_ENCODING)
-        tamanio, bytes_resultado = resultado.serializar()
-        mensaje = bytes_identificador + bytes_resultado
+    def _enviar_resultados(self, resultados, identificador_resultado, id_cliente):
+        if len(resultados) == 0:
+            return
+        msg = pack(FORMATOCABECERA_RESULTADOS, identificador_resultado.encode(STRING_ENCODING), len(resultados))
+        for resultado in resultados:
+            tamanio, bytes_resultado = resultado.serializar()
+            msg = msg + bytes_resultado
         logging.debug(f'Enviando resultado a la cola: {self._nombre_cola + id_cliente}')
-        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, mensaje)
+        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, msg)
 
         
     def enviar_fin_resultados_rapidos(self, id_cliente):

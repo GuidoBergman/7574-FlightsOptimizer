@@ -1,3 +1,5 @@
+from math import log
+from struct import calcsize, unpack
 from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
 from modelo.ResultadoFiltroEscalas import ResultadoFiltroEscalas
@@ -22,7 +24,10 @@ class ProtocoloResultadosCliente:
     def __init__(self, socket):
         self._socket = socket
 
-
+    def enviar_resultados(self, msjResultados):
+        logging.info(f"Envia resultado")
+        self._socket.send(msjResultados, len(msjResultados))
+        
     def enviar_resultado_vuelos_rapidos(self, resultado: ResultadoVuelosRapidos):
         return self._enviar_resultado(resultado, 'vuelos_rapidos', IDENTIFICADOR_RESULTADO_RAPIDOS)
 
@@ -72,21 +77,16 @@ class ProtocoloResultadosCliente:
 
        
     def recibir_resultado(self):
+        
+        logging.info("Recubi tipo mensaje")
         estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_RESULTADO)
         if estado != STATUS_OK:
             return STATUS_ERR, None
         
         identificador_resultado =  mensaje.decode(STRING_ENCODING)
-
-        if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
-            resultado = ResultadoVuelosRapidos
-        elif identificador_resultado == IDENTIFICADOR_RESULTADO_DISTANCIA:
-            resultado = ResultadoFiltroDistancia
-        elif identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
-            resultado = ResultadoFiltroEscalas
-        elif identificador_resultado == IDENTIFICADOR_RESULTADO_PRECIO:
-            resultado = ResultadoEstadisticaPrecios
-        elif identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
+        
+        logging.info(f"Mensaje del tipo {identificador_resultado}")
+        if identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
             return IDENTIFICADOR_FIN_RAPIDOS, None
         elif identificador_resultado == IDENTIFICADOR_FIN_DISTANCIA:
             return IDENTIFICADOR_FIN_DISTANCIA, None
@@ -94,15 +94,34 @@ class ProtocoloResultadosCliente:
             return IDENTIFICADOR_FIN_ESCALAS, None
         elif identificador_resultado == IDENTIFICADOR_FIN_PRECIO:
             return IDENTIFICADOR_FIN_PRECIO, None
-        else:
-            return STATUS_ERR, None
         
-        tamanio_mensaje = resultado.calcular_tamanio()
-        estado, mensaje = self._socket.receive(tamanio_mensaje)
+        
+        #Si llega aca es porque son resultados, entonces recibe la cantidad:
+        resultados = []
+        logging.info("Llegaron resultados asi que voy a ver cuantos son")
+        estado, mensaje = self._socket.receive(calcsize("!H"))
         if estado != STATUS_OK:
             return STATUS_ERR, None
-
-        return STATUS_OK, resultado.deserializar(mensaje)
-
+        total_resultados = unpack("!H", mensaje)
+        if type(total_resultados) is tuple:
+            total_resultados = total_resultados[0] 
+            
+        logging.info(f"Llegaron {total_resultados} resultados")
+        
+        for i in range(1, total_resultados + 1):
+            if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
+                resultado = ResultadoVuelosRapidos
+            elif identificador_resultado == IDENTIFICADOR_RESULTADO_DISTANCIA:
+                resultado = ResultadoFiltroDistancia
+            elif identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
+                resultado = ResultadoFiltroEscalas
+            elif identificador_resultado == IDENTIFICADOR_RESULTADO_PRECIO:
+                resultado = ResultadoEstadisticaPrecios
+            tamanio_mensaje = resultado.calcular_tamanio()
+            estado, mensaje = self._socket.receive(tamanio_mensaje)
+            if estado != STATUS_OK:
+                return STATUS_ERR, None        
+            resultados.append(resultado.deserializar(mensaje))
+        return STATUS_OK, resultados
     def cerrar(self):
         self._socket.close()

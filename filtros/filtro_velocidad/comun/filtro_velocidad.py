@@ -79,7 +79,7 @@ class FiltroVelocidad:
         self._fines_vuelo += 1
         if self._fines_vuelo < self._cant_filtros_escalas:
             return
-     
+        resultados = []
         logging.info(f"Procesando fin de vuelo")        
         vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
         self._protocoloResultado = ProtocoloResultadosServidor()
@@ -92,7 +92,10 @@ class FiltroVelocidad:
                 duracion = vuelo.duracion
                 escalas = vuelo.escalas
                 resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, escalas, duracion)
-                self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultado, id_cliente)
+                resultados.append(resultado)
+                
+        
+        self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultados, id_cliente)                
         logging.info(f'Resultados enviados: {self.resultados_enviados}')
         del self.vuelos_mas_rapido_cliente[id_cliente]
         self._protocoloResultado.enviar_fin_resultados_rapidos(id_cliente)

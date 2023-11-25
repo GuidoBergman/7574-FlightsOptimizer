@@ -75,7 +75,7 @@ class Client:
                     with open(archivo_ResultadoEstadisticaPrecios, 'w') as aResultadoEstadisticaPrecios:
                         while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
                             logging.debug('action: recibir_resultado | estado: esperando')
-                            estado, resultado = self._protocolo_resultados.recibir_resultado()
+                            estado, resultados = self._protocolo_resultados.recibir_resultado()
                             if estado == STATUS_ERR:
                                 logging.error('action: recibir_resultado | resultado: error')
                                 return
@@ -92,17 +92,18 @@ class Client:
                                 fines_recibidos.add(estado)
                                 logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
                             else:
-                                resultados_recibidos +=1;
-                                if (resultados_recibidos % 1000) == 1:
-                                    logging.info(f"Resultados recibidos : {resultados_recibidos}")
-                                if type(resultado) is ResultadoFiltroDistancia: 
-                                    aResultadoFiltroDistancia.write(resultado.convertir_a_str() + '\n'),
-                                if type(resultado) is ResultadoFiltroEscalas: 
-                                    aResultadoFiltroEscalas.write(resultado.convertir_a_str() + '\n'),
-                                if type(resultado) is ResultadoVuelosRapidos: 
-                                    aResultadoVuelosRapidos.write(resultado.convertir_a_str() + '\n' ),
-                                if type(resultado) is ResultadoEstadisticaPrecios: 
-                                    aResultadoEstadisticaPrecios.write(resultado.convertir_a_str() + '\n')
+                                for resultado in resultados:
+                                    resultados_recibidos +=1;
+                                    if (resultados_recibidos % 1000) == 1:
+                                        logging.info(f"Resultados recibidos : {resultados_recibidos}")
+                                    if type(resultado) is ResultadoFiltroDistancia: 
+                                        aResultadoFiltroDistancia.write(resultado.convertir_a_str() + '\n'),
+                                    if type(resultado) is ResultadoFiltroEscalas: 
+                                        aResultadoFiltroEscalas.write(resultado.convertir_a_str() + '\n'),
+                                    if type(resultado) is ResultadoVuelosRapidos: 
+                                        aResultadoVuelosRapidos.write(resultado.convertir_a_str() + '\n' ),
+                                    if type(resultado) is ResultadoEstadisticaPrecios: 
+                                        aResultadoEstadisticaPrecios.write(resultado.convertir_a_str() + '\n')
                                     
         logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados {resultados_recibidos}')
         

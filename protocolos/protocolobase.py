@@ -19,7 +19,7 @@ class ProtocoloBase(ABC):
         pass
     
     def traducir_vuelos(self, id_cliente, vuelos):
-        logging.info(f"Traduccion para cliente {id_cliente} vuelos {len(vuelos)}")
+        logging.debug(f"Traduccion para cliente {id_cliente} vuelos {len(vuelos)}")
         msg = pack(FORMATOCABECERA_VUELO, IDENTIFICADOR_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING), len(vuelos))
         for vuelo in vuelos:
             msg = msg + self.traducir_vuelo(vuelo)

@@ -112,6 +112,8 @@ class FiltroPrecios:
     def procesar_promediogeneral(self, id_cliente, promedio):
         logging.info(f"Recibe el promedio {promedio} del cliente {id_cliente}")
         self._protocoloResultado = ProtocoloResultadosServidor()
+        
+        resultados = []
         for trayecto, vuelos in self.total_vuelos_por_trayecto.items():            
             if trayecto.startswith(id_cliente):
                 precios_por_encima = 0
@@ -136,11 +138,12 @@ class FiltroPrecios:
                     self.resultados_enviados += 1
                     if (self.resultados_enviados % 100) == 1:
                         logging.info(f'Enviando resultados: {self.resultados_enviados}')
+                    resultados.append(res)
                     
                     logging.debug(f"Filtro enviando resultado: {trayecto} promedio: {precio_promedio}")
-                    self._protocoloResultado.enviar_resultado_filtro_precio(res, id_cliente)
             
         logging.info(f'Resultados enviados: {self.resultados_enviados}')
+        self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente)
         self.borrar_archivos(id_cliente)
 

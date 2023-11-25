@@ -90,7 +90,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
             self.enviar_vuelos_filtro(self.id_cliente, id_filtro, vuelosfiltro)
     
     def enviar_vuelos_filtro(self, id_cliente, id_filtro, vuelos):
-        logging.info(f'Enviando vuelos: {len(vuelos)} al filtro {id_filtro}')
+        logging.debug(f'Enviando vuelos: {len(vuelos)} al filtro {id_filtro}')
         mensaje_empaquetado = self.traducir_vuelos(id_cliente, vuelos)
         self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro)
     

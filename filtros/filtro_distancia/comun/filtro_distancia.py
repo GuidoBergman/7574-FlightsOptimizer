@@ -1,3 +1,4 @@
+from struct import unpack, pack, calcsize
 import logging
 import signal
 from geopy.distance import geodesic
@@ -28,9 +29,6 @@ class FiltroDistancia:
        self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
         IDENTIFICADOR_FILTRO_DISTANCIA, periodo_heartbeat, id)
 
-      
-        
-
     def procesar_aeropuerto(self, id_cliente, aeropuertos_nuevos):
         self.aeropuertos_procesados += 1
         if (self.aeropuertos_procesados % 100) == 1:
@@ -52,6 +50,7 @@ class FiltroDistancia:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
             
         aeropuertos_cliente = self.aeropuertos[id_cliente]
+        resultados = []
         for vuelo in vuelos:
             logging.debug(f'Procesando vuelo{ vuelo.id_vuelo } distancia { vuelo.distancia } origen {vuelo.origen} destino {vuelo.destino}')
             try:
@@ -66,9 +65,10 @@ class FiltroDistancia:
                 if (distancia_directa * 4 < vuelo.distancia):
                     logging.debug(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
                     resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
-                    self._protocoloResultado.enviar_resultado_filtro_distancia(resDistancia, id_cliente)
+                    resultados.append(resDistancia)
             except KeyError as e:
                 logging.error(f'AEROPUERTO NO ENCONTRADO')
+        self._protocoloResultado.enviar_resultado_filtro_distancia(resultados, id_cliente)
 
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos {id_cliente}')

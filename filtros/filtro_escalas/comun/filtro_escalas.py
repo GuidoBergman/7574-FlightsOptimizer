@@ -29,6 +29,7 @@ class FiltroEscalas:
         IDENTIFICADOR_FILTRO_ESCALAS, periodo_heartbeat, id)
         
     def procesar_vuelo(self, id_cliente, vuelos):
+        resultados = []
         self.vuelos_procesados += 1;
         if (self.vuelos_procesados % 300) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
@@ -41,8 +42,9 @@ class FiltroEscalas:
                 resultado = ResultadoFiltroEscalas(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino,
                     vuelo.precio, vuelo.escalas
                 )
-                self._protocoloResultado.enviar_resultado_filtro_escalas(resultado, id_cliente)
+                resultados.append(resultado)
                 vuelos_paravelocidad.append(vuelo)
+        self._protocoloResultado.enviar_resultado_filtro_escalas(resultados, id_cliente)
         self._protocoloVelocidad.enviar_vuelos(id_cliente, vuelos_paravelocidad)
 
     def procesar_finvuelo(self, id_cliente):        
