@@ -1,6 +1,8 @@
 import logging
 from math import log
 import signal
+import sys
+import traceback
 
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
@@ -39,6 +41,8 @@ class CalculadorPromedio:
             self._protocolo.enviar_promediogeneral(id_cliente, promCliente.promedio)
             del self.clientes[id_cliente]
 
+        return None
+
     def run(self):
           logging.info(f"Iniciando promedios")  
           try:
@@ -47,6 +51,9 @@ class CalculadorPromedio:
             self._protocolo.iniciar_promedio(self.procesar_promedio)
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
+            exc = sys.exception()
+            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+            traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
           
     

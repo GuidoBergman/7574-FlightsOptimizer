@@ -45,11 +45,15 @@ class FiltroEscalas:
                 vuelos_paravelocidad.append(vuelo)
         self._protocoloVelocidad.enviar_vuelos(id_cliente, vuelos_paravelocidad)
 
+        return None
+
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos Cliente: {id_cliente}')
         self._protocoloVelocidad.enviar_fin_vuelos(id_cliente)
         self._protocoloResultado.enviar_fin_resultados_escalas(id_cliente)
 
+        return None
+        
     def run(self):
           logging.info('Iniciando filtro escalas')  
           try:

@@ -50,11 +50,13 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
         logging.debug(f'llego el promedio general: {body}')
         id_cliente, promedio_general = unpack("32sf", body)
-        self.procesar_promediogeneral(id_cliente.decode('utf-8'), promedio_general)
+        contenido = self.procesar_promediogeneral(id_cliente.decode('utf-8'), promedio_general)
+        return id_cliente, contenido
         
     def callback_promedio(self, body):
         id_cliente, promedio, cantidad = unpack(FORMATO_MENSAJE_PROMEDIO, body)
-        self.procesar_promedio(id_cliente.decode('utf-8'), promedio, cantidad)
+        contenido = self.procesar_promedio(id_cliente.decode('utf-8'), promedio, cantidad)
+        return id_cliente, contenido
 
     def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral, id):
         self.corriendo = True

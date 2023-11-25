@@ -101,6 +101,8 @@ class ProtocoloResultadosServidor:
                 self._protocolo_resultados_cliente.enviar_fin_resultados_filtro_precio()
         else:
             logging.error('acción: recibir_resultado_vuelo | resultado: error')
+
+        return None
         
         
         

@@ -43,7 +43,9 @@ class ProtocoloBase(ABC):
         logging.debug(f'llego mensaje body: {body}')
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             id_cliente, vuelos = self.decodificar_vuelos(body)
-            self.procesar_vuelo(id_cliente, vuelos)
+            contenido_a_persisitir = self.procesar_vuelo(id_cliente, vuelos)
         else:
             caracter, id_cliente = unpack(FORMATO_FIN_VUELO, body)            
-            self.procesar_finvuelo(id_cliente.decode('utf-8'))
+            contenido_a_persisitir = self.procesar_finvuelo(id_cliente.decode('utf-8'))
+
+        return id_cliente, contenido_a_persisitir

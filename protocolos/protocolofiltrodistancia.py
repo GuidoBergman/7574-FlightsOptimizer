@@ -49,10 +49,12 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         logging.debug(f'llego mensaje AEROPUERTOS body: {body}')
         if body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):
             id_cliente, aeropuertos = self.traducir_aeropuertos(body)
-            self.procesar_aeropuerto(id_cliente, aeropuertos)
+            contenido_persistir = self.procesar_aeropuerto(id_cliente, aeropuertos)
         elif body.startswith(IDENTIFICADOR_FIN_AEROPUERTO.encode('utf-8')):
             caracter, id_cliente = unpack(FORMATO_FIN, body)
-            self.procesar_finaeropuerto(id_cliente.decode('utf-8'))
+            contenido_persistir = self.procesar_finaeropuerto(id_cliente.decode('utf-8'))
+
+        return id_cliente, contenido_persistir
 
     def iniciarvuelos(self):
         self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
