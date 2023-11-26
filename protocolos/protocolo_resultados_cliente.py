@@ -25,7 +25,7 @@ class ProtocoloResultadosCliente:
         self._socket = socket
 
     def enviar_resultados(self, msjResultados):
-        logging.info(f"Envia resultado")
+        logging.debug(f"Envia resultado")
         self._socket.send(msjResultados, len(msjResultados))
         
     def enviar_resultado_vuelos_rapidos(self, resultado: ResultadoVuelosRapidos):
@@ -78,14 +78,12 @@ class ProtocoloResultadosCliente:
        
     def recibir_resultado(self):
         
-        logging.info("Recubi tipo mensaje")
         estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_RESULTADO)
+        
         if estado != STATUS_OK:
             return STATUS_ERR, None
         
-        identificador_resultado =  mensaje.decode(STRING_ENCODING)
-        
-        logging.info(f"Mensaje del tipo {identificador_resultado}")
+        identificador_resultado =  mensaje.decode(STRING_ENCODING)   
         if identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
             return IDENTIFICADOR_FIN_RAPIDOS, None
         elif identificador_resultado == IDENTIFICADOR_FIN_DISTANCIA:
@@ -98,16 +96,13 @@ class ProtocoloResultadosCliente:
         
         #Si llega aca es porque son resultados, entonces recibe la cantidad:
         resultados = []
-        logging.info("Llegaron resultados asi que voy a ver cuantos son")
         estado, mensaje = self._socket.receive(calcsize("!H"))
         if estado != STATUS_OK:
             return STATUS_ERR, None
         total_resultados = unpack("!H", mensaje)
         if type(total_resultados) is tuple:
             total_resultados = total_resultados[0] 
-            
-        logging.info(f"Llegaron {total_resultados} resultados")
-        
+          
         for i in range(1, total_resultados + 1):
             if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
                 resultado = ResultadoVuelosRapidos

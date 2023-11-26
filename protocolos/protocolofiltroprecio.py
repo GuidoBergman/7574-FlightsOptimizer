@@ -14,6 +14,7 @@ IDENTIFICADOR_VUELO = 'V'
 IDENTIFICADOR_AEROPUERTO = 'A'
 IDENTIFICADOR_FIN_VUELO = 'F'
 IDENTIFICADOR_FIN_AEROPUERTO = 'E'
+IDENTIFICADOR_FLUSH = 'L'
 
 ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
@@ -30,13 +31,13 @@ FORMATO_FIN_VUELO = '!c32s'
 
 class ProtocoloFiltroPrecio(ProtocoloBase):
        
-    def __init__(self, cant_filtros_precio=None, id_cliente=None):
+    def __init__(self, cant_filtros=None, id_cliente=None):
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False       
-       if cant_filtros_precio:
-          self._cant_filtros_precio= int(cant_filtros_precio)        
+       if cant_filtros:
+          self._cant_filtros= int(cant_filtros)        
        self.id_cliente = id_cliente
        
 
@@ -65,6 +66,8 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         self.procesar_promediogeneral = procesar_promediogeneral
         self._colas.crear_cola_por_topico(self.nombre_cola)      
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)        
+        
+
         self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIOGENERAL)
         self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)            
         self._colas.consumir()
@@ -76,25 +79,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         self._colas.consumir_mensajes(NOMBRE_COLAPROMEDIO, self.callback_promedio)
         self._colas.consumir()
         
-    def enviar_vuelos(self, vuelos):
-        if (len(vuelos) == 0):
-            return
-        #Agrupa los vuelos por filtro
-        grupos_de_vuelos = {}          
-        for vuelo in vuelos:
-            id_filtro_precio = (hash(vuelo.origen + vuelo.destino) % self._cant_filtros_precio) + 1
-            if id_filtro_precio not in grupos_de_vuelos:
-                grupos_de_vuelos[id_filtro_precio] = []
-            grupos_de_vuelos[id_filtro_precio].append(vuelo)
-            
-        #Envia a cada filtro su mensaje
-        for id_filtro, vuelosfiltro in grupos_de_vuelos.items():
-            self.enviar_vuelos_filtro(self.id_cliente, id_filtro, vuelosfiltro)
-    
-    def enviar_vuelos_filtro(self, id_cliente, id_filtro, vuelos):
-        logging.debug(f'Enviando vuelos: {len(vuelos)} al filtro {id_filtro}')
-        mensaje_empaquetado = self.traducir_vuelos(id_cliente, vuelos)
-        self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro)
+        
     
     def traducir_vuelo(self, vuelo):
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_UNVUELO,
@@ -103,13 +88,6 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
                                       float(vuelo.precio)
                                       )           
         return mensaje_empaquetado
-       
-
-    def enviar_fin_vuelos(self, id_cliente):
-        mensaje = pack(FORMATO_FIN_VUELO, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
-        for i in range(1, self._cant_filtros_precio + 1):
-            logging.info(f"Envio fin de vuelto al filtro {i}")
-            self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje, i)
         
     def enviar_promedio(self, id_cliente, promedio: float, cantidad: int):
         logging.debug(f"enviando promedio {promedio} cantidad {cantidad}")

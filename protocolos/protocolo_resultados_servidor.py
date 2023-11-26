@@ -63,7 +63,7 @@ class ProtocoloResultadosServidor:
         
     def _callback_function(self, body):
         self.resultados_recibidos += 1;
-        if (self.resultados_recibidos % 100) == 1:
+        if (self.resultados_recibidos % 300) == 1:
             logging.info(f"Resultados recibidos {self.resultados_recibidos}")
         identificador_resultado = body[0:1].decode(STRING_ENCODING)
         if identificador_resultado == IDENTIFICADOR_RESULTADO_RAPIDOS:
@@ -73,13 +73,16 @@ class ProtocoloResultadosServidor:
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
             self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_PRECIO:
+            logging.info("Llego Fin de Precios")
             self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
+            logging.info("Llego Fin de Velocidad")
             self._cant_fines_resultados['velocidad'] += 1
             if self._cant_fines_resultados['velocidad'] >= self._cant_filtros_velocidad:
                 self.finalizo_resultados(IDENTIFICADOR_FIN_RAPIDOS)
                 self._protocolo_resultados_cliente.enviar_fin_resultados_rapidos()
         elif identificador_resultado == IDENTIFICADOR_FIN_DISTANCIA:
+            logging.info("Llego Fin de Distancia")
             self._cant_fines_resultados['distancia'] += 1
             if self._cant_fines_resultados['distancia'] >= self._cant_filtros_distancia:
                 self.finalizo_resultados(IDENTIFICADOR_FIN_DISTANCIA)

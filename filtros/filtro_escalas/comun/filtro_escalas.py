@@ -61,7 +61,7 @@ class FiltroEscalas:
           try:
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
-            self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo)
+            self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id)
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
             self.cerrar()

@@ -31,9 +31,7 @@ class ProtocoloCliente:
     def _recibir_identificador_mensaje(self):
         estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
         if estado != STATUS_OK:
-            return STATUS_ERR, None
-
-       
+            return STATUS_ERR, None       
         return estado, mensaje.decode(STRING_ENCODING)
 
     def recibir_vuelo(self):

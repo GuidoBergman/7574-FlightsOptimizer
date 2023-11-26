@@ -17,6 +17,7 @@ IDENTIFICADOR_FIN_VUELO = 'F'
 IDENTIFICADOR_FIN_AEROPUERTO = 'E'
 FORMATO_TOTAL_VUELOS =  '!H'
 FORMATO_FIN_VUELO = '!c32s'
+IDENTIFICADOR_FLUSH = 'L'
 
 ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
@@ -29,11 +30,13 @@ NOMBRE_COLA = 'cola_escalas'
 
 class ProtocoloFiltroEscalas(ProtocoloBase):
        
-    def __init__(self, id_cliente=None):    
+    def __init__(self, cant_filtros=None, id_cliente=None):    
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False
+       if cant_filtros:
+          self._cant_filtros= int(cant_filtros)        
        self.id_cliente = id_cliente
        
             
@@ -43,13 +46,15 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
         return vuelo
 
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, id):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
-        self._colas.crear_cola(self.nombre_cola)
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
+        self._colas.crear_cola_por_topico(self.nombre_cola)
+        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
         self._colas.consumir()
+
+        
         
     def traducir_vuelo(self, vuelo):
         return struct.pack(FORMATO_MENSAJE_UNVUELO.encode(STRING_ENCODING),
@@ -59,18 +64,6 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
                                           vuelo.escalas.encode(STRING_ENCODING),
                                           vuelo.duracion.encode(STRING_ENCODING)
                                           )
-
-
-
-    def enviar_vuelos(self, vuelos):
-        self._colas.enviar_mensaje(self.nombre_cola, self.traducir_vuelos(self.id_cliente, vuelos))
-        
-
-
-    def enviar_fin_vuelos(self, id_cliente):
-        mensaje = pack(FORMATO_FIN_VUELO, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
-        self._colas.enviar_mensaje(self.nombre_cola, mensaje)
-
 
 
     def parar(self):        

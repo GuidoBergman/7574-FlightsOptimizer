@@ -77,7 +77,7 @@ class FiltroDistancia:
         return None
 
     def procesar_finvuelo(self, id_cliente):        
-        logging.info(f'Fin de vuelos {id_cliente}')
+        logging.info(f'Fin de vuelos distancia {id_cliente}')
         self._protocoloResultado.enviar_fin_resultados_distancia(id_cliente)
         del self.aeropuertos[id_cliente]        
 
@@ -94,7 +94,7 @@ class FiltroDistancia:
           logging.info(f'Iniciando Filtro Distancia')
           self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
           self._handle_protocolo_heartbeat.start()
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_aeropuerto, self.procesar_finaeropuerto)
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_aeropuerto, self.procesar_finaeropuerto, self._id)
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
             self.cerrar()

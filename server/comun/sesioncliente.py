@@ -7,30 +7,36 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from multiprocessing import Process
 from socket_comun import SocketComun
-from comun.enviador_fin import EnviadorFin
 from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
 import signal
 
 class SesionCliente:
     def __init__(self, _client_sock, cant_filtros_escalas,
         cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):        
+        
+        guid = uuid.uuid4()
+        self.id_cliente = str(guid).replace("-", "")
+        
+        signal.signal(signal.SIGTERM, self.sigterm_handler)        
         self._client_sock = _client_sock
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
         self._cant_filtros_precio = cant_filtros_precio        
         
-        guid = uuid.uuid4()
-        self.id_cliente = str(guid).replace("-", "")
         
         logging.info(f'Inicia cliente {self.id_cliente}')
-        self._protocoloEscalas = ProtocoloFiltroEscalas(self.id_cliente)
+        
+        self._protocoloEscalas = ProtocoloFiltroEscalas(cant_filtros_escalas, self.id_cliente)
         self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio, self.id_cliente)
-        self._protocoloDistancia = ProtocoloFiltroDistancia(self.id_cliente)
+        self._protocoloDistancia = ProtocoloFiltroDistancia(cant_filtros_distancia, self.id_cliente)
           
           
     def correr(self):
-            signal.signal(signal.SIGTERM, self.sigterm_handler)
+        try:    
+            
+            logging.info(f"Inicia proceso para cliente: {self.id_cliente}")
+            
             enviador_resultados = ProtocoloResultadosServidor(self.id_cliente)
             self._proceso_enviador = Process(target=enviador_resultados.iniciar, args=((self._client_sock,
                     self._cant_filtros_escalas, self._cant_filtros_distancia,
@@ -40,15 +46,17 @@ class SesionCliente:
             self._protocolo_cliente = ProtocoloCliente(self._client_sock)  
             self._recibir_aeropuertos()  
             self._recibir_vuelos()
-            enviador_fin = EnviadorFin(self._cant_filtros_escalas, self._cant_filtros_distancia,
-            self._cant_filtros_precio)
-            enviador_fin.enviar_fin_vuelos(self.id_cliente)
-            
+            self._enviar_fin_vuelos()
             logging.info("Espera terminen los resultados resultados")
             self._proceso_enviador.join()
             self._client_sock.close()            
             logging.info(f'Termina el proceso cliente {self.id_cliente}')
-
+        except Exception as e:
+            self._enviar_flush()
+            logging.error(f"{e}")
+            logging.error(f'Error con el cliente {self.id_cliente}, manda señal de FLUSH')
+            
+          
     def _recibir_aeropuertos(self):
         logging.info('Recibiendo aeropuertos')
         while True:            
@@ -59,6 +67,12 @@ class SesionCliente:
             logging.info(f'Aeropuertos recibidos: { self.id_cliente} total { len(aeropuertos)}')
             self._protocoloDistancia.enviar_aeropuertos(self.id_cliente, aeropuertos)
             
+    def _enviar_flush(self):
+        self._protocoloEscalas.enviar_flush(self.id_cliente)
+        self._protocoloDistancia.enviar_flush(self.id_cliente)
+        self._protocoloPrecio.enviar_flush(self.id_cliente)
+        
+        
     def _recibir_vuelos(self):
         chunk_recibidos = 0
         logging.info('Recibiendo vuelos')
@@ -76,10 +90,17 @@ class SesionCliente:
             
             # Manda los vuelos a los filtros
             #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
-            self._protocoloEscalas.enviar_vuelos(vuelos_rec)
-            self._protocoloDistancia.enviar_vuelos(vuelos_rec)
-            self._protocoloPrecio.enviar_vuelos(vuelos_rec)
+            self._protocoloEscalas.enviar_vuelos(self.id_cliente, vuelos_rec)
+            self._protocoloDistancia.enviar_vuelos(self.id_cliente, vuelos_rec)
+            self._protocoloPrecio.enviar_vuelos(self.id_cliente, vuelos_rec)
+         
             
+    def _enviar_fin_vuelos(self):
+        self._protocoloEscalas.enviar_fin_vuelos(self.id_cliente)
+        self._protocoloDistancia.enviar_fin_vuelos(self.id_cliente)
+        self._protocoloPrecio.enviar_fin_vuelos(self.id_cliente)
+         
+                
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('SIGTERM recibida (sesión cliente)')
         self.cerrar()

@@ -12,7 +12,7 @@ class Wrapper:
         self.callback_function = callback_function        
 
     def funcion_wrapper(self, channel, method, properties, body):
-        nombre_archivo, contenido = self.callback_function(body)
+        self.callback_function(body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
 class ManejadorColas:

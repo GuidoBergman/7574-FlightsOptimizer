@@ -30,12 +30,14 @@ NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
 
 class ProtocoloFiltroDistancia(ProtocoloBase):
        
-    def __init__(self, id_cliente=None):
+    def __init__(self, cant_filtros=None, id_cliente=None):
        
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
        self.corriendo = False
+       if cant_filtros:
+          self._cant_filtros= int(cant_filtros)        
        self.id_cliente = id_cliente
 
 
@@ -56,10 +58,8 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
 
         return id_cliente, contenido_persistir
 
-    def iniciarvuelos(self):
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
     
-    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto, id):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
@@ -67,9 +67,11 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         self.procesar_finaeropuerto =  procesar_finaeropuerto
         
         self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)
-        self._colas.crear_cola(self.nombre_cola)
         self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
-        self._colas.consumir_mensajes(self.nombre_cola, self.callback_function)
+        
+        self._colas.crear_cola_por_topico(self.nombre_cola)
+        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
+
         self._colas.consumir()
 
     def traducir_vuelo(self, vuelo):
@@ -78,16 +80,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
                                       int(vuelo.distancia))
-
-
-    def enviar_vuelos(self, vuelos):
         
-        self._colas.enviar_mensaje(self.nombre_cola, self.traducir_vuelos(self.id_cliente, vuelos))
-        
-
-    def enviar_fin_vuelos(self, id_cliente):
-        mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
-        self._colas.enviar_mensaje(self.nombre_cola, mensaje)
         
     def traducir_aeropuertos(self, mensaje):        
         offset = calcsize(FORMATO_MENSAJE_CABECERAAEROPUERTO)

@@ -22,12 +22,11 @@ services:
   server:
     container_name: server
     image: server:latest
-    init: true
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS=1
+      - CANT_HANDLERS=2
       - CANT_FILTROS_ESCALAS=2
       - CANT_FILTROS_DISTANCIA=2
       - CANT_FILTROS_VELOCIDAD=2
@@ -134,7 +133,6 @@ services:
   filtro_velocidad1:
     container_name: filtro_velocidad1
     image: filtro_velocidad:latest
-    init: true
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
@@ -226,9 +224,6 @@ services:
       - type: bind
         source: ./filtros/calculador_promedio/config.ini
         target: /config.ini
-      - type: bind
-        source: ./data/calculador_promedio
-        target: /data
 
   client:
     container_name: client
@@ -241,6 +236,7 @@ services:
       - testing_net
     depends_on:
       - server
+    
     volumes:
       - type: bind
         source: ./client/config.ini
@@ -262,7 +258,6 @@ services:
       - CANT_FILTROS_PRECIO=2
       - CANT_WATCHDOGS=2
       - ID=1
-      - PYTHONHASHSEED=0
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -272,7 +267,6 @@ services:
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
-      - /var/run/docker.sock:/var/run/docker.sock
 
   watchdog2:
     container_name: watchdog2
@@ -287,7 +281,6 @@ services:
       - CANT_FILTROS_PRECIO=2
       - CANT_WATCHDOGS=2
       - ID=2
-      - PYTHONHASHSEED=0
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -297,7 +290,6 @@ services:
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
-      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   testing_net:

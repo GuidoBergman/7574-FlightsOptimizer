@@ -47,9 +47,9 @@ class FiltroPrecios:
     def procesar_vuelo(self, id_cliente, vuelos):        
         self.vuelos_procesados += 1;
         if (self.vuelos_procesados % 10) == 1:
-            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
+            logging.debug(f'Procesando Vuelo: {self.vuelos_procesados}')  
         for vuelo in vuelos:
-            logging.info(f'Inicio el proceso cliente {id_cliente} origen { vuelo.origen } precio { vuelo.precio }')
+            logging.debug(f'Inicio el proceso cliente {id_cliente} origen { vuelo.origen } precio { vuelo.precio }')
             trayecto = f'{id_cliente}-{vuelo.origen}-{vuelo.destino}'
             if trayecto not in self.archivos_por_trayecto:
                 # Si el trayecto no existe en el diccionario, creamos una lista con el precio actual

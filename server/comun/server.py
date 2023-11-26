@@ -77,6 +77,8 @@ class Server:
 
         # Eliminar los hilos terminados de la lista
         for proceso in borrar_procesos:
+            
+            logging.info("Borrando proceso de cliente")
             self._procesos_cliente.remove(proceso)
 
 
