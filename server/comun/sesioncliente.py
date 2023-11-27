@@ -12,27 +12,27 @@ import signal
 
 class SesionCliente:
     def __init__(self, _client_sock, cant_filtros_escalas,
-        cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):        
+        cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):
         
         guid = uuid.uuid4()
         self.id_cliente = str(guid).replace("-", "")
         
         signal.signal(signal.SIGTERM, self.sigterm_handler)        
         self._client_sock = _client_sock
-        
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
         self._cant_filtros_precio = cant_filtros_precio        
         
-        
-        logging.info(f'Inicia cliente {self.id_cliente}')
-        
-        self._protocoloEscalas = ProtocoloFiltroEscalas(cant_filtros_escalas, self.id_cliente)
-        self._protocoloPrecio = ProtocoloFiltroPrecio(cant_filtros_precio, self.id_cliente)
-        self._protocoloDistancia = ProtocoloFiltroDistancia(cant_filtros_distancia, self.id_cliente)
-          
-          
+        self._protocolos = []
+        self._protocolos_con_aeropuerto = []
+        self._protocolos.append(ProtocoloFiltroEscalas(cant_filtros_escalas, self.id_cliente))
+        self._protocolos.append(ProtocoloFiltroPrecio(cant_filtros_escalas, self.id_cliente))
+        # El protocolo distancia lo arreglo en los dos vectores de protocolos
+        protDistancia = ProtocoloFiltroDistancia(cant_filtros_escalas, self.id_cliente)
+        self._protocolos.append(protDistancia)
+        self._protocolos_con_aeropuerto.append(protDistancia)
+  
     def correr(self):
         try:    
             
@@ -62,17 +62,18 @@ class SesionCliente:
         while True:            
             estado, aeropuertos = self._protocolo_cliente.recibir_aeropuertos()
             if estado == ESTADO_FIN_AEROPUERTOS:
-                self._protocoloDistancia.enviar_fin_aeropuertos(self.id_cliente)
+                for prot in self._protocolos_con_aeropuerto:
+                    prot.enviar_fin_aeropuertos(self.id_cliente)
                 break
             logging.info(f'Aeropuertos recibidos: { self.id_cliente} total { len(aeropuertos)}')
-            self._protocoloDistancia.enviar_aeropuertos(self.id_cliente, aeropuertos)
+            for prot in self._protocolos_con_aeropuerto:
+                    prot.enviar_aeropuertos(self.id_cliente, aeropuertos)
+            
             
     def _enviar_flush(self):
         logging.info(f"Enviando FLUSH para cliente {self.id_cliente}")
-        self._protocoloEscalas.enviar_flush(self.id_cliente)
-        self._protocoloDistancia.enviar_flush(self.id_cliente)
-        self._protocoloPrecio.enviar_flush(self.id_cliente)
-        
+        for prot in self._protocolos:
+            prot.enviar_flush(self.id_cliente)
         
     def _recibir_vuelos(self):
         chunk_recibidos = 0
@@ -91,15 +92,14 @@ class SesionCliente:
             
             # Manda los vuelos a los filtros
             #self._protocoloPrecio.enviar_vuelos(vuelos_rec)
-            self._protocoloEscalas.enviar_vuelos(self.id_cliente, vuelos_rec)
-            self._protocoloDistancia.enviar_vuelos(self.id_cliente, vuelos_rec)
-            self._protocoloPrecio.enviar_vuelos(self.id_cliente, vuelos_rec)
+            for prot in self._protocolos:
+                prot.enviar_vuelos(self.id_cliente, vuelos_rec)
          
             
     def _enviar_fin_vuelos(self):
-        self._protocoloEscalas.enviar_fin_vuelos(self.id_cliente)
-        self._protocoloDistancia.enviar_fin_vuelos(self.id_cliente)
-        self._protocoloPrecio.enviar_fin_vuelos(self.id_cliente)
+        logging.info(f"Enviando FIN VUELOS para cliente {self.id_cliente}")
+        for prot in self._protocolos:
+            prot.enviar_fin_vuelos(self.id_cliente)
          
                 
     def sigterm_handler(self, _signo, _stack_frame):
@@ -110,11 +110,8 @@ class SesionCliente:
         logging.info('Cerrando recursos (sesión cliente)')
         
         self._client_sock.close()
-            
-
-        self._protocoloEscalas.cerrar()
-        self._protocoloDistancia.cerrar()
-        self._protocoloPrecio.cerrar()
+        for prot in self._protocolos:
+            prot.cerrar()
         
         if hasattr(self, '_proceso_enviador'):
             self._proceso_enviador.terminate()
