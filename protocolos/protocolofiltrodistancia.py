@@ -59,9 +59,10 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         return id_cliente, contenido_persistir
 
     
-    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto, id):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto,procesar_flush, id):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
+        self.procesar_flush = procesar_flush
         self.procesar_finvuelo =  procesar_finvuelo
         self.procesar_aeropuerto =  procesar_aeropuerto
         self.procesar_finaeropuerto =  procesar_finaeropuerto

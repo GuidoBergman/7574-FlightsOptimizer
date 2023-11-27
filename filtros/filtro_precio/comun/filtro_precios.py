@@ -85,7 +85,13 @@ class FiltroPrecios:
         for trayecto, archivo in self.archivos_por_trayecto.items():
             if trayecto.startswith(id_cliente):
                 os.remove(trayecto)
+
+
+    def procesar_flush(self, id_cliente):        
+        logging.info(f'FLUSH Cliente: {id_cliente}')
+        return None
         
+    
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Calculo el promedio y lo envia')
         # Guardo en disco lo que quedo en memoria de cada trayecto
@@ -155,7 +161,7 @@ class FiltroPrecios:
         try:
           self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
           self._handle_protocolo_heartbeat.start()
-          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral, self._id)
+          self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_promediogeneral, self.procesar_flush, self._id)
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
             self.cerrar()

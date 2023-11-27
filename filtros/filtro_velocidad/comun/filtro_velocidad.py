@@ -74,6 +74,11 @@ class FiltroVelocidad:
           
         self.vuelos_mas_rapido_cliente[id_cliente] = vuelos_mas_rapido
 
+
+    def procesar_flush(self, id_cliente):        
+        logging.info(f'FLUSH Cliente: {id_cliente}')
+        return None
+        
     def procesar_finvuelo(self, id_cliente):
         # Recorrer todos los trayectos de vuelos_mas_rapidos
         self._fines_vuelo += 1
@@ -105,7 +110,7 @@ class FiltroVelocidad:
           try:
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
-            self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self._id, self._cant_filtros_escalas) 
+            self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_flush, self._id, self._cant_filtros_escalas) 
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
             self.cerrar()

@@ -59,10 +59,11 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         contenido = self.procesar_promedio(id_cliente.decode('utf-8'), promedio, cantidad)
         return id_cliente, contenido
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral, id):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral,procesar_flush, id):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
+        self.procesar_flush = procesar_flush
         self.procesar_promediogeneral = procesar_promediogeneral
         self._colas.crear_cola_por_topico(self.nombre_cola)      
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)        

@@ -42,7 +42,6 @@ class ProtocoloResultadosServidor:
     cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio):      
         self._protocolo_resultados_cliente = ProtocoloResultadosCliente(socket_cliente)
         signal.signal(signal.SIGTERM, self._sigterm_handler)
-
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad

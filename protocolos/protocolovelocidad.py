@@ -39,10 +39,11 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
         return vuelo
 
 
-    def iniciar(self, procesar_vuelo, procesar_finvuelo, id, cant_filtros_escalas):
+    def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_flush,id, cant_filtros_escalas):
         self.corriendo = True
         self.procesar_vuelo = procesar_vuelo
         self.procesar_finvuelo =  procesar_finvuelo
+        self.procesar_flush = procesar_flush
         self._cant_filtros_escalas = cant_filtros_escalas
         self._colas.crear_cola_por_topico(self.nombre_cola)
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)

@@ -47,7 +47,10 @@ class ProtocoloBase(ABC):
             contenido_a_persisitir = self.procesar_vuelo(id_cliente, vuelos)
         else:
             caracter, id_cliente = unpack(FORMATO_FIN, body)            
-            contenido_a_persisitir = self.procesar_finvuelo(id_cliente.decode('utf-8'))
+            if caracter == IDENTIFICADOR_FIN_VUELO:
+                contenido_a_persisitir = self.procesar_finvuelo(id_cliente.decode('utf-8'))
+            if caracter == IDENTIFICADOR_FLUSH:
+                contenido_a_persisitir = self.procesar_flush(id_cliente.decode('utf-8'))
 
         return id_cliente, contenido_a_persisitir
     
