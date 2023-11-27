@@ -1,10 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\protocolos",
+    "\\client",
+    "\\client\\comun",
+    "\\filtros\\filtro_distancia",
+    "\\filtros\\filtro_distancia\\comun",
+    "\\filtros\\filtro_escalas",
+    "\\filtros\\filtro_escalas\\comun",
+    "\\protocolos\\modelo",
     "\\server",
     "\\server\\comun"
   ],
-  "SelectedNode": "\\protocolos\\protocolo_resultados_servidor.py",
+  "SelectedNode": "\\client\\config.ini",
   "PreviewInSolutionExplorer": false
 }

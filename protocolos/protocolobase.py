@@ -41,16 +41,19 @@ class ProtocoloBase(ABC):
     
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        logging.debug(f'llego mensaje body: {body}')
+        
         contenido_a_persisitir = None
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             id_cliente, vuelos = self.decodificar_vuelos(body)
             contenido_a_persisitir = self.procesar_vuelo(id_cliente, vuelos)
         else:
-            caracter, id_cliente = unpack(FORMATO_FIN, body)            
-            if caracter == IDENTIFICADOR_FIN_VUELO:
+            caracter, id_cliente = unpack(FORMATO_FIN, body)  
+            logging.info(f'Llego otro tipo de mensaje: {caracter} cliente {id_cliente}')
+            if caracter == IDENTIFICADOR_FIN_VUELO.encode('utf-8'):
+                logging.info(f"RECIBE Fin de vuelo {id_cliente }")
                 contenido_a_persisitir = self.procesar_finvuelo(id_cliente.decode('utf-8'))
-            if caracter == IDENTIFICADOR_FLUSH:
+            if caracter == IDENTIFICADOR_FLUSH.encode('utf-8'):
+                logging.info(f"RECIBE FLUSH {id_cliente }")
                 contenido_a_persisitir = self.procesar_flush(id_cliente.decode('utf-8'))
 
         return id_cliente, contenido_a_persisitir
@@ -74,11 +77,13 @@ class ProtocoloBase(ABC):
             self._colas.enviar_mensaje_por_topico(self.nombre_cola, mensaje_empaquetado, id_filtro)
     
     def enviar_flush(self, id_cliente):
+        logging.info(f"ENVIA FLUSH {id_cliente }")
         for i in range(1, self._cant_filtros + 1):
             mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FLUSH.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
 
     def enviar_fin_vuelos(self, id_cliente):
+        logging.info(f"ENVIA FIN VUELO {id_cliente }")
         for i in range(1, self._cant_filtros + 1):
             mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)

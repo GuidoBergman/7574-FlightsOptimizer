@@ -19,6 +19,7 @@ class SesionCliente:
         
         signal.signal(signal.SIGTERM, self.sigterm_handler)        
         self._client_sock = _client_sock
+        
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
@@ -52,10 +53,9 @@ class SesionCliente:
             self._client_sock.close()            
             logging.info(f'Termina el proceso cliente {self.id_cliente}')
         except Exception as e:
-            self._enviar_flush()
             logging.error(f"{e}")
             logging.error(f'Error con el cliente {self.id_cliente}, manda señal de FLUSH')
-            
+            self._enviar_flush()
           
     def _recibir_aeropuertos(self):
         logging.info('Recibiendo aeropuertos')
@@ -68,6 +68,7 @@ class SesionCliente:
             self._protocoloDistancia.enviar_aeropuertos(self.id_cliente, aeropuertos)
             
     def _enviar_flush(self):
+        logging.info(f"Enviando FLUSH para cliente {self.id_cliente}")
         self._protocoloEscalas.enviar_flush(self.id_cliente)
         self._protocoloDistancia.enviar_flush(self.id_cliente)
         self._protocoloPrecio.enviar_flush(self.id_cliente)
