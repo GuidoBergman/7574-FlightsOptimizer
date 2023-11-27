@@ -42,6 +42,7 @@ class ProtocoloBase(ABC):
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
         logging.debug(f'llego mensaje body: {body}')
+        contenido_a_persisitir = None
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             id_cliente, vuelos = self.decodificar_vuelos(body)
             contenido_a_persisitir = self.procesar_vuelo(id_cliente, vuelos)
