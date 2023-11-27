@@ -22,6 +22,8 @@ class Client:
     def __init__(self, host, port, archivo_aeropuertos, archivo_vuelos ):
         # Initialize server socket
         server_socket = SocketComun()
+        from time import sleep
+        sleep(20)
         server_socket.connect(host, port)
         self.archivo_aeropuertos = archivo_aeropuertos
         self.archivo_vuelos = archivo_vuelos

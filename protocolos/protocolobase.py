@@ -48,13 +48,14 @@ class ProtocoloBase(ABC):
             contenido_a_persisitir = self.procesar_vuelo(id_cliente, vuelos)
         else:
             caracter, id_cliente = unpack(FORMATO_FIN, body)  
+            id_cliente = id_cliente.decode('utf-8')
             logging.info(f'Llego otro tipo de mensaje: {caracter} cliente {id_cliente}')
             if caracter == IDENTIFICADOR_FIN_VUELO.encode('utf-8'):
                 logging.info(f"RECIBE Fin de vuelo {id_cliente }")
-                contenido_a_persisitir = self.procesar_finvuelo(id_cliente.decode('utf-8'))
+                contenido_a_persisitir = self.procesar_finvuelo(id_cliente)
             if caracter == IDENTIFICADOR_FLUSH.encode('utf-8'):
                 logging.info(f"RECIBE FLUSH {id_cliente }")
-                contenido_a_persisitir = self.procesar_flush(id_cliente.decode('utf-8'))
+                contenido_a_persisitir = self.procesar_flush(id_cliente)
 
         return id_cliente, contenido_a_persisitir
     
@@ -87,3 +88,8 @@ class ProtocoloBase(ABC):
         for i in range(1, self._cant_filtros + 1):
             mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
+
+    def recuperar_siguiente_linea(self):
+        for nombre_archivo, linea in self._colas.recuperar_siguiente_linea():
+           yield nombre_archivo, linea
+

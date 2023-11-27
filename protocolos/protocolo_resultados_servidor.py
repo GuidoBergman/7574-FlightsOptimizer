@@ -100,7 +100,7 @@ class ProtocoloResultadosServidor:
         else:
             logging.error('acción: recibir_resultado_vuelo | resultado: error')
 
-        return None
+        return self.id_cliente, None
         
         
         

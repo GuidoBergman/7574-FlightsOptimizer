@@ -8,6 +8,8 @@ from multiprocessing import Process, Manager
 from socket_comun import SocketComun
 from comun.sesioncliente import SesionCliente
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
+import sys
+import traceback
 
 from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_SERVER
 from socket_comun_udp import SocketComunUDP
@@ -41,7 +43,7 @@ class Server:
         
 
     def sigterm_handler(self, _signo, _stack_frame):
-        logging.error('SIGTERM recibida')
+        logging.error('SIGTERM recibida (server)')
         self.cerrar()
         
 
@@ -91,6 +93,9 @@ class Server:
             self._run()
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
+            exc = sys.exception()
+            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+            traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
 
 

@@ -6,6 +6,8 @@ from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
 from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
+import sys
+import traceback
 
 from multiprocessing import Process
 from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_FILTRO_VELOCIDAD
@@ -74,6 +76,8 @@ class FiltroVelocidad:
           
         self.vuelos_mas_rapido_cliente[id_cliente] = vuelos_mas_rapido
 
+        return 'Holis'
+
 
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
@@ -104,15 +108,23 @@ class FiltroVelocidad:
         logging.info(f'Resultados enviados: {self.resultados_enviados}')
         del self.vuelos_mas_rapido_cliente[id_cliente]
         self._protocoloResultado.enviar_fin_resultados_rapidos(id_cliente)
+
+        return None
         
     def run(self):        
           logging.info("Iniciando filtro velocidad") 
           try:
+            for nombre_archivo, linea in self._protocolo.recuperar_siguiente_linea():
+                logging.info(f'Recuperé la linea {linea} del archivo {nombre_archivo}')
+
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
             self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_flush, self._id, self._cant_filtros_escalas) 
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
+            exc = sys.exception()
+            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+            traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
 
  

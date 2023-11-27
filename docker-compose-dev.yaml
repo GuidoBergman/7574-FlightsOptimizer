@@ -25,6 +25,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - CANT_HANDLERS=2
       - CANT_FILTROS_ESCALAS=2
@@ -49,6 +50,9 @@ services:
       - type: bind
         source: ./server/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/server
+        target: /data
 
   filtro_escalas1:
     container_name: filtro_escalas1
@@ -56,6 +60,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
       - CANT_FILTROS_VELOCIDAD=2
@@ -69,6 +74,9 @@ services:
       - type: bind
         source: ./filtros/filtro_escalas/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_escalas1
+        target: /data
     
   filtro_escalas2:
     container_name: filtro_escalas2
@@ -76,6 +84,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=2
       - CANT_FILTROS_VELOCIDAD=2
@@ -89,6 +98,9 @@ services:
       - type: bind
         source: ./filtros/filtro_escalas/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_escalas2
+        target: /data
     
   filtro_distancia1:
     container_name: filtro_distancia1
@@ -96,6 +108,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
       - CANT_WATCHDOGS=2
@@ -108,6 +121,10 @@ services:
       - type: bind
         source: ./filtros/filtro_distancia/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_distancia1
+        target: /data
+        
 
     
   filtro_distancia2:
@@ -116,6 +133,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=2
       - CANT_WATCHDOGS=2
@@ -128,6 +146,10 @@ services:
       - type: bind
         source: ./filtros/filtro_distancia/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_distancia2
+        target: /data
+        
 
     
   filtro_velocidad1:
@@ -136,6 +158,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
       - CANT_FILTROS_ESCALAS=2
@@ -148,6 +171,9 @@ services:
       - type: bind
         source: ./filtros/filtro_velocidad/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_velocidad1
+        target: /data
     
   filtro_velocidad2:
     container_name: filtro_velocidad2
@@ -155,6 +181,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=2
       - CANT_FILTROS_ESCALAS=2
@@ -167,6 +194,9 @@ services:
       - type: bind
         source: ./filtros/filtro_velocidad/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_velocidad2
+        target: /data
     
   filtro_precio1:
     container_name: filtro_precio1
@@ -174,6 +204,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
       - CANT_WATCHDOGS=2
@@ -186,6 +217,9 @@ services:
       - type: bind
         source: ./filtros/filtro_precio/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_precio1
+        target: /data
     
   filtro_precio2:
     container_name: filtro_precio2
@@ -193,6 +227,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=2
       - CANT_WATCHDOGS=2
@@ -205,6 +240,9 @@ services:
       - type: bind
         source: ./filtros/filtro_precio/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_precio2
+        target: /data
     
   calculador_promedio:
     container_name: calculador_promedio
@@ -212,6 +250,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
       - CANT_FILTROS_PRECIO=2
       - CANT_WATCHDOGS=2
@@ -224,6 +263,9 @@ services:
       - type: bind
         source: ./filtros/calculador_promedio/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/calculador_promedio
+        target: /data
 
   client:
     container_name: client
@@ -231,6 +273,7 @@ services:
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
     networks:
       - testing_net
@@ -251,6 +294,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
       - CANT_FILTROS_ESCALAS=2
       - CANT_FILTROS_DISTANCIA=2
@@ -267,6 +311,7 @@ services:
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
 
   watchdog2:
     container_name: watchdog2
@@ -274,6 +319,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
       - CANT_FILTROS_ESCALAS=2
       - CANT_FILTROS_DISTANCIA=2
@@ -290,6 +336,7 @@ services:
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   testing_net:

@@ -1,6 +1,8 @@
 import sys
+import os
 
 FILEPATH='docker-compose-dev.yaml'
+BASEPATH_DATA = 'data/'
 
 
 if len(sys.argv) < 6 or sys.argv[1] == '-h':
@@ -26,6 +28,7 @@ cantPrecios = int(sys.argv[5])
 cantWatchdogs = int(sys.argv[6])
     
 
+directoriosACrear = []
 
 # Define the text of the Docker Compose file
 textInitialConfig = """version: '3.9'
@@ -68,6 +71,7 @@ server = f"""
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - CANT_HANDLERS={cantHandlers}
       - CANT_FILTROS_ESCALAS={cantEscalas}
@@ -84,7 +88,12 @@ server = f"""
       - type: bind
         source: ./server/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/server
+        target: /data
 """
+
+directoriosACrear.append('server')
 
 
 textNetworkConfig = """
@@ -111,6 +120,7 @@ for i in range(1, cantEscalas+1):
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID={i}
       - CANT_FILTROS_VELOCIDAD={cantRapidos}
@@ -124,7 +134,13 @@ for i in range(1, cantEscalas+1):
       - type: bind
         source: ./filtros/filtro_escalas/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_escalas{i}
+        target: /data
     """
+
+    directoriosACrear.append(f'filtro_escalas{i}')
+
 for i in range(1, cantDistancias+1):
     filtros += f"""
   filtro_distancia{i}:
@@ -133,6 +149,7 @@ for i in range(1, cantDistancias+1):
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID={i}
       - CANT_WATCHDOGS={cantWatchdogs}
@@ -145,8 +162,14 @@ for i in range(1, cantDistancias+1):
       - type: bind
         source: ./filtros/filtro_distancia/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_distancia{i}
+        target: /data
+        
 
     """
+    directoriosACrear.append(f'filtro_distancia{i}')
+
 for i in range(1, cantRapidos+1):
     filtros += f"""
   filtro_velocidad{i}:
@@ -155,6 +178,7 @@ for i in range(1, cantRapidos+1):
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID={i}
       - CANT_FILTROS_ESCALAS={cantEscalas}
@@ -167,7 +191,13 @@ for i in range(1, cantRapidos+1):
       - type: bind
         source: ./filtros/filtro_velocidad/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_velocidad{i}
+        target: /data
     """
+
+    directoriosACrear.append(f'filtro_velocidad{i}')
+
 for i in range(1, cantPrecios+1):
     filtros += f"""
   filtro_precio{i}:
@@ -176,6 +206,7 @@ for i in range(1, cantPrecios+1):
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID={i}
       - CANT_WATCHDOGS={cantWatchdogs}
@@ -188,7 +219,12 @@ for i in range(1, cantPrecios+1):
       - type: bind
         source: ./filtros/filtro_precio/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/filtro_precio{i}
+        target: /data
     """
+
+    directoriosACrear.append(f'filtro_precio{i}')
 
 watchdogs=''
 for i in range(1, cantWatchdogs+1):
@@ -199,6 +235,7 @@ for i in range(1, cantWatchdogs+1):
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
       - CANT_FILTROS_ESCALAS={cantEscalas}
       - CANT_FILTROS_DISTANCIA={cantDistancias}
@@ -215,6 +252,7 @@ for i in range(1, cantWatchdogs+1):
       - type: bind
         source: ./watchdog/config.ini
         target: /config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
 """
 
 
@@ -225,6 +263,7 @@ cliente = """
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
     networks:
       - testing_net
@@ -247,6 +286,7 @@ calculadorPromedio = f"""
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
       - CANT_FILTROS_PRECIO={cantPrecios}
       - CANT_WATCHDOGS={cantWatchdogs}
@@ -259,7 +299,12 @@ calculadorPromedio = f"""
       - type: bind
         source: ./filtros/calculador_promedio/config.ini
         target: /config.ini
+      - type: bind
+        source: ./data/calculador_promedio
+        target: /data
 """
+
+directoriosACrear.append('calculador_promedio')
 
 dockerComposeFile = open(FILEPATH, 'w')
 fileContent = [textInitialConfig, textRabbitConfig, server, filtros, calculadorPromedio,
@@ -269,3 +314,8 @@ dockerComposeFile.writelines(fileContent)
  
 
 dockerComposeFile.close()
+
+for directorio in directoriosACrear:
+    directorio = BASEPATH_DATA + directorio
+    if not os.path.exists(directorio): 
+      os.makedirs(directorio) 

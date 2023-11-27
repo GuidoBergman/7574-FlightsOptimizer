@@ -6,6 +6,8 @@ from manejador_colas import ManejadorColas
 from modelo.estado import Estado
 from modelo.Vuelo import Vuelo
 from multiprocessing import Process
+import sys
+import traceback
 
 
 from protocolofiltrodistancia import ProtocoloFiltroDistancia
@@ -100,6 +102,9 @@ class FiltroDistancia:
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_aeropuerto, self.procesar_finaeropuerto, self.procesar_flush, self._id)
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
+            exc = sys.exception()
+            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+            traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
         
 
