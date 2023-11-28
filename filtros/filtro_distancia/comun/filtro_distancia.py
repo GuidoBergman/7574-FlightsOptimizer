@@ -1,6 +1,9 @@
+from functools import lru_cache
+import os
 from struct import unpack, pack, calcsize
 import logging
 import signal
+from comun.lista_aeropuertos import ListaAeropuertos
 from geopy.distance import geodesic
 from manejador_colas import ManejadorColas
 from modelo.estado import Estado
@@ -32,20 +35,24 @@ class FiltroDistancia:
         IDENTIFICADOR_FILTRO_DISTANCIA, periodo_heartbeat, id)
 
     def procesar_aeropuerto(self, id_cliente, aeropuertos_nuevos):
+
+        # LOGGING
         self.aeropuertos_procesados += 1
         if (self.aeropuertos_procesados % 100) == 1:
             logging.info(f"Procesando aeropuerto: {self.aeropuertos_procesados}")        
-        aero_nuevo = {}
+            
+        # Proceso aeropuertos        
         if (id_cliente in self.aeropuertos):
-            aero_nuevo = self.aeropuertos[id_cliente]        
-        for aeropuerto in aeropuertos_nuevos:
-            aero_nuevo[aeropuerto.id] = aeropuerto
+            aero_nuevo = self.aeropuertos[id_cliente]
+        else:
+            aero_nuevo = ListaAeropuertos(id_cliente)            
+        aero_nuevo.agregar_aeropuertos(aeropuertos_nuevos)
         self.aeropuertos[id_cliente] = aero_nuevo
-
         return None
 
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
+        self.aeropuertos[id_cliente].borrar_archivos()
         return None
         
     def procesar_finaeropuerto(self, id_cliente):        
@@ -55,7 +62,7 @@ class FiltroDistancia:
     
     def procesar_vuelo(self, id_cliente, vuelos):        
         self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 2) == 1:
+        if (self.vuelos_procesados % 300) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
             
         aeropuertos_cliente = self.aeropuertos[id_cliente]
@@ -84,21 +91,39 @@ class FiltroDistancia:
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos distancia {id_cliente}')
         self._protocoloResultado.enviar_fin_resultados_distancia(id_cliente)
+        self.aeropuertos[id_cliente].borrar_archivos()
         del self.aeropuertos[id_cliente]        
 
         return None
-
+    
+    
+    @lru_cache(maxsize=None)
+    def distancia_entrecoordenadas(self,coordenadas_aeropuerto1, coordenadas_aeropuerto2):
+        distancia = geodesic(coordenadas_aeropuerto1, coordenadas_aeropuerto2).kilometers
+        return int(distancia)
+        
     def calcular_distancia(self,aeropuerto1, aeropuerto2):
         coordenadas_aeropuerto1 = (aeropuerto1.latitud, aeropuerto1.longitud)
         coordenadas_aeropuerto2 = (aeropuerto2.latitud, aeropuerto2.longitud)
-        distancia = geodesic(coordenadas_aeropuerto1, coordenadas_aeropuerto2).kilometers
-        return int(distancia)
-    
+        return self.distancia_entrecoordenadas(coordenadas_aeropuerto1, coordenadas_aeropuerto2)
+
+    def recuperar_aeropuertos(self):
+        archivos_definitivos = [archivo for archivo in os.listdir() if archivo.startswith("aero_def_")]
+        for archivo in archivos_definitivos:
+            id_cliente = archivo.split("_")[2].split(".")[0]
+            logging.info(f"Recuperando aeropuertos de {id_cliente}")
+            lista_aeropuertos = ListaAeropuertos(id_cliente)
+            lista_aeropuertos.recuperar_aeropuertos()
+            self.aeropuertos[id_cliente] = lista_aeropuertos
+
+
+        
     def run(self):
         try:
           logging.info(f'Iniciando Filtro Distancia')
           self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
           self._handle_protocolo_heartbeat.start()
+          self.recuperar_aeropuertos()
           self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_aeropuerto, self.procesar_finaeropuerto, self.procesar_flush, self._id)
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
