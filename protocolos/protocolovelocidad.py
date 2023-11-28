@@ -24,7 +24,8 @@ FORMATO_FIN_VUELO = '!c32s'
 
 class ProtocoloFiltroVelocidad(ProtocoloBase):
 
-    def __init__(self, cant_filtros=None, id_cliente=None):    
+    def __init__(self, cant_filtros=None, id_cliente=None): 
+       super().__init__()   
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self._colas = ManejadorColas()
        self.corriendo = False
@@ -64,4 +65,4 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
         
     def cerrar(self):
         self._colas.cerrar()
-        
+        super().cerrar()

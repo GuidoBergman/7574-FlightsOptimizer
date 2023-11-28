@@ -46,7 +46,6 @@ class FiltroVelocidad:
         return minutos_totales
 
     def procesar_vuelo(self, id_cliente, vuelos):
-        
         self.vuelos_procesados += 1
         if (self.vuelos_procesados % 300) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
@@ -114,8 +113,8 @@ class FiltroVelocidad:
     def run(self):        
           logging.info("Iniciando filtro velocidad") 
           try:
-            for nombre_archivo, linea in self._protocolo.recuperar_siguiente_linea():
-                logging.info(f'Recuperé la linea {linea} del archivo {nombre_archivo}')
+            for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
+                logging.info(f'Recuperé la linea {linea} del cliente {id_cliente}')
 
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()

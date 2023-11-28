@@ -30,7 +30,8 @@ NOMBRE_COLA = 'cola_escalas'
 
 class ProtocoloFiltroEscalas(ProtocoloBase):
        
-    def __init__(self, cant_filtros=None, id_cliente=None):    
+    def __init__(self, cant_filtros=None, id_cliente=None): 
+       super().__init__()   
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
@@ -72,5 +73,6 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
 
     def cerrar(self):
         self._colas.cerrar()
+        super().cerrar()
         
         

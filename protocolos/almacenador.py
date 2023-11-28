@@ -31,10 +31,18 @@ class Almacenador:
             logging.info(f'Recuperando archivo {nombre_archivo}')
             with open(join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION), 'r') as archivo:
                 for linea in archivo:
-                    logging.info(f'Linea encontrada: {linea}')
+                    logging.debug(f'Linea encontrada: {linea}')
                     linea = linea.rstrip("\n")               
                     yield nombre_archivo, linea
                 logging.info(f'Termino la recuperación del archivo {nombre_archivo}')
+
+    def eliminar_archivo(self, nombre_archivo):
+        try:
+            self._archivos[nombre_archivo].close()
+            os.remove(join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION))
+            del self._archivos[nombre_archivo]
+        except (FileNotFoundError, KeyError):
+            logging.error(f'El nombre de archivo {nombre_archivo} es invalido')
 
     def cerrar(self):
         for archivo in self._archivos.values():

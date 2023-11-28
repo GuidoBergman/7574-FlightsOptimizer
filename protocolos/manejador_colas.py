@@ -4,23 +4,21 @@ from math import log
 import queue
 import pika
 import os
-from almacenador import Almacenador
+
 
 HOST = 'rabbitmq'
 
 class Wrapper:
-    def __init__(self, callback_function, almacenador):
+    def __init__(self, callback_function, post_ack_callback=None):
         self.callback_function = callback_function
-        self._almacenador = almacenador        
+        self._post_ack_callback = post_ack_callback        
 
     def funcion_wrapper(self, channel, method, properties, body):
-        nombre_archivo, contenido = self.callback_function(body)
-        if contenido:
-            contenido = str(hash(body)) + ',' + str(contenido)
-        else:
-            contenido = str(hash(body))
-        self._almacenador.guardar_linea(nombre_archivo, contenido)
+        self.callback_function(body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
+
+        if self._post_ack_callback:
+            self._post_ack_callback(body)
 
 class ManejadorColas:
     def __init__(self):
@@ -31,7 +29,7 @@ class ManejadorColas:
         self._consumer_tags = {}
         self._wrapers = {}
         self._nombrecolas = {}
-        self._almacenador = Almacenador()
+        
 
     def crear_cola(self, nombre_cola):
         self._channel.queue_declare(queue=nombre_cola)
@@ -43,12 +41,12 @@ class ManejadorColas:
         self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
         
 
-    def vincular_wrapper(self, nombre_cola, callback_function):
+    def vincular_wrapper(self, nombre_cola, callback_function, post_ack_callback=None):
        nombre_queue=nombre_cola
        if (nombre_cola in self._nombrecolas):
             nombre_queue=self._nombrecolas[nombre_cola]
             
-       wr = Wrapper(callback_function, self._almacenador)
+       wr = Wrapper(callback_function, post_ack_callback)
        self._consumer_tags[nombre_cola] = self._channel.basic_consume(queue=nombre_queue, 
         on_message_callback=wr.funcion_wrapper)
        self._wrapers[nombre_cola] = wr
@@ -103,16 +101,5 @@ class ManejadorColas:
     def cerrar(self):
         try:
             self._channel.close()
-            self._almacenador.cerrar()
         except:
             pass
-
-
-    def recuperar_siguiente_linea(self):
-        for nombre_archivo, linea in self._almacenador.obtener_siguiente_linea():
-            linea = linea.split(',')
-            hash_mensaje = linea[0]
-            logging.info(f'Encontré el mensaje procesado {hash_mensaje}')
-
-            if len(linea) > 1:
-                yield nombre_archivo, linea[1:]

@@ -41,13 +41,16 @@ class CalculadorPromedio:
             self._protocolo.enviar_promediogeneral(id_cliente, promCliente.promedio)
             del self.clientes[id_cliente]
 
-        return None
+        informacion_a_persistir = str(promedio) + ',' + str(cantidad)
+        return informacion_a_persistir
 
     def run(self):
           logging.info(f"Iniciando promedios")  
           try:
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
+            for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
+                logging.info(f'Recuperé la linea {linea} del cliente {id_cliente}')
             self._protocolo.iniciar_promedio(self.procesar_promedio)
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')

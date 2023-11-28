@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 from struct import unpack, pack, calcsize
+from recuperador import Recuperador
 
 
 STRING_ENCODING = 'utf-8'
@@ -11,6 +12,9 @@ IDENTIFICADOR_FIN_VUELO = 'F'
 FORMATO_FIN = '!c32s'
 
 class ProtocoloBase(ABC):
+
+    def __init__(self):
+        self._recuperador = Recuperador()
     
     @abstractmethod
     def traducir_vuelo(self, vuelo):
@@ -41,14 +45,17 @@ class ProtocoloBase(ABC):
     
     def callback_function(self, body):
         # procesar los mensajes, llamando a procesar_vuelo o procesar_finvuelo segun corresponda
-        
         contenido_a_persisitir = None
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             id_cliente, vuelos = self.decodificar_vuelos(body)
+            if self._recuperador.es_duplicado(id_cliente, body):
+                return
             contenido_a_persisitir = self.procesar_vuelo(id_cliente, vuelos)
         else:
             caracter, id_cliente = unpack(FORMATO_FIN, body)  
             id_cliente = id_cliente.decode('utf-8')
+            if self._recuperador.es_duplicado(id_cliente, body):
+                return
             logging.info(f'Llego otro tipo de mensaje: {caracter} cliente {id_cliente}')
             if caracter == IDENTIFICADOR_FIN_VUELO.encode('utf-8'):
                 logging.info(f"RECIBE Fin de vuelo {id_cliente }")
@@ -57,7 +64,7 @@ class ProtocoloBase(ABC):
                 logging.info(f"RECIBE FLUSH {id_cliente }")
                 contenido_a_persisitir = self.procesar_flush(id_cliente)
 
-        return id_cliente, contenido_a_persisitir
+        self._recuperador.almacenar(id_cliente, body, contenido_a_persisitir)
     
 
     def enviar_vuelos(self, id_cliente, vuelos):
@@ -90,6 +97,9 @@ class ProtocoloBase(ABC):
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
 
     def recuperar_siguiente_linea(self):
-        for nombre_archivo, linea in self._colas.recuperar_siguiente_linea():
+        for nombre_archivo, linea in self._recuperador.recuperar_siguiente_linea():
            yield nombre_archivo, linea
 
+
+    def cerrar(self):
+        self._recuperador.cerrar()

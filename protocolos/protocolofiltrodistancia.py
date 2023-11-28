@@ -31,7 +31,7 @@ NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
 class ProtocoloFiltroDistancia(ProtocoloBase):
        
     def __init__(self, cant_filtros=None, id_cliente=None):
-       
+       super().__init__()
        self.TAMANO_VUELO = calcsize(FORMATO_MENSAJE_UNVUELO)
        self.nombre_cola = NOMBRE_COLA
        self._colas = ManejadorColas()
@@ -124,6 +124,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
 
     def cerrar(self):
         self._colas.cerrar()
+        super().cerrar()
         
         
         
