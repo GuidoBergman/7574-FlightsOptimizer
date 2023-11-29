@@ -112,21 +112,6 @@ class FiltroDistancia:
                     aero_nuevo = ListaAeropuertos(id_cliente)            
                 aero_nuevo.recuperar_aeropuertos(linea)
                 self.aeropuertos[id_cliente] = aero_nuevo
-
-    
-                
-                
-                
-
-        archivos_definitivos = [archivo for archivo in os.listdir() if archivo.startswith("aero_def_")]
-        for archivo in archivos_definitivos:
-            id_cliente = archivo.split("_")[2].split(".")[0]
-            logging.info(f"Recuperando aeropuertos de {id_cliente}")
-            lista_aeropuertos = ListaAeropuertos(id_cliente)
-            lista_aeropuertos.recuperar_aeropuertos()
-            self.aeropuertos[id_cliente] = lista_aeropuertos
-
-
         
     def run(self):
         try:
