@@ -55,8 +55,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         elif body.startswith(IDENTIFICADOR_FIN_AEROPUERTO.encode('utf-8')):
             caracter, id_cliente = unpack(FORMATO_FIN, body)
             contenido_persistir = self.procesar_finaeropuerto(id_cliente.decode('utf-8'))
-
-        return id_cliente, contenido_persistir
+        self._recuperador.almacenar(id_cliente, body, contenido_persistir)
 
     
     def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto,procesar_flush, id):

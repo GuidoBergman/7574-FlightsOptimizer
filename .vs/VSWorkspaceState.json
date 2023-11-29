@@ -1,7 +1,13 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\filtros",
+    "\\filtros\\filtro_distancia",
+    "\\filtros\\filtro_distancia\\comun",
+    "\\filtros\\filtro_velocidad",
+    "\\filtros\\filtro_velocidad\\comun",
+    "\\protocolos"
   ],
-  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\7574-FlightsOptimizer",
+  "SelectedNode": "\\filtros\\filtro_distancia\\comun\\filtro_distancia.py",
   "PreviewInSolutionExplorer": false
 }

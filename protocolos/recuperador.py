@@ -17,7 +17,7 @@ class Recuperador():
         for nombre_archivo, linea in self._almacenador.obtener_siguiente_linea():
             linea = linea.split(',')
             hash_mensaje = linea[0]
-            logging.info(f'Encontré el mensaje procesado {hash_mensaje}')
+            logging.login(f'Encontré el mensaje procesado {hash_mensaje}')
 
             if len(linea) > 1:
                 yield nombre_archivo, linea[1:]
