@@ -124,9 +124,7 @@ services:
       - type: bind
         source: ./data/filtro_distancia1
         target: /data
-        
 
-    
   filtro_distancia2:
     container_name: filtro_distancia2
     image: filtro_distancia:latest
@@ -149,9 +147,7 @@ services:
       - type: bind
         source: ./data/filtro_distancia2
         target: /data
-        
 
-    
   filtro_velocidad1:
     container_name: filtro_velocidad1
     image: filtro_velocidad:latest
@@ -283,6 +279,28 @@ services:
     volumes:
       - type: bind
         source: ./client/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data
+        target: /data
+
+        
+  client_prueba1:
+    container_name: client_prueba1
+    image: client_prueba:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server
+    
+    volumes:
+      - type: bind
+        source: ./client_prueba/config.ini
         target: /config.ini
       - type: bind
         source: ./data
