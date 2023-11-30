@@ -281,30 +281,9 @@ services:
         source: ./client/config.ini
         target: /config.ini
       - type: bind
-        source: ./data
+        source: ./data/client
         target: /data
 
-        
-  client_prueba1:
-    container_name: client_prueba1
-    image: client_prueba:latest
-    entrypoint: python3 /main.py 
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONHASHSEED=0
-      - LOGGING_LEVEL=INFO
-    networks:
-      - testing_net
-    depends_on:
-      - server
-    
-    volumes:
-      - type: bind
-        source: ./client_prueba/config.ini
-        target: /config.ini
-      - type: bind
-        source: ./data
-        target: /data
 
   watchdog1:
     container_name: watchdog1

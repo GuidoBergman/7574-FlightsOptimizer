@@ -6,6 +6,9 @@ def borrar_archivos_en_directorios(base_dir):
 
     # Iterar sobre cada directorio y borrar archivos
     for directorio in directorios:
+        if 'client' in directorio:
+            continue
+        
         directorio_path = os.path.join(base_dir, directorio)
         
         # Obtener la lista de archivos en el directorio

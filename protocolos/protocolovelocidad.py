@@ -60,9 +60,10 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
 
     # Aqui se envia el id del filtro que manda (en vez de uno por defecto)
     def enviar_fin_vuelos(self, id_cliente, id_enviador):
-        logging.info(f"ENVIA FIN VUELO {id_cliente }")
+        logging.info(f"ENVIA FIN VUELO {id_cliente }  id enviador: {id_enviador}")
         for i in range(1, self._cant_filtros + 1):
             mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING), id_enviador)
+            logging.debug(f'Body mensaje fin de vuelo enviado: {mensaje}')
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
 
 

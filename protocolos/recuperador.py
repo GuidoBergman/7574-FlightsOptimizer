@@ -17,7 +17,7 @@ class Recuperador():
         else:
             contenido_a_peristir = hash_msj
         self._almacenador.guardar_linea(id_cliente, contenido_a_peristir)
-        logging.info(f'Guardo el hash: {hash_msj} que corresponde al mensaje {body_msj}')
+        logging.debug(f'Guardo el hash: {hash_msj} que corresponde al mensaje {body_msj}')
         self._guardar_hash_mensaje(hash_msj)
         
     
