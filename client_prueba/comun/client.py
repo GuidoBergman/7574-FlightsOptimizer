@@ -14,19 +14,21 @@ from protocolo_resultados_cliente import (ProtocoloResultadosCliente,
             IDENTIFICADOR_FIN_PRECIO)
 from multiprocessing import Process
 from comun.enviador_vuelos import EnviadorVuelos
+from comun.datos_archivo import DatosArchivo
 
-CANT_TIPOS_RESULTADO = 4
+CANT_TIPOS_RESULTADO = 3
 CHUNK_AEROPUERTOS = 300
 
 class Client:
-    def __init__(self, host, port, archivo_aeropuertos, archivo_vuelos ):
+    def __init__(self, host, port, archivo_aeropuertos, datosarchivo: DatosArchivo):
         # Initialize server socket
         server_socket = SocketComun()
         from time import sleep
         sleep(20)
         server_socket.connect(host, port)
         self.archivo_aeropuertos = archivo_aeropuertos
-        self.archivo_vuelos = archivo_vuelos
+        self.datosarchivo = datosarchivo
+        self.archivo_vuelos = datosarchivo.nombre_archivo
         self._protocolo = ProtocoloCliente(server_socket)
         self._protocolo_resultados = ProtocoloResultadosCliente(server_socket)
         signal.signal(signal.SIGTERM, self.sigterm_handler)    
@@ -55,58 +57,40 @@ class Client:
         self._protocolo.enviar_fin_aeropuertos()
 
     def _recibir_resultados(self):
+        
         fines_recibidos = set()
         resultados_recibidos = 0
-        archivo_ResultadoFiltroDistancia = '/data/ResultadoFiltroDistancia.txt'
-        archivo_ResultadoFiltroEscalas = '/data/ResultadoFiltroEscalas.txt'    
-        archivo_ResultadoVuelosRapidos = '/data/ResultadoVuelosRapidos.txt'    
-        archivo_ResultadoEstadisticaPrecios = '/data/ResultadoEstadisticaPrecios.txt'
-
-        if os.path.exists(archivo_ResultadoFiltroDistancia):
-            os.remove(archivo_ResultadoFiltroDistancia)      
-        if os.path.exists(archivo_ResultadoFiltroEscalas):
-            os.remove(archivo_ResultadoFiltroEscalas)
-        if os.path.exists(archivo_ResultadoVuelosRapidos):
-            os.remove(archivo_ResultadoVuelosRapidos)
-        if os.path.exists(archivo_ResultadoEstadisticaPrecios):
-            os.remove(archivo_ResultadoEstadisticaPrecios)
-
-        with open(archivo_ResultadoFiltroDistancia, 'w') as aResultadoFiltroDistancia:
-            with open(archivo_ResultadoFiltroEscalas, 'w') as aResultadoFiltroEscalas:
-                with open(archivo_ResultadoVuelosRapidos, 'w') as aResultadoVuelosRapidos:
-                    with open(archivo_ResultadoEstadisticaPrecios, 'w') as aResultadoEstadisticaPrecios:
-                        while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
-                            logging.debug('action: recibir_resultado | estado: esperando')
-                            estado, resultados = self._protocolo_resultados.recibir_resultado()
-                            if estado == STATUS_ERR:
-                                logging.error('action: recibir_resultado | resultado: error')
-                                return
-                            elif estado == IDENTIFICADOR_FIN_RAPIDOS:
-                                fines_recibidos.add(estado)
-                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
-                            elif estado == IDENTIFICADOR_FIN_DISTANCIA:
-                                fines_recibidos.add(estado)
-                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
-                            elif estado == IDENTIFICADOR_FIN_ESCALAS:
-                                fines_recibidos.add(estado)
-                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
-                            elif estado == IDENTIFICADOR_FIN_PRECIO:
-                                fines_recibidos.add(estado)
-                                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
-                            else:
-                                for resultado in resultados:
-                                    resultados_recibidos +=1;
-                                    if (resultados_recibidos % 1000) == 1:
-                                        logging.info(f"Resultados recibidos : {resultados_recibidos}")
-                                    if type(resultado) is ResultadoFiltroDistancia: 
-                                        aResultadoFiltroDistancia.write(resultado.convertir_a_str() + '\n'),
-                                    if type(resultado) is ResultadoFiltroEscalas: 
-                                        aResultadoFiltroEscalas.write(resultado.convertir_a_str() + '\n'),
-                                    if type(resultado) is ResultadoVuelosRapidos: 
-                                        aResultadoVuelosRapidos.write(resultado.convertir_a_str() + '\n' ),
-                                    if type(resultado) is ResultadoEstadisticaPrecios: 
-                                        aResultadoEstadisticaPrecios.write(resultado.convertir_a_str() + '\n')
-                                    
+        while len(fines_recibidos) < CANT_TIPOS_RESULTADO:
+            logging.debug('action: recibir_resultado | estado: esperando')
+            estado, resultados = self._protocolo_resultados.recibir_resultado()
+            if estado == STATUS_ERR:
+                logging.error('action: recibir_resultado | resultado: error')
+                return
+            elif estado == IDENTIFICADOR_FIN_RAPIDOS:
+                fines_recibidos.add(estado)
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos rápidos')
+            elif estado == IDENTIFICADOR_FIN_DISTANCIA:
+                fines_recibidos.add(estado)
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con distancia larga')
+            elif estado == IDENTIFICADOR_FIN_ESCALAS:
+                fines_recibidos.add(estado)
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de los vuelos con más escalas')
+            elif estado == IDENTIFICADOR_FIN_PRECIO:
+                fines_recibidos.add(estado)
+                logging.info('action: recibir_resultado | resultado: se recibieron todos los resultados de las estadisticas de los precios costosos')
+            else:
+                for resultado in resultados:
+                    resultados_recibidos +=1
+                    if (resultados_recibidos % 1000) == 1:
+                        logging.info(f"Resultados recibidos : {resultados_recibidos}")
+                    if type(resultado) is ResultadoFiltroDistancia: 
+                        self.datosarchivo.cant_result_rec_distancia += 1
+                    if type(resultado) is ResultadoFiltroEscalas: 
+                        self.datosarchivo.cant_result_rec_escalas += 1
+                    if type(resultado) is ResultadoVuelosRapidos: 
+                        self.datosarchivo.cant_result_rec_velocidad += 1
+                    if type(resultado) is ResultadoEstadisticaPrecios: 
+                        self.datosarchivo.cant_result_rec_precio += 1
         logging.info(f'action: recibir_resultado | resultado: se recibieron todos los resultados {resultados_recibidos}')
         
 
@@ -144,6 +128,7 @@ class Client:
 
         self._protocolo.cerrar()
         self._handler_proceso.join()
+        self.datosarchivo.validar()
 
 
                 

@@ -2,8 +2,10 @@
 
 from configparser import ConfigParser
 from comun.client import Client
+from comun.datos_archivo import DatosArchivo
 import logging
 import os
+import random
 
 
 def initialize_config():
@@ -52,8 +54,21 @@ def main():
     logging.debug(f"action: config | result: success | host: {host} |  port: {port} | "
                   f"logging_level: {logging_level} ")
 
-    # Initialize server and start server loop
-    client = Client(host, port, archivo_aeropuertos, archivo_vuelos)
+    # Inicializo los arhvicos de prueba
+    datosarchivos = []
+    datosarchivos.append(DatosArchivo("archivo_prueba1.csv", 0, 873, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba2.csv", 100, 32, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba3.csv", 100, 32, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba4.csv", 0, 873, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba5.csv", 72, 0, 508, 234))
+    datosarchivos.append(DatosArchivo("archivo_prueba6.csv", 100, 32, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba7.csv", 100, 32, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba8.csv", 100, 32, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba9.csv", 100, 32, 423, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba10.csv", 100, 32, 423, 254))
+    elemento_aleatorio = random.choice(datosarchivos)
+    logging.info(f"Iniciando pruebas para archivo: {elemento_aleatorio.nombre_archivo}")
+    client = Client(host, port, archivo_aeropuertos, elemento_aleatorio)
     client.run()
 
 def initialize_log(logging_level):
