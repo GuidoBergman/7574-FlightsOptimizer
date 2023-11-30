@@ -20,8 +20,8 @@ ESTADO_FIN_VUELOS = 1
 ESTADO_FIN_AEROPUERTOS = 1
 
 STRING_ENCODING = 'utf-8'
-FORMATO_MENSAJE_UNVUELO = '!3s3sf'
-FORMATO_MENSAJE_PROMEDIO = '!32sfi'
+FORMATO_MENSAJE_UNVUELO = '!32s3s3sf'
+FORMATO_MENSAJE_PROMEDIO = '!32sfiH'
 NOMBRE_COLA = 'cola_precios'
 NOMBRE_COLAPROMEDIO = 'cola_promedios'
 NOMBRE_COLAPROMEDIOGENERAL = 'cola_preciosgeneral'
@@ -43,8 +43,8 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
        
 
     def decodificar_vuelo(self, mensaje):        
-        origen, destino, precio = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)
-        vuelo = Vuelo("", origen.decode('utf-8'), destino.decode('utf-8'), precio, "", 0, 0)
+        id, origen, destino, precio = unpack(FORMATO_MENSAJE_UNVUELO, mensaje)
+        vuelo = Vuelo(id.decode('utf-8'), origen.decode('utf-8'), destino.decode('utf-8'), precio, "", 0, 0)
         return vuelo
     
 
@@ -53,14 +53,20 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         logging.debug(f'llego el promedio general: {body}')
         id_cliente, promedio_general = unpack("32sf", body)
         id_cliente = id_cliente.decode('utf-8')
+        if self._recuperador.es_duplicado(id_cliente, body):
+                logging.info(f'Se recibió un promedio general duplicado: {body}')
+                return
         contenido = self.procesar_promediogeneral(id_cliente, promedio_general)
-        return id_cliente, contenido
+        self._recuperador.almacenar(id_cliente, body, contenido)
         
     def callback_promedio(self, body):
-        id_cliente, promedio, cantidad = unpack(FORMATO_MENSAJE_PROMEDIO, body)
+        id_cliente, promedio, cantidad, id_filtro = unpack(FORMATO_MENSAJE_PROMEDIO, body)
         id_cliente = id_cliente.decode('utf-8')
+        if self._recuperador.es_duplicado(id_cliente, body):
+                logging.info(f'Se recibió un promedio duplicado: {body}')
+                return
         contenido = self.procesar_promedio(id_cliente, promedio, cantidad)
-        return id_cliente, contenido
+        self._recuperador.almacenar(id_cliente, body, contenido)
 
     def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_promediogeneral,procesar_flush, id):
         self.corriendo = True
@@ -87,18 +93,20 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
     
     def traducir_vuelo(self, vuelo):
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_UNVUELO,
+                                      vuelo.id_vuelo.encode(STRING_ENCODING),
                                       vuelo.origen.encode(STRING_ENCODING),
                                       vuelo.destino.encode(STRING_ENCODING),
                                       float(vuelo.precio)
                                       )           
         return mensaje_empaquetado
         
-    def enviar_promedio(self, id_cliente, promedio: float, cantidad: int):
+    def enviar_promedio(self, id_cliente, promedio: float, cantidad: int, id_filtro: int):
         logging.debug(f"enviando promedio {promedio} cantidad {cantidad}")
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_PROMEDIO,
                                       id_cliente.encode('utf-8'),
                                       promedio,
-                                      cantidad)           
+                                      cantidad,
+                                      id_filtro)           
         
         logging.debug(f"enviando mensaje {mensaje_empaquetado}")
         self._colas.enviar_mensaje(NOMBRE_COLAPROMEDIO, mensaje_empaquetado)

@@ -55,8 +55,8 @@ class FiltroEscalas:
         
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos Cliente: {id_cliente}')
-        self._protocoloVelocidad.enviar_fin_vuelos(id_cliente)
-        self._protocoloResultado.enviar_fin_resultados_escalas(id_cliente)
+        self._protocoloVelocidad.enviar_fin_vuelos(id_cliente, self._id)
+        self._protocoloResultado.enviar_fin_resultados_escalas(id_cliente, self._id)
 
         return None
         

@@ -87,7 +87,7 @@ class FiltroDistancia:
 
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos distancia {id_cliente}')
-        self._protocoloResultado.enviar_fin_resultados_distancia(id_cliente)
+        self._protocoloResultado.enviar_fin_resultados_distancia(id_cliente, self._id)
         del self.aeropuertos[id_cliente]
         return None
 
@@ -103,7 +103,7 @@ class FiltroDistancia:
 
     def _recuperar_aeropuertos(self):
         for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
-            logging.info(f'Recuperé la linea del cliente {id_cliente}')
+            logging.debug(f'Recuperé la linea del cliente {id_cliente}')
             # Proceso aeropuertos        
             if linea[0] == ("A"):
                 if (id_cliente in self.aeropuertos):
@@ -112,20 +112,6 @@ class FiltroDistancia:
                     aero_nuevo = ListaAeropuertos(id_cliente)            
                 aero_nuevo.recuperar_aeropuertos(linea)
                 self.aeropuertos[id_cliente] = aero_nuevo
-
-    
-                
-                
-                
-
-        archivos_definitivos = [archivo for archivo in os.listdir() if archivo.startswith("aero_def_")]
-        for archivo in archivos_definitivos:
-            id_cliente = archivo.split("_")[2].split(".")[0]
-            logging.info(f"Recuperando aeropuertos de {id_cliente}")
-            lista_aeropuertos = ListaAeropuertos(id_cliente)
-            lista_aeropuertos.recuperar_aeropuertos()
-            self.aeropuertos[id_cliente] = lista_aeropuertos
-
 
         
     def run(self):

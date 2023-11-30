@@ -113,7 +113,7 @@ class FiltroPrecios:
                 npromedio = (promedio * parte_actual) + (promedio_nuevo * parte_nueva)        
                 promedio = npromedio
                 cantidad = suma_vuelos
-        self._protocolo.enviar_promedio(id_cliente, promedio, cantidad)
+        self._protocolo.enviar_promedio(id_cliente, promedio, cantidad, self._id)
 
         return None
         
@@ -152,7 +152,7 @@ class FiltroPrecios:
             
         logging.info(f'Resultados enviados: {self.resultados_enviados}')
         self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
-        self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente)
+        self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente, self._id)
         self.borrar_archivos(id_cliente)
 
         return None

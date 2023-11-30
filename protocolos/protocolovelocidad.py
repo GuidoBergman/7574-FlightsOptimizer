@@ -5,7 +5,7 @@ from manejador_colas import ManejadorColas
 from modelo.Aeropuerto import Aeropuerto
 from modelo.Vuelo import Vuelo
 from modelo.estado import Estado
-from protocolobase import ProtocoloBase
+from protocolobase import ProtocoloBase, FORMATO_FIN
 
 TAMANIO_IDENTIFICADOR_MENSAJE = 1
 IDENTIFICADOR_VUELO = 'V'
@@ -58,6 +58,12 @@ class ProtocoloFiltroVelocidad(ProtocoloBase):
                                       vuelo.duracion.encode(STRING_ENCODING))
 
 
+    # Aqui se envia el id del filtro que manda (en vez de uno por defecto)
+    def enviar_fin_vuelos(self, id_cliente, id_enviador):
+        logging.info(f"ENVIA FIN VUELO {id_cliente }")
+        for i in range(1, self._cant_filtros + 1):
+            mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING), id_enviador)
+            self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
 
 
     def parar(self):        

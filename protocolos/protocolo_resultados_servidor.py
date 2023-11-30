@@ -17,6 +17,7 @@ from protocolo_resultados_cliente import (TAMANIO_IDENTIFICADOR_RESULTADO,
                                         IDENTIFICADOR_FIN_DISTANCIA,
                                         IDENTIFICADOR_FIN_ESCALAS,
                                         IDENTIFICADOR_FIN_PRECIO)
+from recuperador import Recuperador
 
 
 COLA_RESULTADOS = 'cola_resultados'
@@ -24,10 +25,12 @@ STRING_ENCODING = 'utf-8'
 CANT_TIPOS_RESULTADO = 4
 
 FORMATOCABECERA_RESULTADOS = '!cH'
+FORMATO_FIN_RESULTADOS = '!cH'
 
-class ProtocoloResultadosServidor:
+class ProtocoloResultadosServidor():
 
     def __init__(self, id_cliente=None):
+       self._recuperador = Recuperador()
        self._colas = ManejadorColas()
        self._corriendo = False
        self.id_cliente = id_cliente
@@ -61,6 +64,11 @@ class ProtocoloResultadosServidor:
             self._colas.dejar_de_consumir(self._nombre_cola)
         
     def _callback_function(self, body):
+        if self._recuperador.es_duplicado(self.id_cliente, body):
+                logging.info(f'Se recibió un mensaje duplicado: {body}')
+                return
+
+        contenido_a_persistir = None
         self.resultados_recibidos += 1;
         if (self.resultados_recibidos % 300) == 1:
             logging.info(f"Resultados recibidos {self.resultados_recibidos}")
@@ -100,8 +108,7 @@ class ProtocoloResultadosServidor:
         else:
             logging.error('acción: recibir_resultado_vuelo | resultado: error')
 
-        return self.id_cliente, None
-        
+        self._recuperador.almacenar(self.id_cliente, body, contenido_a_persistir)
         
         
 
@@ -129,17 +136,23 @@ class ProtocoloResultadosServidor:
         self._colas.enviar_mensaje(self._nombre_cola + id_cliente, msg)
 
         
-    def enviar_fin_resultados_rapidos(self, id_cliente):
-        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_RAPIDOS.encode(STRING_ENCODING))
+    def enviar_fin_resultados_rapidos(self, id_cliente, id_filtro):
+        self._enviar_fin_resultados(id_cliente, IDENTIFICADOR_FIN_RAPIDOS, id_filtro)
 
-    def enviar_fin_resultados_distancia(self, id_cliente):
-        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_DISTANCIA.encode(STRING_ENCODING))
+    def enviar_fin_resultados_distancia(self, id_cliente, id_filtro):
+        self._enviar_fin_resultados(id_cliente, IDENTIFICADOR_FIN_DISTANCIA, id_filtro)
 
-    def enviar_fin_resultados_escalas(self, id_cliente):
-        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_ESCALAS.encode(STRING_ENCODING))
+    def enviar_fin_resultados_escalas(self, id_cliente, id_filtro):
+        self._enviar_fin_resultados(id_cliente, IDENTIFICADOR_FIN_ESCALAS, id_filtro)
     
-    def enviar_fin_resultados_filtro_precio(self, id_cliente):
-        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, IDENTIFICADOR_FIN_PRECIO.encode(STRING_ENCODING))
+    def enviar_fin_resultados_filtro_precio(self, id_cliente, id_filtro):
+       self._enviar_fin_resultados(id_cliente, IDENTIFICADOR_FIN_PRECIO, id_filtro)
+
+    def _enviar_fin_resultados(self, id_cliente, id_fin, id_filtro):
+        msg = pack(FORMATO_FIN_RESULTADOS, id_fin.encode(STRING_ENCODING), id_filtro)
+        logging.debug(f'Enviando resultado a la cola: {self._nombre_cola + id_cliente}')
+        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, msg)
+
        
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.error('Sigterm recibida (enviador resultados)')
@@ -153,3 +166,4 @@ class ProtocoloResultadosServidor:
     
     def cerrar(self):
         self._colas.cerrar()
+        self._recuperador.cerrar()

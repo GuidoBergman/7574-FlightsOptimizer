@@ -106,7 +106,7 @@ class FiltroVelocidad:
         self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultados, id_cliente)                
         logging.info(f'Resultados enviados: {self.resultados_enviados}')
         del self.vuelos_mas_rapido_cliente[id_cliente]
-        self._protocoloResultado.enviar_fin_resultados_rapidos(id_cliente)
+        self._protocoloResultado.enviar_fin_resultados_rapidos(id_cliente, self._id)
 
         return None
         
@@ -114,7 +114,7 @@ class FiltroVelocidad:
           logging.info("Iniciando filtro velocidad") 
           try:
             for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
-                logging.info(f'Recuperé la linea {linea} del cliente {id_cliente}')
+                logging.debug(f'Recuperé la linea {linea} del cliente {id_cliente}')
 
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()

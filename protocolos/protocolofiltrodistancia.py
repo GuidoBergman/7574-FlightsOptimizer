@@ -51,9 +51,15 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         logging.debug(f'llego mensaje AEROPUERTOS body: {body}')
         if body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):
             id_cliente, aeropuertos = self.traducir_aeropuertos(body)
+            if self._recuperador.es_duplicado(id_cliente, body):
+                logging.info(f'Se recibió un aeropuerto duplicado: {body}')
+                return
             contenido_persistir = self.procesar_aeropuerto(id_cliente, aeropuertos)
         elif body.startswith(IDENTIFICADOR_FIN_AEROPUERTO.encode('utf-8')):
             caracter, id_cliente = unpack(FORMATO_FIN, body)
+            if self._recuperador.es_duplicado(id_cliente, body):
+                logging.info(f'Se recibió un fin de aeropuertos duplicado: {body}')
+                return
             contenido_persistir = self.procesar_finaeropuerto(id_cliente.decode('utf-8'))
         self._recuperador.almacenar(id_cliente, body, contenido_persistir)
 
