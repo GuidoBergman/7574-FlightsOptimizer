@@ -50,7 +50,7 @@ class ProtocoloBase(ABC):
         if body.startswith(IDENTIFICADOR_VUELO.encode('utf-8')):
             id_cliente, vuelos = self.decodificar_vuelos(body)
             if self._recuperador.es_duplicado(id_cliente, body):
-                logging.info(f'Se recibió un vuelo duplicado: {body}')
+                logging.debug(f'Se recibió un vuelo duplicado: {body}')
                 return
             contenido_a_persistir = self.procesar_vuelo(id_cliente, vuelos)
         else:

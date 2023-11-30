@@ -54,7 +54,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         id_cliente, promedio_general = unpack("32sf", body)
         id_cliente = id_cliente.decode('utf-8')
         if self._recuperador.es_duplicado(id_cliente, body):
-                logging.info(f'Se recibió un promedio general duplicado: {body}')
+                logging.debug(f'Se recibió un promedio general duplicado: {body}')
                 return
         contenido = self.procesar_promediogeneral(id_cliente, promedio_general)
         self._recuperador.almacenar(id_cliente, body, contenido)
@@ -63,7 +63,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         id_cliente, promedio, cantidad, id_filtro = unpack(FORMATO_MENSAJE_PROMEDIO, body)
         id_cliente = id_cliente.decode('utf-8')
         if self._recuperador.es_duplicado(id_cliente, body):
-                logging.info(f'Se recibió un promedio duplicado: {body}')
+                logging.debug(f'Se recibió un promedio duplicado: {body}')
                 return
         contenido = self.procesar_promedio(id_cliente, promedio, cantidad)
         self._recuperador.almacenar(id_cliente, body, contenido)

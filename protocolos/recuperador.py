@@ -17,7 +17,7 @@ class Recuperador():
         else:
             contenido_a_peristir = hash_msj
         self._almacenador.guardar_linea(id_cliente, contenido_a_peristir)
-        logging.error(f'Guardo el hash: {hash_msj} que corresponde al mensaje {body_msj}') # Borrame
+        logging.info(f'Guardo el hash: {hash_msj} que corresponde al mensaje {body_msj}')
         self._guardar_hash_mensaje(hash_msj)
         
     
@@ -40,7 +40,7 @@ class Recuperador():
     def es_duplicado(self, id_cliente, body_msj):
         hash_msj = str(hash(body_msj))
         if hash_msj in self._mensajes_procesados: # Borrame
-             logging.error(f'Es duplicado porque tiene el hash: {hash_msj}') # Borrame
+             logging.debug(f'Es duplicado porque tiene el hash: {hash_msj}') 
         return hash_msj in self._mensajes_procesados
 
     def cerrar(self):

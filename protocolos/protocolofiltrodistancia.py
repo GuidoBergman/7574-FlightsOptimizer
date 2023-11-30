@@ -52,7 +52,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         if body.startswith(IDENTIFICADOR_AEROPUERTO.encode('utf-8')):
             id_cliente, aeropuertos = self.traducir_aeropuertos(body)
             if self._recuperador.es_duplicado(id_cliente, body):
-                logging.info(f'Se recibió un aeropuerto duplicado: {body}')
+                logging.debug(f'Se recibió un aeropuerto duplicado: {body}')
                 return
             contenido_persistir = self.procesar_aeropuerto(id_cliente, aeropuertos)
         elif body.startswith(IDENTIFICADOR_FIN_AEROPUERTO.encode('utf-8')):

@@ -65,7 +65,7 @@ class ProtocoloResultadosServidor():
         
     def _callback_function(self, body):
         if self._recuperador.es_duplicado(self.id_cliente, body):
-                logging.info(f'Se recibió un mensaje duplicado: {body}')
+                logging.debug(f'Se recibió un mensaje duplicado: {body}')
                 return
 
         contenido_a_persistir = None
