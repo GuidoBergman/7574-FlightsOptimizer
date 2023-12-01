@@ -101,7 +101,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         return mensaje_empaquetado
         
     def enviar_promedio(self, id_cliente, promedio: float, cantidad: int, id_filtro: int):
-        logging.debug(f"enviando promedio {promedio} cantidad {cantidad}")
+        logging.info(f"enviando promedio {promedio} cantidad {cantidad}")
         mensaje_empaquetado = struct.pack(FORMATO_MENSAJE_PROMEDIO,
                                       id_cliente.encode('utf-8'),
                                       promedio,

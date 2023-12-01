@@ -3,7 +3,6 @@ import struct
 import logging
 import shutil
 from modelo.Aeropuerto import Aeropuerto
-STRING_ENCODING = 'utf-8'
 
 class ListaAeropuertos(dict):
     def __init__(self, id_cliente):
