@@ -26,6 +26,15 @@ class Almacenador:
         self._archivos[nombre_archivo].write(str(contenido) + '\n')        
 
 
+    def obtener_siguiente_linea_cliente(self, nombre_archivo):
+        logging.info(f'Recuperando archivo {nombre_archivo}')
+        with open(join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION), 'r') as archivo:
+            for linea in archivo:
+                logging.debug(f'Linea encontrada: {linea}')
+                linea = linea.rstrip("\n")               
+                yield nombre_archivo, linea
+        logging.info(f'Termino la recuperación del archivo {nombre_archivo}')
+
     def obtener_siguiente_linea(self):
         for nombre_archivo in self._archivos.keys():
             logging.info(f'Recuperando archivo {nombre_archivo}')

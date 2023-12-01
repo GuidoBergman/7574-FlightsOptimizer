@@ -76,7 +76,10 @@ class FiltroPrecios:
     def procesar_promediogeneral(self, id_cliente, promedio):
         logging.info(f"Recibe el promedio {promedio} del cliente {id_cliente}")
         self._protocoloResultado = ProtocoloResultadosServidor()
-        resultados = self.precios[id_cliente].get_resultados()
+        precios = self.precios[id_cliente]
+        for valores in self._protocolo.obtener_siguiente_linea_cliente(id_cliente):
+            precios.procesar_linea(promedio, valores)
+        resultados = precios.get_resultados()
         self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente, self._id)
         self.borrar_archivos(id_cliente)

@@ -32,10 +32,15 @@ class Recuperador():
             hash_msj = linea[0]
             logging.debug(f'Encontré el mensaje procesado {hash_msj}')
             self._guardar_hash_mensaje(hash_msj)
-
-
             if len(linea) > 1:
                 yield nombre_archivo, linea[1:]
+
+
+    def obtener_siguiente_linea_cliente(self, id_cliente):
+        for linea in self._almacenador.obtener_siguiente_linea_cliente():
+            linea = linea.split(',')
+            if len(linea) > 1:
+                yield linea[1:]
 
     def es_duplicado(self, id_cliente, body_msj):
         hash_msj = str(hash(body_msj))
