@@ -41,8 +41,8 @@ class ProtocoloEnviarHeartbeat:
             self._identificador_tipo.encode(STRING_ENCODING), self._numero
         )
 
+        estado = STATUS_OK
         for i in range(1, self._cant_watchdogs + 1):
-            estado = STATUS_OK
             if evitar_id and i == evitar_id:
                 continue
 
