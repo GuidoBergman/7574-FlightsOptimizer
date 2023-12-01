@@ -9,16 +9,28 @@ import os
 HOST = 'rabbitmq'
 
 class Wrapper:
-    def __init__(self, callback_function, post_ack_callback=None):
+    def __init__(self, callback_function, auto_ack=True, post_ack_callback=None):
         self.callback_function = callback_function
-        self._post_ack_callback = post_ack_callback        
+        self._post_ack_callback = post_ack_callback
+        self._auto_ack = auto_ack        
 
     def funcion_wrapper(self, channel, method, properties, body):
-        self.callback_function(body)
-        channel.basic_ack(delivery_tag=method.delivery_tag)
+        hacer_ack = False
+        if self._auto_ack:
+            self.callback_function(body)
+            hacer_ack = True
+        # Si no hay auto_ack, se espera que la callback_funcion devuelva un bool que indique si hacer el ACK o no
+        else:
+            hacer_ack = self.callback_function(body)
+            
+        if hacer_ack:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+            if self._post_ack_callback:
+                self._post_ack_callback(body)
+        else:
+            channel.basic_nack(delivery_tag=method.delivery_tag)
 
-        if self._post_ack_callback:
-            self._post_ack_callback(body)
+            
 
 class ManejadorColas:
     def __init__(self):
@@ -41,33 +53,33 @@ class ManejadorColas:
         self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
         
 
-    def vincular_wrapper(self, nombre_cola, callback_function, post_ack_callback=None):
+    def vincular_wrapper(self, nombre_cola, callback_function, auto_ack=True, post_ack_callback=None):
        nombre_queue=nombre_cola
        if (nombre_cola in self._nombrecolas):
             nombre_queue=self._nombrecolas[nombre_cola]
             
-       wr = Wrapper(callback_function, post_ack_callback)
+       wr = Wrapper(callback_function, auto_ack, post_ack_callback)
        self._consumer_tags[nombre_cola] = self._channel.basic_consume(queue=nombre_queue, 
         on_message_callback=wr.funcion_wrapper)
        self._wrapers[nombre_cola] = wr
         
 
-    def consumir_mensajes(self, nombre_cola, callback_function):
-       self.vincular_wrapper(nombre_cola, callback_function)
+    def consumir_mensajes(self, nombre_cola, callback_function, auto_ack=True):
+       self.vincular_wrapper(nombre_cola, callback_function, auto_ack)
 
-    def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico):
+    def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico, auto_ack=True):
        resultado = self._channel.queue_declare(queue='')
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))       
-       self.vincular_wrapper(nombre_cola, callback_function)       
+       self.vincular_wrapper(nombre_cola, callback_function, auto_ack)       
  
-    def subscribirse_cola(self, nombre_cola, callback_function):
+    def subscribirse_cola(self, nombre_cola, callback_function, auto_ack=True):
        resultado = self._channel.queue_declare(queue='')
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
-       self.vincular_wrapper(nombre_cola, callback_function) 
+       self.vincular_wrapper(nombre_cola, callback_function, auto_ack) 
 
     def dejar_de_consumir(self, nombre_cola):
         try:
