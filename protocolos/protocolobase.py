@@ -60,7 +60,7 @@ class ProtocoloBase(ABC):
             id_cliente = id_cliente.decode('utf-8')
             if self._recuperador.es_duplicado(id_cliente, body):
                 return
-            logging.info(f"RECIBE Fin de vuelo {id_cliente }")
+            logging.info(f"protocolo | RECIBE Fin de vuelo {id_cliente }")
             contenido_a_persistir = self.procesar_finvuelo(id_cliente)
         elif body.startswith(IDENTIFICADOR_FLUSH.encode('utf-8')):
             caracter, id_cliente = unpack(FORMATO_FLUSH, body)  

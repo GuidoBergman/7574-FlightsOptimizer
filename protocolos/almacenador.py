@@ -32,7 +32,7 @@ class Almacenador:
             for linea in archivo:
                 logging.debug(f'Linea encontrada: {linea}')
                 linea = linea.rstrip("\n")               
-                yield nombre_archivo, linea
+                yield linea
         logging.info(f'Termino la recuperación del archivo {nombre_archivo}')
 
     def obtener_siguiente_linea(self):

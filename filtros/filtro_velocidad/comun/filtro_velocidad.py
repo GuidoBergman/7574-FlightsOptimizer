@@ -17,6 +17,7 @@ from socket_comun_udp import SocketComunUDP
 class FiltroVelocidad:
     def __init__(self, id, cant_filtros_escalas, cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
        self._protocolo = ProtocoloFiltroVelocidad()       
+       self._protocoloResultado = ProtocoloResultadosServidor()    
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_mas_rapido_cliente = {}
        self._fines_vuelo = 0
@@ -51,9 +52,11 @@ class FiltroVelocidad:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
             
         if id_cliente in self.vuelos_mas_rapido_cliente:
-            vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
-        else:
             vuelos_mas_rapido = {}
+        else:
+            logging.info(f"Agregando registros para cliente {id_cliente}")
+            vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
+            
             
         for vuelo in vuelos:
             trayecto = vuelo.origen + "-" + vuelo.destino
@@ -88,24 +91,24 @@ class FiltroVelocidad:
         if self._fines_vuelo < self._cant_filtros_escalas:
             return
         resultados = []
-        logging.info(f"Procesando fin de vuelo")        
-        vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
-        self._protocoloResultado = ProtocoloResultadosServidor()
-        for trayecto, vuelos in vuelos_mas_rapido.items():
-            for vuelo in vuelos:
-                self.resultados_enviados += 1
-                if (self.resultados_enviados % 100) == 1:
-                    logging.info(f'Enviando resultados: {self.resultados_enviados}')
-                id_vuelo = vuelo.id_vuelo            
-                duracion = vuelo.duracion
-                escalas = vuelo.escalas
-                resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, escalas, duracion)
-                resultados.append(resultado)
-                
+        logging.info(f"Procesando fin de vuelo cliente {id_cliente}")
         
-        self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultados, id_cliente)                
-        logging.info(f'Resultados enviados: {self.resultados_enviados}')
-        del self.vuelos_mas_rapido_cliente[id_cliente]
+        if id_cliente in self.vuelos_mas_rapido_cliente[id_cliente]:
+            vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
+            for trayecto, vuelos in vuelos_mas_rapido.items():
+                for vuelo in vuelos:
+                    self.resultados_enviados += 1
+                    if (self.resultados_enviados % 100) == 1:
+                        logging.info(f'Enviando resultados: {self.resultados_enviados}')
+                    id_vuelo = vuelo.id_vuelo            
+                    duracion = vuelo.duracion
+                    escalas = vuelo.escalas
+                    resultado = ResultadoVuelosRapidos(id_vuelo, trayecto, escalas, duracion)
+                    resultados.append(resultado)
+                
+            self._protocoloResultado.enviar_resultado_vuelos_rapidos(resultados, id_cliente)                
+            logging.info(f'Resultados enviados: {self.resultados_enviados}')
+            del self.vuelos_mas_rapido_cliente[id_cliente]
         self._protocoloResultado.enviar_fin_resultados_rapidos(id_cliente, self._id)
 
         return None

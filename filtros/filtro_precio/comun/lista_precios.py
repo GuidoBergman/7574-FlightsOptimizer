@@ -13,7 +13,7 @@ class ListaPrecios(dict):
         devolver = {}
         for vuelo in vuelos:
             trayecto = f'{vuelo.origen}-{vuelo.destino}'
-            if trayecto not in self.archivos_por_trayecto:
+            if trayecto not in devolver:
                  devolver[trayecto] = [vuelo.precio]
             else:
                 devolver[trayecto].append(vuelo.precio)
@@ -23,12 +23,12 @@ class ListaPrecios(dict):
     def agregar(self, prom_cant, agregar):
         promedio, cantidad = prom_cant
         promedio_agregar, cantidad_agregar = agregar
-        if cantidad > 0:
+        toRet = prom_cant
+        if cantidad_agregar > 0:
             parte_actual = cantidad / (cantidad_agregar + cantidad)
             parte_nueva = cantidad_agregar / (cantidad_agregar + cantidad)
             npromedio = (promedio * parte_actual) + (promedio_agregar * parte_nueva)
             toRet = (npromedio, cantidad + cantidad_agregar)
-        logging.info(f"Nuevo promedio {toRet} ")
         return toRet
         
     def agregar_vuelos(self, vuelos):
@@ -36,13 +36,20 @@ class ListaPrecios(dict):
         x_trayecto = self.vuelos_x_trayecto(vuelos)
         total = 0
         cantidad = 0
-        for trayecto, precios in x_trayecto:
+        for trayecto in x_trayecto:
+            precios = x_trayecto[trayecto]
+            #Persistencia
             contenido_a_persisitir += f',{trayecto},{len(precios)}'
+            
+            #Suma
             cantidad += len(precios)
             total += sum(precios)
             for precio in precios:
                 contenido_a_persisitir += f',{precio}'
-        self.prom_cant = self.agregar(self.prom_cant, (total / cantidad, cantidad))
+        
+        promedio = total / cantidad
+        agregar_valor = (promedio, cantidad)
+        self.prom_cant = self.agregar(self.prom_cant, agregar_valor)
         return contenido_a_persisitir
     
     def recuperar_promedios(self, valores):
@@ -52,9 +59,9 @@ class ListaPrecios(dict):
             cantidad = int(valores[i + 1])
             i += 2
             suma = 0
-            for i in range(i, i + cantidad - 1):
+            for i in range(i, i + cantidad):
                 suma += float(valores[i])
-            i += cantidad
+            i += cantidad + 1
             self.prom_cant = self.agregar(self.prom_cant, (suma / cantidad, cantidad))
 
     def procesar_linea(self, promedio, valores):

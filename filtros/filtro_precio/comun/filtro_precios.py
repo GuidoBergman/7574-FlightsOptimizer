@@ -23,7 +23,8 @@ class FiltroPrecios:
        self._id = id
        self.inicialar()   
        self.corriendo = True
-
+       self._protocoloResultado = ProtocoloResultadosServidor()
+        
        signal.signal(signal.SIGTERM, self.sigterm_handler)
 
        socket = SocketComunUDP()
@@ -38,9 +39,9 @@ class FiltroPrecios:
     def procesar_vuelos(self, id_cliente, vuelos):        
         self.vuelos_procesados += 1;
         if (self.vuelos_procesados % 10) == 1:
-            logging.debug(f'Procesando Vuelo: {self.vuelos_procesados}')  
+            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
         
-        if (id_cliente in self.aeropuertos):
+        if (id_cliente in self.precios):
             listaprecio = self.precios[id_cliente]
         else:
             listaprecio = ListaPrecios(id_cliente)            
@@ -56,7 +57,8 @@ class FiltroPrecios:
     
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Calculo el promedio y lo envia')        
-        self._protocolo.enviar_promedio(id_cliente, self.precios[id_cliente].promedio, self.precios[id_cliente].cantidad, self._id)
+        promedio, cantidad = self.precios[id_cliente].prom_cant
+        self._protocolo.enviar_promedio(id_cliente, promedio, cantidad, self._id)
         return "promedio_enviado"
 
     def _recuperar_promedios(self):
@@ -75,15 +77,13 @@ class FiltroPrecios:
 
     def procesar_promediogeneral(self, id_cliente, promedio):
         logging.info(f"Recibe el promedio {promedio} del cliente {id_cliente}")
-        self._protocoloResultado = ProtocoloResultadosServidor()
         precios = self.precios[id_cliente]
         for valores in self._protocolo.obtener_siguiente_linea_cliente(id_cliente):
             precios.procesar_linea(promedio, valores)
         resultados = precios.get_resultados()
+        logging.info(f"Envio {len(resultados)} resultados")
         self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente, self._id)
-        self.borrar_archivos(id_cliente)
-
         return None
 
     def run(self):

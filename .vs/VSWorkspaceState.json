@@ -1,7 +1,14 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\client",
+    "\\data\\client",
+    "\\filtros",
+    "\\filtros\\filtro_distancia\\comun",
+    "\\filtros\\filtro_precio",
+    "\\filtros\\filtro_precio\\comun",
+    "\\protocolos"
   ],
-  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\7574-FlightsOptimizer",
+  "SelectedNode": "\\protocolos\\protocolofiltroprecio.py",
   "PreviewInSolutionExplorer": false
 }
