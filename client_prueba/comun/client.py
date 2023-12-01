@@ -16,7 +16,7 @@ from multiprocessing import Process
 from comun.enviador_vuelos import EnviadorVuelos
 from comun.datos_archivo import DatosArchivo
 
-CANT_TIPOS_RESULTADO = 3
+CANT_TIPOS_RESULTADO = 4
 CHUNK_AEROPUERTOS = 300
 
 class Client:

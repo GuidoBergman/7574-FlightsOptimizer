@@ -16,6 +16,7 @@ if len(sys.argv) < 6 or sys.argv[1] == '-h':
       - 4 filtros de vuelos rápidos
       - 5 filtros de estadisticas de precios
       - 6 watchdogs
+      - 7 clientes de prueba
     """)
     exit()
 
@@ -26,6 +27,11 @@ cantDistancias = int(sys.argv[3])
 cantRapidos = int(sys.argv[4])
 cantPrecios = int(sys.argv[5])
 cantWatchdogs = int(sys.argv[6])
+clientes_prueba = 0
+try:
+    cantWatchdogs = int(sys.argv[7])
+except:
+    print("Puede crear clientes de prueba")
     
 
 directoriosACrear = []
@@ -256,6 +262,32 @@ for i in range(1, cantWatchdogs+1):
 """
 
 
+
+clientes_prueba=''
+for i in range(1, cantWatchdogs+1):
+  clientes_prueba += f"""
+  clientes_prueba{i}:
+    container_name: clientes_prueba{i}
+    image: client_prueba:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server    
+    volumes:
+      - type: bind
+        source: ./client/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data
+        target: /data
+"""
+
+
 cliente = """
   client:
     container_name: client
@@ -308,7 +340,7 @@ directoriosACrear.append('calculador_promedio')
 
 dockerComposeFile = open(FILEPATH, 'w')
 fileContent = [textInitialConfig, textRabbitConfig, server, filtros, calculadorPromedio,
-                cliente, watchdogs, textNetworkConfig]
+                cliente, watchdogs, clientes_prueba, textNetworkConfig]
 
 dockerComposeFile.writelines(fileContent)
  

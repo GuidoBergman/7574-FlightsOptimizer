@@ -24,7 +24,7 @@ class ListaAeropuertos(dict):
             id_aeropuerto = aeropuertos[i]
             latitud = float(aeropuertos[i + 1])
             longitud = float(aeropuertos[i + 2])            
-            logging.info(f"Aeropuerto {id_aeropuerto} Lat:{latitud} Long: {longitud}")
+            logging.debug(f"Aeropuerto {id_aeropuerto} Lat:{latitud} Long: {longitud}")
             aeropuerto = Aeropuerto(id_aeropuerto, latitud, longitud)
             self[id_aeropuerto] = aeropuerto
                 

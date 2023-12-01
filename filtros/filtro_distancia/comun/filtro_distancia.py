@@ -1,4 +1,3 @@
-from functools import lru_cache
 import os
 from struct import unpack, pack, calcsize
 import logging
@@ -30,6 +29,7 @@ class FiltroDistancia:
        self.vuelos_procesados = 0
        self.aeropuertos_procesados = 0
        self._id = id
+       self.cache_distancias = {}
        socket = SocketComunUDP()
        self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
         IDENTIFICADOR_FILTRO_DISTANCIA, periodo_heartbeat, id)
@@ -73,10 +73,9 @@ class FiltroDistancia:
                 logging.debug(f'Aeropuerto destino latitud { ae_destino.latitud } longitud { ae_destino.longitud }')
         
                 distancia_directa = self.calcular_distancia(ae_origen, ae_destino)
-                logging.debug(f'Distancia directa: { distancia_directa }')
+                logging.debug(f'Distancia directa: { distancia_directa } distancia vuelo {vuelo.distancia}')
         
                 if (distancia_directa * 4 < vuelo.distancia):
-                    logging.debug(f'Enviando resultado { vuelo.id_vuelo } distancia { vuelo.distancia } distancia directa {distancia_directa}')
                     resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
                     resultados.append(resDistancia)
             except KeyError as e:
@@ -91,10 +90,15 @@ class FiltroDistancia:
         del self.aeropuertos[id_cliente]
         return None
 
-    @lru_cache(maxsize=None)
     def distancia_entrecoordenadas(self,coordenadas_aeropuerto1, coordenadas_aeropuerto2):
+        clave_cache = (coordenadas_aeropuerto1, coordenadas_aeropuerto2)
+        if clave_cache in self.cache_distancias:
+            # Devuelve la distancia almacenada en el caché
+            return int(self.cache_distancias[clave_cache])
         distancia = geodesic(coordenadas_aeropuerto1, coordenadas_aeropuerto2).kilometers
-        return int(distancia)
+        distancia_int = int(distancia)
+        self.cache_distancias[clave_cache] = distancia_int
+        return distancia_int
         
     def calcular_distancia(self,aeropuerto1, aeropuerto2):
         coordenadas_aeropuerto1 = (aeropuerto1.latitud, aeropuerto1.longitud)
@@ -102,6 +106,7 @@ class FiltroDistancia:
         return self.distancia_entrecoordenadas(coordenadas_aeropuerto1, coordenadas_aeropuerto2)
 
     def _recuperar_aeropuertos(self):
+        logging.info("Recuperando aeropuertos..")
         for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
             logging.debug(f'Recuperé la linea del cliente {id_cliente}')
             # Proceso aeropuertos        
