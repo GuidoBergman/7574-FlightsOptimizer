@@ -19,14 +19,13 @@ from socket_comun_udp import SocketComunUDP
 EOF_MSG = 'EOF'
 
 class Server:
-    def __init__(self, port, listen_backlog, cant_handlers, cant_filtros_escalas,
+    def __init__(self, port, listen_backlog, cant_filtros_escalas,
     cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio,
      cant_watchdogs, periodo_heartbeat, host_watchdog, port_watchdog):
         self._server_socket = SocketComun()
         self._server_socket.bind_and_listen('', port, listen_backlog)
         
 
-        self._cant_handlers = cant_handlers
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad

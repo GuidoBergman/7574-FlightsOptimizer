@@ -27,7 +27,6 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS=2
       - CANT_FILTROS_ESCALAS=2
       - CANT_FILTROS_DISTANCIA=2
       - CANT_FILTROS_VELOCIDAD=2
@@ -124,7 +123,9 @@ services:
       - type: bind
         source: ./data/filtro_distancia1
         target: /data
+        
 
+    
   filtro_distancia2:
     container_name: filtro_distancia2
     image: filtro_distancia:latest
@@ -147,7 +148,9 @@ services:
       - type: bind
         source: ./data/filtro_distancia2
         target: /data
+        
 
+    
   filtro_velocidad1:
     container_name: filtro_velocidad1
     image: filtro_velocidad:latest
@@ -284,7 +287,6 @@ services:
         source: ./data/client
         target: /data
 
-
   watchdog1:
     container_name: watchdog1
     image: watchdog:latest
@@ -334,6 +336,46 @@ services:
         source: ./watchdog/config.ini
         target: /config.ini
       - /var/run/docker.sock:/var/run/docker.sock
+
+  clientes_prueba1:
+    container_name: clientes_prueba1
+    image: client_prueba:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server    
+    volumes:
+      - type: bind
+        source: ./client/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data
+        target: /data
+
+  clientes_prueba2:
+    container_name: clientes_prueba2
+    image: client_prueba:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server    
+    volumes:
+      - type: bind
+        source: ./client/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data
+        target: /data
 
 networks:
   testing_net:

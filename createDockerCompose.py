@@ -8,30 +8,27 @@ BASEPATH_DATA = 'data/'
 if len(sys.argv) < 6 or sys.argv[1] == '-h':
     print("""
     Debe ingresar las cantidades de los filtros que desea crear. 
-    El formato del comando es  \'createDockerCompose.py <cant handlers server>  <cant filtro escalas> <cant filtro distancia> <cant filtro rapidos> <cant filtro precio> <cant watchdogs>\'
+    El formato del comando es  \'createDockerCompose.py <cant filtro escalas> <cant filtro distancia> <cant filtro rapidos> <cant filtro precio> <cant watchdogs> <cant clientes prueba>\'
     Ej: el comando \'createDockerCompose.py 1 2 3 4 5 6\' creara:
-      - 1 handlers para el server
-      - 2 filtros de escalas
-      - 3 filtros de distancia
-      - 4 filtros de vuelos rápidos
-      - 5 filtros de estadisticas de precios
-      - 6 watchdogs
-      - 7 clientes de prueba
+      - 1 filtros de escalas
+      - 2 filtros de distancia
+      - 3 filtros de vuelos rápidos
+      - 4 filtros de estadisticas de precios
+      - 5 watchdogs
+      - 6 clientes de prueba
     """)
     exit()
 
 
-cantHandlers = int(sys.argv[1])
-cantEscalas = int(sys.argv[2])
-cantDistancias = int(sys.argv[3])
-cantRapidos = int(sys.argv[4])
-cantPrecios = int(sys.argv[5])
-cantWatchdogs = int(sys.argv[6])
-clientes_prueba = 0
-try:
-    cantWatchdogs = int(sys.argv[7])
-except:
-    print("Puede crear clientes de prueba")
+
+cantEscalas = int(sys.argv[1])
+cantDistancias = int(sys.argv[2])
+cantRapidos = int(sys.argv[3])
+cantPrecios = int(sys.argv[4])
+cantWatchdogs = int(sys.argv[5])
+cantClientesPrueba = int(sys.argv[6])
+
+
     
 
 directoriosACrear = []
@@ -79,7 +76,6 @@ server = f"""
       - PYTHONUNBUFFERED=1
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
-      - CANT_HANDLERS={cantHandlers}
       - CANT_FILTROS_ESCALAS={cantEscalas}
       - CANT_FILTROS_DISTANCIA={cantDistancias}
       - CANT_FILTROS_VELOCIDAD={cantRapidos}
@@ -264,7 +260,7 @@ for i in range(1, cantWatchdogs+1):
 
 
 clientes_prueba=''
-for i in range(1, cantWatchdogs+1):
+for i in range(1, cantClientesPrueba+1):
   clientes_prueba += f"""
   clientes_prueba{i}:
     container_name: clientes_prueba{i}
