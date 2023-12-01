@@ -12,7 +12,7 @@ import sys
 import traceback
 
 
-from protocolofiltrodistancia import ProtocoloFiltroDistancia
+from protocolofiltrodistancia import ProtocoloFiltroDistancia, AeropuertoNoEncontrado
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from modelo.Aeropuerto import Aeropuerto
 from modelo.ResultadoFiltroDistancia import ResultadoFiltroDistancia
@@ -79,7 +79,8 @@ class FiltroDistancia:
                     resDistancia = ResultadoFiltroDistancia(vuelo.id_vuelo, vuelo.origen + '-' + vuelo.destino, vuelo.distancia)
                     resultados.append(resDistancia)
             except KeyError as e:
-                logging.error(f'AEROPUERTO NO ENCONTRADO')
+                raise AeropuertoNoEncontrado
+
         self._protocoloResultado.enviar_resultado_filtro_distancia(resultados, id_cliente)
 
         return None

@@ -27,6 +27,9 @@ NOMBRE_COLA = 'cola_distancia'
 NOMBRE_COLAAEROPUERTOS = 'cola_aeropuerto'
 
 
+class AeropuertoNoEncontrado(Exception):
+    "No se encontró el aeropuerto correspondiente a ese vuelo"
+    pass
 
 class ProtocoloFiltroDistancia(ProtocoloBase):
        
@@ -63,6 +66,13 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
             contenido_persistir = self.procesar_finaeropuerto(id_cliente.decode('utf-8'))
         self._recuperador.almacenar(id_cliente, body, contenido_persistir)
 
+    def callback_function(self, body):
+        try:
+            super().callback_function(body)
+            return True
+        except AeropuertoNoEncontrado:
+            logging.error('Se intentó procesar procesar un vuelo de un aeropuerto que aún no había llegado, se reinterá más tarde')
+            return False
     
     def iniciar(self, procesar_vuelo, procesar_finvuelo, procesar_aeropuerto, procesar_finaeropuerto,procesar_flush, id):
         self.corriendo = True
@@ -76,7 +86,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
         
         self._colas.crear_cola_por_topico(self.nombre_cola)
-        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id)
+        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id, auto_ack=False)
 
         self._colas.consumir()
 

@@ -307,9 +307,10 @@ cliente = """
         source: ./client/config.ini
         target: /config.ini
       - type: bind
-        source: ./data
+        source: ./data/client
         target: /data
 """
+directoriosACrear.append('client')
 
 calculadorPromedio = f"""
   calculador_promedio:

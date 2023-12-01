@@ -93,9 +93,10 @@ class Server:
             self._run()
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
-            exc = sys.exception()
-            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
-            traceback.print_exception(exc, limit=2, file=sys.stdout)
+            if hasattr(sys, 'exception'):
+                exc = sys.exception()
+                traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+                traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
 
 

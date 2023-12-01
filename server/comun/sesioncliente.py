@@ -7,8 +7,10 @@ from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from multiprocessing import Process
 from socket_comun import SocketComun
-from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS
+from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AEROPUERTOS, STATUS_ERR
 import signal
+import sys
+import traceback
 
 class SesionCliente:
     def __init__(self, _client_sock, cant_filtros_escalas,
@@ -58,8 +60,11 @@ class SesionCliente:
             self._client_sock.close()            
             logging.info(f'Termina el proceso cliente {self.id_cliente}')
         except Exception as e:
-            logging.error(f"{e}")
-            logging.error(f'Error con el cliente {self.id_cliente}, manda señal de FLUSH')
+            logging.error(f'Ocurrió una excepción: {e}')
+            if hasattr(sys, 'exception'):
+                exc = sys.exception()
+                traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+                traceback.print_exception(exc, limit=2, file=sys.stdout)
             self._enviar_flush()
           
     def _recibir_aeropuertos(self):
@@ -69,6 +74,9 @@ class SesionCliente:
             if estado == ESTADO_FIN_AEROPUERTOS:
                 for prot in self._protocolos_con_aeropuerto:
                     prot.enviar_fin_aeropuertos(self.id_cliente)
+                break
+            elif estado == STATUS_ERR:
+                logging.error(f'Error al recibir aeropuerto')
                 break
             logging.info(f'Aeropuertos recibidos: { self.id_cliente} total { len(aeropuertos)}')
             for prot in self._protocolos_con_aeropuerto:
@@ -88,7 +96,10 @@ class SesionCliente:
             if estado == ESTADO_FIN_VUELOS:
                 logging.info(f'Se terminaron de recibir todos los vuelos')
                 break
-            
+            elif estado == STATUS_ERR:
+                logging.error(f'Error al recibir vuelo')
+                break
+
             # Muestra por logs los chunck recibidos
             logging.debug(f'Accion: recibir_vuelo | estado: OK | Nro chunck: { chunk_recibidos } | Vuelos recibidos:   {len(vuelos_rec)}')
             chunk_recibidos += 1

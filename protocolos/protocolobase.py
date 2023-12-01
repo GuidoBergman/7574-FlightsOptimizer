@@ -10,6 +10,7 @@ IDENTIFICADOR_VUELO = 'V'
 IDENTIFICADOR_FLUSH = 'L'
 IDENTIFICADOR_FIN_VUELO = 'F'
 FORMATO_FIN = '!c32sH'
+FORMATO_FLUSH = '!c32s'
 DEFAULT_ID = 1
 
 class ProtocoloBase(ABC):
@@ -53,18 +54,21 @@ class ProtocoloBase(ABC):
                 logging.debug(f'Se recibió un vuelo duplicado: {body}')
                 return
             contenido_a_persistir = self.procesar_vuelo(id_cliente, vuelos)
-        else:
-            caracter, id_cliente, _ = unpack(FORMATO_FIN, body)  
+        elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
+            logging.debug(f'Body mensaje fin de vuelo recibido {body}')
+            caracter, id_cliente, id_enviador = unpack(FORMATO_FIN, body)  
             id_cliente = id_cliente.decode('utf-8')
             if self._recuperador.es_duplicado(id_cliente, body):
                 return
-            logging.info(f'Llego otro tipo de mensaje: {caracter} cliente {id_cliente}')
-            if caracter == IDENTIFICADOR_FIN_VUELO.encode('utf-8'):
-                logging.info(f"RECIBE Fin de vuelo {id_cliente }")
-                contenido_a_persistir = self.procesar_finvuelo(id_cliente)
-            if caracter == IDENTIFICADOR_FLUSH.encode('utf-8'):
-                logging.info(f"RECIBE FLUSH {id_cliente }")
-                contenido_a_persistir = self.procesar_flush(id_cliente)
+            logging.info(f"RECIBE Fin de vuelo {id_cliente }")
+            contenido_a_persistir = self.procesar_finvuelo(id_cliente)
+        elif body.startswith(IDENTIFICADOR_FLUSH.encode('utf-8')):
+            caracter, id_cliente = unpack(FORMATO_FLUSH, body)  
+            id_cliente = id_cliente.decode('utf-8')
+            if self._recuperador.es_duplicado(id_cliente, body):
+                return
+            logging.info(f"RECIBE FLUSH {id_cliente }")
+            contenido_a_persistir = self.procesar_flush(id_cliente)
 
         self._recuperador.almacenar(id_cliente, body, contenido_a_persistir)
     
@@ -89,13 +93,14 @@ class ProtocoloBase(ABC):
     def enviar_flush(self, id_cliente):
         logging.info(f"ENVIA FLUSH {id_cliente }")
         for i in range(1, self._cant_filtros + 1):
-            mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FLUSH.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
+            mensaje = pack(FORMATO_FLUSH, IDENTIFICADOR_FLUSH.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING))
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
 
     def enviar_fin_vuelos(self, id_cliente):
         logging.info(f"ENVIA FIN VUELO {id_cliente }")
         for i in range(1, self._cant_filtros + 1):
             mensaje = pack(FORMATO_FIN, IDENTIFICADOR_FIN_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING), DEFAULT_ID)
+            logging.debug(f'Body mensaje fin de vuelo enviado: {mensaje}')
             self._colas.enviar_mensaje_por_topico(self.nombre_cola,mensaje, i)
 
     def recuperar_siguiente_linea(self):
