@@ -46,10 +46,10 @@ class FiltroVelocidad:
         return minutos_totales
 
     def procesar_vuelo(self, id_cliente, vuelos):    
-        if id_cliente in self.vuelos_mas_rapido_cliente:
+        if id_cliente not in self.vuelos_mas_rapido_cliente:
             vuelos_mas_rapido = {}
         else:
-            logging.info(f"Agregando registros para cliente {id_cliente}")
+            logging.debug(f"Agregando registros para cliente {id_cliente}")
             vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
             
             
