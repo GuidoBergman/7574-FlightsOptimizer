@@ -44,13 +44,13 @@ class ManejadorColas:
         
 
     def crear_cola(self, nombre_cola):
-        self._channel.queue_declare(queue=nombre_cola)
+        self._channel.queue_declare(queue=nombre_cola, durable=True)
     
     def crear_cola_por_topico(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct')
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct', durable=True)
         
     def crear_cola_subscriptores(self, nombre_cola):
-        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout')
+        self._channel.exchange_declare(exchange=nombre_cola, exchange_type='fanout', durable=True)
         
 
     def vincular_wrapper(self, nombre_cola, callback_function, auto_ack=True, post_ack_callback=None):
@@ -68,14 +68,14 @@ class ManejadorColas:
        self.vincular_wrapper(nombre_cola, callback_function, auto_ack)
 
     def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico, auto_ack=True):
-       resultado = self._channel.queue_declare(queue='')
+       resultado = self._channel.queue_declare(queue='', durable=True)
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))       
        self.vincular_wrapper(nombre_cola, callback_function, auto_ack)       
  
     def subscribirse_cola(self, nombre_cola, callback_function, auto_ack=True):
-       resultado = self._channel.queue_declare(queue='')
+       resultado = self._channel.queue_declare(queue='', durable=True)
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
@@ -94,16 +94,22 @@ class ManejadorColas:
 
 
     def enviar_mensaje_por_topico(self, nombre_cola, mensaje, topico):
-        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje)
+        self._channel.basic_publish(exchange=nombre_cola, routing_key=str(topico), body=mensaje, properties=pika.BasicProperties(
+            delivery_mode=pika.DeliveryMode.Transient.Persistent
+        ))
 
         
     def enviar_mensaje_suscriptores(self, nombre_cola, mensaje):
         logging.debug(f"Enviando mensaje suscriptores al exchange={nombre_cola} mensaje={mensaje}")
-        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje)
+        self._channel.basic_publish(exchange=nombre_cola, routing_key='', body=mensaje, properties=pika.BasicProperties(
+            delivery_mode=pika.DeliveryMode.Transient.Persistent
+        ))
 
     def enviar_mensaje(self, nombre_cola, mensaje):
         logging.debug(f"Enviando mensaje al routing_key={nombre_cola} mensaje={mensaje}")
-        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje)
+        self._channel.basic_publish(exchange='', routing_key=nombre_cola, body=mensaje, properties=pika.BasicProperties(
+            delivery_mode=pika.DeliveryMode.Transient.Persistent
+        ))
         
 
     def cerrar(self):

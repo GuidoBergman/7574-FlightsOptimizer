@@ -103,7 +103,7 @@ class SesionCliente:
             # Muestra por logs los chunck recibidos
             logging.debug(f'Accion: recibir_vuelo | estado: OK | Nro chunck: { chunk_recibidos } | Vuelos recibidos:   {len(vuelos_rec)}')
             chunk_recibidos += 1
-            if (chunk_recibidos % 100) == 1:
+            if (chunk_recibidos % 300) == 1:
                 logging.info(f'Cliente: {self.id_cliente} Lote de vuelos recibido: {chunk_recibidos}')
             
             # Manda los vuelos a los filtros

@@ -21,7 +21,6 @@ class FiltroEscalas:
        self._protocoloVelocidad = ProtocoloFiltroVelocidad(cant_filtros_velocidad)
        signal.signal(signal.SIGTERM, self.sigterm_handler)
        self.vuelos_con_tres_escalas = []
-       self.vuelos_procesados = 0
        self._id = id
        
        socket = SocketComunUDP()
@@ -30,9 +29,6 @@ class FiltroEscalas:
         
     def procesar_vuelo(self, id_cliente, vuelos):
         resultados = []
-        self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 300) == 1:
-            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
 
         vuelos_paravelocidad = []        
         for vuelo in vuelos:

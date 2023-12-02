@@ -17,6 +17,7 @@ class ProtocoloBase(ABC):
 
     def __init__(self):
         self._recuperador = Recuperador()
+        self.vuelos_procesados = 0
     
     @abstractmethod
     def traducir_vuelo(self, vuelo):
@@ -53,6 +54,9 @@ class ProtocoloBase(ABC):
             if self._recuperador.es_duplicado(id_cliente, body):
                 logging.debug(f'Se recibió un vuelo duplicado: {body}')
                 return
+            self.vuelos_procesados += len(vuelos)
+            if (int(self.vuelos_procesados/len(vuelos)) % 300) == 1:
+                logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
             contenido_a_persistir = self.procesar_vuelo(id_cliente, vuelos)
         elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
             logging.debug(f'Body mensaje fin de vuelo recibido {body}')

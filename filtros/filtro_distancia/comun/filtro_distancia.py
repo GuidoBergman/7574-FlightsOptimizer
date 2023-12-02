@@ -26,7 +26,6 @@ class FiltroDistancia:
        self._protocoloResultado = ProtocoloResultadosServidor()
        self.aeropuertos = {}
        self.corriendo = True
-       self.vuelos_procesados = 0
        self.aeropuertos_procesados = 0
        self._id = id
        self.cache_distancias = {}
@@ -57,11 +56,7 @@ class FiltroDistancia:
         logging.info(f'Fin de Aeropuertos Cliente: {id_cliente}')
         return None
     
-    def procesar_vuelo(self, id_cliente, vuelos):        
-        self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 300) == 1:
-            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
-            
+    def procesar_vuelo(self, id_cliente, vuelos):                    
         aeropuertos_cliente = self.aeropuertos[id_cliente]
         resultados = []
         for vuelo in vuelos:

@@ -23,8 +23,7 @@ class FiltroVelocidad:
        self._fines_vuelo = 0
         
        self._id = id
-       self._cant_filtros_escalas = cant_filtros_escalas
-       self.vuelos_procesados = 0       
+       self._cant_filtros_escalas = cant_filtros_escalas     
        self.resultados_enviados = 0
 
        socket = SocketComunUDP()
