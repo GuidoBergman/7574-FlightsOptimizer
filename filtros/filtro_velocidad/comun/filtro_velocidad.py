@@ -52,10 +52,10 @@ class FiltroVelocidad:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
             
         if id_cliente in self.vuelos_mas_rapido_cliente:
-            vuelos_mas_rapido = {}
+            vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
         else:
             logging.info(f"Agregando registros para cliente {id_cliente}")
-            vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
+            vuelos_mas_rapido = {}
             
             
         for vuelo in vuelos:

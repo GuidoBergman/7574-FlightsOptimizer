@@ -57,37 +57,36 @@ class ListaPrecios(dict):
         while i < len(valores):
             trayecto = valores[i]
             cantidad = int(valores[i + 1])
-            i += 2
+            i = i + 2
             suma = 0
-            for i in range(i, i + cantidad):
-                suma += float(valores[i])
-            i += cantidad + 1
+            for n in range(i, i + cantidad):
+                suma += float(valores[n])
+            i += cantidad
             self.prom_cant = self.agregar(self.prom_cant, (suma / cantidad, cantidad))
 
     def procesar_linea(self, promedio, valores):
         nuevos_trayectos = {}
         i = 1
-        
         while i < len(valores):
             trayecto = valores[i]
-            if not trayecto in self.trayectos_max:
-                self.trayectos_max[trayecto] = 0
             cantidad = int(valores[i + 1])
-            cantidad_sobrepromedio = 0
-            i += 2
+            i = i + 2
+            
+            if not trayecto in self.trayectos_max:
+                self.trayectos_max[trayecto] = 0            
             suma = 0
-            for i in range(i, i + cantidad - 1):
-                valor = float(valores[i])
+            cantidad_sobrepromedio = 0
+            for n in range(i, i + cantidad):
+                valor = float(valores[n])
                 if valor > promedio: 
                     suma += valor
                     cantidad_sobrepromedio += 1
                 if self.trayectos_max[trayecto] < valor:
                     self.trayectos_max[trayecto] = valor
-            i += cantidad
+            i = i + cantidad
             if cantidad_sobrepromedio > 0:
                 nuevos_trayectos[trayecto] = (suma / cantidad_sobrepromedio, cantidad_sobrepromedio)
-            
-        for (trayecto, prom_tot) in nuevos_trayectos:
+        for (trayecto, prom_tot) in nuevos_trayectos.items():
             if trayecto in self.trayectos:
                 self.trayectos[trayecto] = self.agregar(self.trayectos[trayecto], prom_tot)
             else:

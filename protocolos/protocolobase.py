@@ -108,7 +108,7 @@ class ProtocoloBase(ABC):
            yield nombre_archivo, linea
 
     def obtener_siguiente_linea_cliente(self, id_cliente):
-        for linea in self._recuperador.recuperar_siguiente_linea():
+        for linea in self._recuperador.obtener_siguiente_linea_cliente(id_cliente):
            yield linea
 
     def cerrar(self):

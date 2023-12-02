@@ -37,7 +37,7 @@ class Recuperador():
 
 
     def obtener_siguiente_linea_cliente(self, id_cliente):
-        for linea in self._almacenador.obtener_siguiente_linea_cliente():
+        for linea in self._almacenador.obtener_siguiente_linea_cliente(id_cliente):
             linea = linea.split(',')
             if len(linea) > 1:
                 yield linea[1:]

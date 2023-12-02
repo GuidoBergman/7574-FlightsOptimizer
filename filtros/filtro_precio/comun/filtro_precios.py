@@ -38,7 +38,7 @@ class FiltroPrecios:
         
     def procesar_vuelos(self, id_cliente, vuelos):        
         self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 10) == 1:
+        if (self.vuelos_procesados % 30) == 1:
             logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
         
         if (id_cliente in self.precios):
