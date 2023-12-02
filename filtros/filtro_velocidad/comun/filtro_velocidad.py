@@ -23,8 +23,7 @@ class FiltroVelocidad:
        self._fines_vuelo = 0
         
        self._id = id
-       self._cant_filtros_escalas = cant_filtros_escalas
-       self.vuelos_procesados = 0       
+       self._cant_filtros_escalas = cant_filtros_escalas     
        self.resultados_enviados = 0
 
        socket = SocketComunUDP()
@@ -46,11 +45,7 @@ class FiltroVelocidad:
             minutos_totales += horas * 60 + minutos
         return minutos_totales
 
-    def procesar_vuelo(self, id_cliente, vuelos):
-        self.vuelos_procesados += 1
-        if (self.vuelos_procesados % 300) == 1:
-            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
-            
+    def procesar_vuelo(self, id_cliente, vuelos):    
         if id_cliente in self.vuelos_mas_rapido_cliente:
             vuelos_mas_rapido = {}
         else:

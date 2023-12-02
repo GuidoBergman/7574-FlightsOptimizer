@@ -13,6 +13,8 @@ from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from multiprocessing import Process
 from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_FILTRO_PRECIO
 from socket_comun_udp import SocketComunUDP
+import sys
+import traceback
 
 REGISTROS_EN_MEMORIA = 1000
 
@@ -33,14 +35,9 @@ class FiltroPrecios:
        
     def inicialar(self):
        self.precios = {}    
-       self.vuelos_procesados = 0
        self.resultados_enviados = 0
         
-    def procesar_vuelos(self, id_cliente, vuelos):        
-        self.vuelos_procesados += 1;
-        if (self.vuelos_procesados % 10) == 1:
-            logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')  
-        
+    def procesar_vuelos(self, id_cliente, vuelos):               
         if (id_cliente in self.precios):
             listaprecio = self.precios[id_cliente]
         else:
@@ -93,7 +90,10 @@ class FiltroPrecios:
           self._handle_protocolo_heartbeat.start()
           self._protocolo.iniciar(self.procesar_vuelos, self.procesar_finvuelo, self.procesar_promediogeneral, self.procesar_flush, self._id)
         except Exception as e:
-            logging.error(f'Ocurrió una excepción: {e}')
+            if hasattr(sys, 'exception'):
+                exc = sys.exception()
+                traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+                traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
           
 

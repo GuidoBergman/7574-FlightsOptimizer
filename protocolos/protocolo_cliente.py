@@ -57,7 +57,7 @@ class ProtocoloCliente:
             destino = destino.decode(STRING_ENCODING)
             escalas = escalas[0:longitud_escalas].decode(STRING_ENCODING)
             duracion = duracion.decode(STRING_ENCODING)
-            logging.info(f"Vuelo con distancia: {distancia}")
+            logging.debug(f"Vuelo con distancia: {distancia}")
             vuelo = Vuelo(id, origen, destino, precio, escalas, duracion, distancia)
             return STATUS_OK, vuelo
         elif identificador_mensaje == IDENTIFICADOR_FIN_VUELO:
@@ -108,7 +108,7 @@ class ProtocoloCliente:
                 escalas = escalas[0:longitud_escalas].decode(STRING_ENCODING)
                 duracion = duracion.decode(STRING_ENCODING)
                 
-                logging.info(f"Vuelo con distancia: {distancia}")
+                logging.debug(f"Vuelo con distancia: {distancia}")
                 vuelo = Vuelo(id_vuelo, origen, destino, precio, escalas, duracion, distancia)
                 ret.append(vuelo)
                 cantidad_vuelos -= 1
