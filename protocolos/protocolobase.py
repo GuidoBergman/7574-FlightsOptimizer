@@ -68,7 +68,7 @@ class ProtocoloBase(ABC):
                 return
             self.vuelos_procesados += len(vuelos)
             if (int(self.vuelos_procesados/len(vuelos)) % 300) == 1:
-                logging.info(f'Procesando Vuelo: {self.vuelos_procesados}')
+                logging.info(f'Procesando lote de vuelos: {self.vuelos_procesados}')
             contenido_a_persistir = self.procesar_vuelo(id_cliente, vuelos)
         elif body.startswith(IDENTIFICADOR_FIN_VUELO.encode('utf-8')):
             logging.debug(f'Body mensaje fin de vuelo recibido {body}')
