@@ -78,6 +78,7 @@ class FiltroVelocidad:
 
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
         
     def procesar_finvuelo(self, id_cliente):
@@ -105,7 +106,8 @@ class FiltroVelocidad:
             logging.info(f'Resultados enviados: {self.resultados_enviados}')
             del self.vuelos_mas_rapido_cliente[id_cliente]
         self._protocoloResultado.enviar_fin_resultados_rapidos(id_cliente, self._id)
-
+        
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
         
     def run(self):        

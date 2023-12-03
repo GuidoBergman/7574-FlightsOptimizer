@@ -9,6 +9,9 @@ class Recuperador():
         self._almacenador = Almacenador()
         self._mensajes_procesados = OrderedDict()
 
+    def eliminar_archivo(self, nombre_archivo):
+        self._almacenador.eliminar_archivo(nombre_archivo)
+        
 
     def almacenar(self, id_cliente, body_msj, contenido_a_peristir=None):
         hash_msj = str(hash(body_msj))

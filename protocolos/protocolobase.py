@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
+import os
 from struct import unpack, pack, calcsize
 from recuperador import Recuperador
 
@@ -18,6 +19,7 @@ class ProtocoloBase(ABC):
     def __init__(self):
         self._recuperador = Recuperador()
         self.vuelos_procesados = 0
+        self.clientes_finalizados = []
     
     @abstractmethod
     def traducir_vuelo(self, vuelo):
@@ -27,6 +29,16 @@ class ProtocoloBase(ABC):
     def decodificar_vuelo(self, mensaje):
         pass
     
+    def finalizo_cliente(self, id_cliente):
+        logging.info(f"Cliente para finalizar: {id_cliente}")
+        self.clientes_finalizados.append(id_cliente)
+        
+    def borrar_archivos(self):
+        for arch in self.clientes_finalizados:
+            logging.info(f"Eliminando archivo: {arch}")
+            self._recuperador.eliminar_archivo(arch)
+        self.clientes_finalizados = []
+            
     def traducir_vuelos(self, id_cliente, vuelos):
         logging.debug(f"Traduccion para cliente {id_cliente} vuelos {len(vuelos)}")
         msg = pack(FORMATOCABECERA_VUELO, IDENTIFICADOR_VUELO.encode(STRING_ENCODING), id_cliente.encode(STRING_ENCODING), len(vuelos))

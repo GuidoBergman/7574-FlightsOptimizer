@@ -49,6 +49,7 @@ class FiltroPrecios:
             
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
         
     
@@ -81,6 +82,7 @@ class FiltroPrecios:
         logging.info(f"Envio {len(resultados)} resultados")
         self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente, self._id)
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
 
     def run(self):

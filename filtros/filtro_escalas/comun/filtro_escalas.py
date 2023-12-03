@@ -47,13 +47,14 @@ class FiltroEscalas:
     
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
         
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos Cliente: {id_cliente}')
         self._protocoloVelocidad.enviar_fin_vuelos(id_cliente, self._id)
-        self._protocoloResultado.enviar_fin_resultados_escalas(id_cliente, self._id)
-
+        self._protocoloResultado.enviar_fin_resultados_escalas(id_cliente, self._id)        
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
         
     def run(self):

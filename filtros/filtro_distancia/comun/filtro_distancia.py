@@ -50,6 +50,7 @@ class FiltroDistancia:
 
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
         
     def procesar_finaeropuerto(self, id_cliente):        
@@ -83,7 +84,8 @@ class FiltroDistancia:
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Fin de vuelos distancia {id_cliente}')
         self._protocoloResultado.enviar_fin_resultados_distancia(id_cliente, self._id)
-        del self.aeropuertos[id_cliente]
+        del self.aeropuertos[id_cliente]        
+        self._protocolo.finalizo_cliente(id_cliente)
         return None
 
     def distancia_entrecoordenadas(self,coordenadas_aeropuerto1, coordenadas_aeropuerto2):

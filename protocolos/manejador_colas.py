@@ -26,7 +26,7 @@ class Wrapper:
         if hacer_ack:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             if self._post_ack_callback:
-                self._post_ack_callback(body)
+                self._post_ack_callback()
         else:
             channel.basic_nack(delivery_tag=method.delivery_tag)
 
@@ -64,22 +64,22 @@ class ManejadorColas:
        self._wrapers[nombre_cola] = wr
         
 
-    def consumir_mensajes(self, nombre_cola, callback_function, auto_ack=True):
-       self.vincular_wrapper(nombre_cola, callback_function, auto_ack)
+    def consumir_mensajes(self, nombre_cola, callback_function, auto_ack=True, post_ack_callback=None):
+       self.vincular_wrapper(nombre_cola, callback_function, auto_ack, post_ack_callback=post_ack_callback)
 
-    def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico, auto_ack=True):
+    def consumir_mensajes_por_topico(self, nombre_cola, callback_function, topico, auto_ack=True, post_ack_callback=None):
        resultado = self._channel.queue_declare(queue='', durable=True)
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
-       self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))       
-       self.vincular_wrapper(nombre_cola, callback_function, auto_ack)       
+       self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))
+       self.vincular_wrapper(nombre_cola, callback_function, auto_ack, post_ack_callback=post_ack_callback)
  
-    def subscribirse_cola(self, nombre_cola, callback_function, auto_ack=True):
+    def subscribirse_cola(self, nombre_cola, callback_function, auto_ack=True, post_ack_callback=None):
        resultado = self._channel.queue_declare(queue='', durable=True)
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
-       self.vincular_wrapper(nombre_cola, callback_function, auto_ack) 
+       self.vincular_wrapper(nombre_cola, callback_function, auto_ack, post_ack_callback=post_ack_callback) 
 
     def dejar_de_consumir(self, nombre_cola):
         try:

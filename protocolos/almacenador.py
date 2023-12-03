@@ -18,6 +18,12 @@ class Almacenador:
                 nombre_archivo = nombre_archivo.rstrip(EXTENCION)
                 self._archivos[nombre_archivo] = open(join(BASEPATH_ARCHIVOS, nombre_archivo + EXTENCION), 'a+')
 
+    def eliminar_archivo(self, nombre_archivo):
+        self._archivos[nombre_archivo].close()
+        del self._archivos;
+        archi = join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION)
+        os.remove(archi)
+    
 
     def guardar_linea(self, nombre_archivo, contenido):
         if nombre_archivo not in self._archivos:
