@@ -78,7 +78,7 @@ class FiltroVelocidad:
 
             vuelos_trayecto_new = vuelos_mas_rapido[trayecto]
             if self._hubo_cambios(vuelos_trayecto_old, vuelos_trayecto_new):
-                logging.info(f'Hubo cambios en un trayecto el trayecto {trayecto}, que pasó de {vuelos_trayecto_old} a {vuelos_trayecto_new}')
+                logging.debug(f'Hubo cambios en un trayecto el trayecto {trayecto}, que pasó de {vuelos_trayecto_old} a {vuelos_trayecto_new}')
                 trayectos_con_cambios.append(trayecto)
 
         self.vuelos_mas_rapido_cliente[id_cliente] = vuelos_mas_rapido
@@ -116,7 +116,7 @@ class FiltroVelocidad:
         resultados = []
         logging.info(f"Procesando fin de vuelo cliente {id_cliente}")
         
-        if id_cliente in self.vuelos_mas_rapido_cliente[id_cliente]:
+        if id_cliente in self.vuelos_mas_rapido_cliente:
             vuelos_mas_rapido = self.vuelos_mas_rapido_cliente[id_cliente]
             for trayecto, vuelos in vuelos_mas_rapido.items():
                 for vuelo in vuelos:
