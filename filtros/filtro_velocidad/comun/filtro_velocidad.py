@@ -12,6 +12,7 @@ import traceback
 from multiprocessing import Process
 from protocolo_enviar_heartbeat import ProtocoloEnviarHeartbeat, IDENTIFICADOR_FILTRO_VELOCIDAD
 from socket_comun_udp import SocketComunUDP
+from comun.recuperador_vuelos_rapidos import RecuperadorVuelosRapidos
 
 
 class FiltroVelocidad:
@@ -25,6 +26,7 @@ class FiltroVelocidad:
        self._id = id
        self._cant_filtros_escalas = cant_filtros_escalas     
        self.resultados_enviados = 0
+       self._recuperador_vuelos = RecuperadorVuelosRapidos()
 
        socket = SocketComunUDP()
        self._protocolo_heartbeat = ProtocoloEnviarHeartbeat(socket, host_watchdog, port_watchdog, cant_watchdogs,
@@ -51,16 +53,19 @@ class FiltroVelocidad:
         else:
             logging.info(f"Agregando registros para cliente {id_cliente}")
             vuelos_mas_rapido = {}
-            
-            
+                
+        trayectos_con_cambios = []
+
         for vuelo in vuelos:
             trayecto = vuelo.origen + "-" + vuelo.destino
             # Obtener la duración del vuelo actual
             vuelo.duracion_enminutos = self.calcular_minutos(vuelo.duracion)
             logging.debug(f"Procesando vuelo trayecto: { trayecto } de duracion: {vuelo.duracion} en minutos: { vuelo.duracion_enminutos } ")
             # Comprobar si ya hay vuelos registrados para este trayecto
+            vuelos_trayecto_old = None
             if trayecto in vuelos_mas_rapido:
                 # Agregar el vuelo a la lista
+                vuelos_trayecto_old = vuelos_mas_rapido[trayecto].copy()
                 vuelos_mas_rapido[trayecto].append(vuelo)
             else:
                 # Si no hay vuelos registrados para este proyecto, crear una lista con el vuelo actual
@@ -70,10 +75,32 @@ class FiltroVelocidad:
             if len(vuelos_mas_rapido[trayecto]) > 2:
                 vuelos_mas_rapido[trayecto].sort(key=lambda x: x.duracion_enminutos)
                 vuelos_mas_rapido[trayecto] = vuelos_mas_rapido[trayecto][:2]
-          
+
+            vuelos_trayecto_new = vuelos_mas_rapido[trayecto]
+            if self._hubo_cambios(vuelos_trayecto_old, vuelos_trayecto_new):
+                logging.info(f'Hubo cambios en un trayecto el trayecto {trayecto}, que pasó de {vuelos_trayecto_old} a {vuelos_trayecto_new}')
+                trayectos_con_cambios.append(trayecto)
+
         self.vuelos_mas_rapido_cliente[id_cliente] = vuelos_mas_rapido
 
-        return 'Holis'
+        contenido_a_persistir = self._recuperador_vuelos.obtener_contenido_a_persistir(vuelos_mas_rapido, trayectos_con_cambios)
+
+        return contenido_a_persistir
+
+    def _hubo_cambios(self, vuelos_trayecto_old, vuelos_trayecto_new):
+        if not vuelos_trayecto_old:
+            return True
+        
+        if len(vuelos_trayecto_old) != len(vuelos_trayecto_new):
+            return True
+        
+        for v1, v2 in zip(vuelos_trayecto_old, vuelos_trayecto_new):
+            if v1.id_vuelo != v2.id_vuelo or v1.duracion_enminutos != v2.duracion_enminutos:
+                return True
+            
+        return False
+        
+
 
 
     def procesar_flush(self, id_cliente):        
