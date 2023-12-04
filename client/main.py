@@ -53,8 +53,19 @@ def main():
                   f"logging_level: {logging_level} ")
 
     # Initialize server and start server loop
-    client = Client(host, port, archivo_aeropuertos, archivo_vuelos)
-    client.run()
+
+    archivos_validos = True
+    
+    if not os.path.exists('/data/' + archivo_aeropuertos):
+        logging.error("El archivo de aeropuertos no existe")
+        archivos_validos = False
+    if not os.path.exists('/data/' + archivo_vuelos):
+        logging.error("El archivo de vuelos no existe")
+        archivos_validos = False
+        
+    if archivos_validos:        
+        client = Client(host, port, archivo_aeropuertos, archivo_vuelos)
+        client.run()
 
 def initialize_log(logging_level):
     """

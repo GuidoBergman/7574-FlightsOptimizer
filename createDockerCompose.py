@@ -279,7 +279,7 @@ for i in range(1, cantClientesPrueba+1):
         source: ./client/config.ini
         target: /config.ini
       - type: bind
-        source: ./data
+        source: ./data/client
         target: /data
 """
 
