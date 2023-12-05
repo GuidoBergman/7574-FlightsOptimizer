@@ -1,15 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\filtros",
-    "\\filtros\\calculador_promedio",
-    "\\filtros\\calculador_promedio\\comun",
-    "\\filtros\\filtro_distancia",
-    "\\filtros\\filtro_escalas",
-    "\\filtros\\filtro_escalas\\comun",
-    "\\filtros\\filtro_precio",
-    "\\filtros\\filtro_precio\\comun",
-    "\\protocolos"
+    ""
   ],
+  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\7574-FlightsOptimizer",
   "PreviewInSolutionExplorer": false
 }

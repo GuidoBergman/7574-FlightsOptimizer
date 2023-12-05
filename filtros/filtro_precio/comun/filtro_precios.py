@@ -55,7 +55,9 @@ class FiltroPrecios:
     
     def procesar_finvuelo(self, id_cliente):        
         logging.info(f'Calculo el promedio y lo envia')        
-        promedio, cantidad = self.precios[id_cliente].prom_cant
+        promedio, cantidad = 0, 0
+        if id_cliente in self.precios:
+            self.precios[id_cliente].prom_cant
         self._protocolo.enviar_promedio(id_cliente, promedio, cantidad, self._id)
         return "promedio_enviado"
 
@@ -75,10 +77,13 @@ class FiltroPrecios:
 
     def procesar_promediogeneral(self, id_cliente, promedio):
         logging.info(f"Recibe el promedio {promedio} del cliente {id_cliente}")
-        precios = self.precios[id_cliente]
-        for valores in self._protocolo.obtener_siguiente_linea_cliente(id_cliente):
-            precios.procesar_linea(promedio, valores)
-        resultados = precios.get_resultados()
+        resultados = []
+        if id_cliente in self.precios:
+            precios = self.precios[id_cliente]
+            for valores in self._protocolo.obtener_siguiente_linea_cliente(id_cliente):
+                precios.procesar_linea(promedio, valores)
+            resultados = precios.get_resultados()
+        
         logging.info(f"Envio {len(resultados)} resultados")
         self._protocoloResultado.enviar_resultado_filtro_precio(resultados, id_cliente)
         self._protocoloResultado.enviar_fin_resultados_filtro_precio(id_cliente, self._id)
