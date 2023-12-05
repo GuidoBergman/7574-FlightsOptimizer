@@ -17,9 +17,9 @@ def borrar_archivos_en_directorios(base_dir):
         # Borrar cada archivo en el directorio
         for archivo in archivos:
             try:
-                
-                os.remove(archivo)
-                print(f"Archivo {archivo} borrado exitosamente.")
+                if archivo != 'config.ini':
+                    os.remove(archivo)
+                    print(f"Archivo {archivo} borrado exitosamente.")
             except Exception as e:
                 print(f"No se pudo borrar el archivo {archivo}. Error: {e}")
 

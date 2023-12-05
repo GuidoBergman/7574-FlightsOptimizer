@@ -264,7 +264,7 @@ for i in range(1, cantClientesPrueba+1):
   clientes_prueba += f"""
   clientes_prueba{i}:
     container_name: clientes_prueba{i}
-    image: client_prueba:latest
+    image: client:latest
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
@@ -276,12 +276,17 @@ for i in range(1, cantClientesPrueba+1):
       - server    
     volumes:
       - type: bind
-        source: ./client/config.ini
+        source: ./data/client{i}/config.ini
         target: /config.ini
       - type: bind
         source: ./data/client
         target: /data
+      - type: bind
+        source: ./data/client{i}
+        target: /resultados
 """
+  directoriosACrear.append(f'client{i}')
+
 
 
 cliente = """
@@ -297,7 +302,6 @@ cliente = """
       - testing_net
     depends_on:
       - server
-    
     volumes:
       - type: bind
         source: ./client/config.ini
@@ -305,8 +309,12 @@ cliente = """
       - type: bind
         source: ./data/client
         target: /data
+      - type: bind
+        source: ./data/client
+        target: /resultados
 """
 directoriosACrear.append('client')
+directoriosACrear.append(f'resultados')
 
 calculadorPromedio = f"""
   calculador_promedio:
