@@ -60,6 +60,9 @@ class FiltroEscalas:
     def run(self):
           logging.info('Iniciando filtro escalas')  
           try:
+            for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
+                logging.debug(f'Recuperé la linea {linea} del cliente {id_cliente}')
+                
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
             self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_flush, self._id)

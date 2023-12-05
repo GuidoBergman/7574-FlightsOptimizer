@@ -142,6 +142,7 @@ class FiltroVelocidad:
           try:
             for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
                 logging.debug(f'Recuperé la linea {linea} del cliente {id_cliente}')
+                self.vuelos_mas_rapido_cliente = self._recuperador_vuelos.recuperar_valores(self.vuelos_mas_rapido_cliente, id_cliente, linea)
 
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()

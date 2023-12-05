@@ -47,7 +47,7 @@ class Recuperador():
 
     def es_duplicado(self, id_cliente, body_msj):
         hash_msj = str(hash(body_msj))
-        if hash_msj in self._mensajes_procesados: # Borrame
+        if hash_msj in self._mensajes_procesados: 
              logging.debug(f'Es duplicado porque tiene el hash: {hash_msj}') 
         return hash_msj in self._mensajes_procesados
 
