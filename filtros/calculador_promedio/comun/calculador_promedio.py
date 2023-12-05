@@ -27,11 +27,11 @@ class CalculadorPromedio:
         
         
     def procesar_promedio(self, id_cliente, promedio: float, cantidad: int):
-        if cantidad > 0:
-            if id_cliente in self.clientes:
-                self.clientes[id_cliente].agregar(promedio, cantidad)
-            else:
-                self.clientes[id_cliente] = PromedioCliente(promedio, cantidad)
+        
+        if id_cliente in self.clientes:
+            self.clientes[id_cliente].agregar(promedio, cantidad)
+        else:
+            self.clientes[id_cliente] = PromedioCliente(promedio, cantidad)
         
         logging.info(f"Procesa promedio {id_cliente} : | promedio { promedio} cantidad { cantidad}")
         promCliente = self.clientes[id_cliente]
