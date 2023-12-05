@@ -2,7 +2,7 @@ from almacenador import Almacenador
 import logging
 from collections import OrderedDict 
 
-CANT_MAX_MENSAJES_PROCESADOS = 10000
+CANT_MAX_MENSAJES_PROCESADOS = 100000
 
 class Recuperador():
     def __init__(self):
