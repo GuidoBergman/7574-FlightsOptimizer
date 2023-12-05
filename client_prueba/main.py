@@ -57,7 +57,7 @@ def main():
     # Inicializo los arhvicos de prueba
     datosarchivos = []
     datosarchivos.append(DatosArchivo("archivo_prueba0.csv", 100, 32, 234, 254))
-    datosarchivos.append(DatosArchivo("archivo_prueba1.csv", 0, 873, 234, 254))
+    datosarchivos.append(DatosArchivo("archivo_prueba1.csv", 0, 4680, 234, 534))
     datosarchivos.append(DatosArchivo("archivo_prueba2.csv", 75, 4593, 234, 544))
     datosarchivos.append(DatosArchivo("archivo_prueba3.csv", 79, 4734, 234, 564))
     datosarchivos.append(DatosArchivo("archivo_prueba4.csv", 0, 873, 234, 254))
