@@ -50,7 +50,10 @@ class CalculadorPromedio:
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
             for id_cliente, linea in self._protocolo.recuperar_siguiente_linea():
-                logging.info(f'Recuperé la linea {linea} del cliente {id_cliente}')
+                logging.debug(f'Recuperé la linea {linea} del cliente {id_cliente}')
+                promedio = float(linea[0])
+                cantidad = int(linea[1])
+                self.procesar_promedio(id_cliente, promedio, cantidad)
             self._protocolo.iniciar_promedio(self.procesar_promedio)
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
