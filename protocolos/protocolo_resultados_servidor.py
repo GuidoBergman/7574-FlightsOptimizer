@@ -128,12 +128,12 @@ class ProtocoloResultadosServidor():
     def _enviar_resultados(self, resultados, identificador_resultado, id_cliente):
         if len(resultados) == 0:
             return
-        msg = pack(FORMATOCABECERA_RESULTADOS, identificador_resultado.encode(STRING_ENCODING), len(resultados))
         for resultado in resultados:
+            msg = pack(FORMATOCABECERA_RESULTADOS, identificador_resultado.encode(STRING_ENCODING), 1)
             tamanio, bytes_resultado = resultado.serializar()
             msg = msg + bytes_resultado
-        logging.debug(f'Enviando resultado a la cola: {self._nombre_cola + id_cliente}')
-        self._colas.enviar_mensaje(self._nombre_cola + id_cliente, msg)
+            logging.debug(f'Enviando resultado a la cola: {self._nombre_cola + id_cliente}')
+            self._colas.enviar_mensaje(self._nombre_cola + id_cliente, msg)
 
         
     def enviar_fin_resultados_rapidos(self, id_cliente, id_filtro):
