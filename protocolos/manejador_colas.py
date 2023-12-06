@@ -37,7 +37,7 @@ class ManejadorColas:
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=HOST))
         self._channel = connection.channel()
-        self._channel.basic_qos(prefetch_count=1)
+        self._channel.confirm_delivery()
         self._consumer_tags = {}
         self._wrapers = {}
         self._nombrecolas = {}
