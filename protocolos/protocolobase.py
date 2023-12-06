@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import logging
-import os
 from struct import unpack, pack, calcsize
 from recuperador import Recuperador
 

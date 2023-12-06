@@ -4,7 +4,6 @@ import struct
 from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
 from modelo.Aeropuerto import Aeropuerto
-from modelo.estado import Estado
 from protocolobase import ProtocoloBase
 
 

@@ -2,9 +2,7 @@ import logging
 from struct import unpack, pack, calcsize
 import struct
 from manejador_colas import ManejadorColas
-from modelo.Aeropuerto import Aeropuerto
 from modelo.Vuelo import Vuelo
-from modelo.estado import Estado
 from protocolobase import ProtocoloBase, FORMATO_FIN
 
 TAMANIO_IDENTIFICADOR_MENSAJE = 1

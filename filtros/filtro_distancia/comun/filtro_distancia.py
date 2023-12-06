@@ -1,12 +1,7 @@
-import os
-from struct import unpack, pack, calcsize
 import logging
 import signal
 from comun.lista_aeropuertos import ListaAeropuertos
 from geopy.distance import geodesic
-from manejador_colas import ManejadorColas
-from modelo.estado import Estado
-from modelo.Vuelo import Vuelo
 from multiprocessing import Process
 import sys
 import traceback

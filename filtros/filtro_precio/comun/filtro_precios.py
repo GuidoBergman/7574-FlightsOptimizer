@@ -1,13 +1,7 @@
 import logging
-import os
 from math import log
 import signal
-import struct
 from comun.lista_precios import ListaPrecios
-from manejador_colas import ManejadorColas
-from modelo.estado import Estado
-from modelo.Vuelo import Vuelo
-from modelo.ResultadoEstadisticasPrecios import ResultadoEstadisticaPrecios
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 from protocolo_resultados_servidor import ProtocoloResultadosServidor
 from multiprocessing import Process

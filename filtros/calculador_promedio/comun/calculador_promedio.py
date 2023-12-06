@@ -4,9 +4,7 @@ import signal
 import sys
 import traceback
 
-from manejador_colas import ManejadorColas
-from modelo.estado import Estado
-from modelo.Vuelo import Vuelo
+
 from protocolofiltroprecio import ProtocoloFiltroPrecio
 from comun.promedio_cliente import PromedioCliente
 

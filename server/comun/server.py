@@ -1,13 +1,9 @@
 from ast import Import
-import chunk
 import logging
 import signal
-from comun.handler import Handler
-from comun.enviador_fin import EnviadorFin
-from multiprocessing import Process, Manager
+from multiprocessing import Process
 from socket_comun import SocketComun
 from comun.sesioncliente import SesionCliente
-from protocolo_resultados_servidor import ProtocoloResultadosServidor
 import sys
 import traceback
 

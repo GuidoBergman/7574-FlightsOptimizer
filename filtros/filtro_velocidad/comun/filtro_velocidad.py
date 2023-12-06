@@ -1,8 +1,6 @@
 import logging
 import signal
 import re
-from manejador_colas import ManejadorColas
-from modelo.Vuelo import Vuelo
 from protocolovelocidad import ProtocoloFiltroVelocidad
 from modelo.ResultadoVuelosRapidos import ResultadoVuelosRapidos
 from protocolo_resultados_servidor import ProtocoloResultadosServidor

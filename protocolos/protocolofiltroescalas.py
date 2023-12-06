@@ -4,8 +4,6 @@ from struct import unpack, pack, calcsize
 import struct
 from modelo.Vuelo import Vuelo
 from manejador_colas import ManejadorColas
-from modelo.Aeropuerto import Aeropuerto
-from modelo.estado import Estado
 from protocolo_cliente import FORMATO_MENSAJE_UNVUELO, FORMATO_MENSAJE_VUELO
 from protocolobase import ProtocoloBase
 import uuid
