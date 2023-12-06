@@ -57,7 +57,7 @@ class FiltroPrecios:
         logging.info(f'Calculo el promedio y lo envia')        
         promedio, cantidad = 0, 0
         if id_cliente in self.precios:
-            self.precios[id_cliente].prom_cant
+            promedio, cantidad = self.precios[id_cliente].prom_cant
         self._protocolo.enviar_promedio(id_cliente, promedio, cantidad, self._id)
         return "promedio_enviado"
 
