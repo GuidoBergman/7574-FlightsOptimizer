@@ -79,7 +79,7 @@ class ProtocoloFiltroPrecio(ProtocoloBase):
         
 
         self._colas.crear_cola_subscriptores(NOMBRE_COLAPROMEDIOGENERAL)
-        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIOGENERAL, self.callback_promedio_general)            
+        self._colas.subscribirse_cola(NOMBRE_COLAPROMEDIOGENERAL, str(id), self.callback_promedio_general)            
         self._colas.consumir()
 
 

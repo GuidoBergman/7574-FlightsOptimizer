@@ -83,7 +83,7 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
         self.procesar_finaeropuerto =  procesar_finaeropuerto
         
         self._colas.crear_cola_subscriptores(NOMBRE_COLAAEROPUERTOS)
-        self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, self.callback_functionaero)
+        self._colas.subscribirse_cola(NOMBRE_COLAAEROPUERTOS, str(id), self.callback_functionaero)
         
         self._colas.crear_cola_por_topico(self.nombre_cola)
         self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id, auto_ack=False, post_ack_callback=self.borrar_archivos)

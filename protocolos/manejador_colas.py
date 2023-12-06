@@ -37,6 +37,7 @@ class ManejadorColas:
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=HOST))
         self._channel = connection.channel()
+        self._channel.basic_qos(prefetch_count=1)
         self._consumer_tags = {}
         self._wrapers = {}
         self._nombrecolas = {}
@@ -73,8 +74,8 @@ class ManejadorColas:
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))
        self.vincular_wrapper(nombre_cola, callback_function, auto_ack, post_ack_callback=post_ack_callback)
  
-    def subscribirse_cola(self, nombre_cola, callback_function, auto_ack=True, post_ack_callback=None):
-       resultado = self._channel.queue_declare(queue=nombre_cola, durable=True)
+    def subscribirse_cola(self, nombre_cola, id, callback_function, auto_ack=True, post_ack_callback=None):
+       resultado = self._channel.queue_declare(queue=nombre_cola + id, durable=True)
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
