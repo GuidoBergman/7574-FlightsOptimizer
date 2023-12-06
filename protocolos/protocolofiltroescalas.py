@@ -53,7 +53,7 @@ class ProtocoloFiltroEscalas(ProtocoloBase):
         self.procesar_flush = procesar_flush
         self.procesar_finvuelo =  procesar_finvuelo
         self._colas.crear_cola_por_topico(self.nombre_cola)
-        self._colas.consumir_mensajes_por_topico(self.nombre_cola, self.callback_function, id, post_ack_callback=self.borrar_archivos)
+        self._colas.consumir_mensajes_por_topico(self.nombre_cola, str(id), self.callback_function, id, post_ack_callback=self.borrar_archivos)
         self._colas.consumir()
 
         
