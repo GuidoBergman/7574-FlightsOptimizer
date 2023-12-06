@@ -55,10 +55,10 @@ class Client:
     def _recibir_resultados(self):
         fines_recibidos = set()
         resultados_recibidos = 0
-        archivo_ResultadoFiltroDistancia = '/data/ResultadoFiltroDistancia.txt'
-        archivo_ResultadoFiltroEscalas = '/data/ResultadoFiltroEscalas.txt'    
-        archivo_ResultadoVuelosRapidos = '/data/ResultadoVuelosRapidos.txt'    
-        archivo_ResultadoEstadisticaPrecios = '/data/ResultadoEstadisticaPrecios.txt'
+        archivo_ResultadoFiltroDistancia = '/resultados/ResultadoFiltroDistancia.txt'
+        archivo_ResultadoFiltroEscalas = '/resultados/ResultadoFiltroEscalas.txt'    
+        archivo_ResultadoVuelosRapidos = '/resultados/ResultadoVuelosRapidos.txt'    
+        archivo_ResultadoEstadisticaPrecios = '/resultados/ResultadoEstadisticaPrecios.txt'
 
         if os.path.exists(archivo_ResultadoFiltroDistancia):
             os.remove(archivo_ResultadoFiltroDistancia)      
