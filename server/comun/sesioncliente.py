@@ -93,8 +93,7 @@ class SesionCliente:
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
             if hasattr(sys, 'exception'):
-                exc = sys.exception()
-                traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+                exc = sys.exception()       
                 traceback.print_exception(exc, limit=2, file=sys.stdout)
             self._enviar_flush()
           
