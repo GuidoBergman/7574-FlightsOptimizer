@@ -8,14 +8,14 @@ BASEPATH_DATA = 'data/'
 if len(sys.argv) < 6 or sys.argv[1] == '-h':
     print("""
     Debe ingresar las cantidades de los filtros que desea crear. 
-    El formato del comando es  \'createDockerCompose.py <cant filtro escalas> <cant filtro distancia> <cant filtro rapidos> <cant filtro precio> <cant watchdogs> <cant clientes>\'
+    El formato del comando es  \'createDockerCompose.py <cant filtro escalas> <cant filtro distancia> <cant filtro rapidos> <cant filtro precio> <cant watchdogs> <cant clientes prueba>\'
     Ej: el comando \'createDockerCompose.py 1 2 3 4 5 6\' creara:
       - 1 filtros de escalas
       - 2 filtros de distancia
       - 3 filtros de vuelos rápidos
       - 4 filtros de estadisticas de precios
       - 5 watchdogs
-      - 6 clientes
+      - 6 clientes de prueba
     """)
     exit()
 
@@ -26,7 +26,7 @@ cantDistancias = int(sys.argv[2])
 cantRapidos = int(sys.argv[3])
 cantPrecios = int(sys.argv[4])
 cantWatchdogs = int(sys.argv[5])
-cantClientes = int(sys.argv[6])
+cantClientesPrueba = int(sys.argv[6])
 
 
     
@@ -259,12 +259,12 @@ for i in range(1, cantWatchdogs+1):
 
 
 
-clientes=''
-for i in range(1, cantClientes+1):
-  clientes += f"""
-  client{i}:
-    container_name: client{i}
-    image: client:latest
+clientes_prueba=''
+for i in range(1, cantClientesPrueba+1):
+  clientes_prueba += f"""
+  clientes_prueba{i}:
+    container_name: clientes_prueba{i}
+    image: client_prueba:latest
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
@@ -289,6 +289,30 @@ for i in range(1, cantClientes+1):
 
 
 
+cliente = """
+  client:
+    container_name: client
+    image: client:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server
+    volumes:
+      - type: bind
+        source: ./client/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/client
+        target: /data
+      - type: bind
+        source: ./data/client
+        target: /resultados
+"""
 directoriosACrear.append('client')
 directoriosACrear.append(f'resultados')
 
@@ -321,7 +345,7 @@ directoriosACrear.append('calculador_promedio')
 
 dockerComposeFile = open(FILEPATH, 'w')
 fileContent = [textInitialConfig, textRabbitConfig, server, filtros, calculadorPromedio,
-                watchdogs, clientes, textNetworkConfig]
+                cliente, watchdogs, clientes_prueba, textNetworkConfig]
 
 dockerComposeFile.writelines(fileContent)
  

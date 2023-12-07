@@ -42,10 +42,10 @@ class SesionCliente:
         self._protocolos = []
         self._protocolos_con_aeropuerto = []
         self._protocolos.append(ProtocoloFiltroEscalas(cant_filtros_escalas, self.id_cliente))
-        self._protocolos.append(ProtocoloFiltroPrecio(cant_filtros_precio, self.id_cliente))
+        self._protocolos.append(ProtocoloFiltroPrecio(cant_filtros_escalas, self.id_cliente))
         
         # El protocolo distancia lo arreglo en los dos vectores de protocolos
-        protDistancia = ProtocoloFiltroDistancia(cant_filtros_distancia, self.id_cliente)
+        protDistancia = ProtocoloFiltroDistancia(cant_filtros_escalas, self.id_cliente)
         self._protocolos.append(protDistancia)
         self._protocolos_con_aeropuerto.append(protDistancia)
   

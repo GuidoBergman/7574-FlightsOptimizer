@@ -59,7 +59,7 @@ class EnviadorVuelos:
                         self._protocolo.enviar_vuelos(lote)
                         lote = []
                         lotes_enviados += 1
-                        if (lotes_enviados % 300) == 1:
+                        if (lotes_enviados % 100) == 1:
                             logging.info(f"Lotes enviados: {lotes_enviados} sobre {lotes_estimados} (Estimados)")
             if len(lote) > 0:
                 self._protocolo.enviar_vuelos(lote)
