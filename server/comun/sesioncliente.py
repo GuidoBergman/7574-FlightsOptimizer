@@ -24,15 +24,18 @@ class SesionCliente:
         cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio, id_cliente = None):
         
         if id_cliente is not None:
-            logging.info("Creando sesion del cliente {id_cliente}")
+            logging.info(f"Creando sesion del cliente {id_cliente}")
             self.id_cliente = id_cliente
         else:
             guid = uuid.uuid4()
             self.id_cliente = str(guid).replace("-", "")
         
         signal.signal(signal.SIGTERM, self.sigterm_handler)        
-        self._client_sock = _client_sock
-        self._client_sock.set_timeout(TIMEOUT_CLIENTE)
+        
+        if _client_sock is not None:
+            self._client_sock = _client_sock
+            self._client_sock.set_timeout(TIMEOUT_CLIENTE)
+        
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
@@ -154,8 +157,8 @@ class SesionCliente:
 
     def cerrar(self):
         logging.info('Cerrando recursos (sesión cliente)')
-        
-        self._client_sock.close()
+        if self._client_sock is not None:
+            self._client_sock.close()
         for prot in self._protocolos:
             prot.cerrar()
         

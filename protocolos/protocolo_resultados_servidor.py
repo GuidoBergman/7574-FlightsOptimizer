@@ -80,7 +80,6 @@ class ProtocoloResultadosServidor():
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_ESCALAS:
             self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_RESULTADO_PRECIO:
-            logging.info("Llego Fin de Precios")
             self._protocolo_resultados_cliente.enviar_resultados(body)
         elif identificador_resultado == IDENTIFICADOR_FIN_RAPIDOS:
             logging.info("Llego Fin de Velocidad")
