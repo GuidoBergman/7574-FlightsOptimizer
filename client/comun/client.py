@@ -141,7 +141,7 @@ class Client:
             self._recibir_resultados()
         except (ConnectionResetError, BrokenPipeError, OSError) as e:
             logging.error(f"Error recibiendo resultados {e}")
-            return False
+            return True
 
         self._protocolo.cerrar()
         self._handler_proceso.join()

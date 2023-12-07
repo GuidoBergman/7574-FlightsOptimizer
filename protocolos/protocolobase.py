@@ -82,7 +82,7 @@ class ProtocoloBase(ABC):
             id_cliente = id_cliente.decode('utf-8')
             if self._recuperador.es_duplicado(id_cliente, body):
                 return
-            logging.info(f"RECIBE FLUSH {id_cliente }")
+            logging.info(f"protocolo | RECIBE FLUSH {id_cliente }")
             contenido_a_persistir = self.procesar_flush(id_cliente)
 
         self._recuperador.almacenar(id_cliente, body, contenido_a_persistir)

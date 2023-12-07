@@ -22,7 +22,12 @@ class Almacenador:
         self._archivos[nombre_archivo].close()
         del self._archivos;
         archi = join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION)
-        os.remove(archi)
+        if os.path.exists(archi):
+            os.remove(archi)
+        archi = join(BASEPATH_ARCHIVOS, f"b'{str(nombre_archivo)}" + EXTENCION)
+        if os.path.exists(archi):
+            os.remove(archi)
+        
     
 
     def guardar_linea(self, nombre_archivo, contenido):

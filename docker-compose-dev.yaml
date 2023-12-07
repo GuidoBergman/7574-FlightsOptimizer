@@ -192,8 +192,8 @@ services:
         target: /config.ini
       - /var/run/docker.sock:/var/run/docker.sock
 
-  clientes_prueba1:
-    container_name: clientes_prueba1
+  client1:
+    container_name: client1
     image: client:latest
     entrypoint: python3 /main.py 
     environment:
@@ -213,98 +213,6 @@ services:
         target: /data
       - type: bind
         source: ./data/client1
-        target: /resultados
-
-  clientes_prueba2:
-    container_name: clientes_prueba2
-    image: client:latest
-    entrypoint: python3 /main.py 
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONHASHSEED=0
-      - LOGGING_LEVEL=INFO
-    networks:
-      - testing_net
-    depends_on:
-      - server    
-    volumes:
-      - type: bind
-        source: ./data/client2/config.ini
-        target: /config.ini
-      - type: bind
-        source: ./data/client
-        target: /data
-      - type: bind
-        source: ./data/client2
-        target: /resultados
-
-  clientes_prueba3:
-    container_name: clientes_prueba3
-    image: client:latest
-    entrypoint: python3 /main.py 
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONHASHSEED=0
-      - LOGGING_LEVEL=INFO
-    networks:
-      - testing_net
-    depends_on:
-      - server    
-    volumes:
-      - type: bind
-        source: ./data/client3/config.ini
-        target: /config.ini
-      - type: bind
-        source: ./data/client
-        target: /data
-      - type: bind
-        source: ./data/client3
-        target: /resultados
-
-  clientes_prueba4:
-    container_name: clientes_prueba4
-    image: client:latest
-    entrypoint: python3 /main.py 
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONHASHSEED=0
-      - LOGGING_LEVEL=INFO
-    networks:
-      - testing_net
-    depends_on:
-      - server    
-    volumes:
-      - type: bind
-        source: ./data/client4/config.ini
-        target: /config.ini
-      - type: bind
-        source: ./data/client
-        target: /data
-      - type: bind
-        source: ./data/client4
-        target: /resultados
-
-  clientes_prueba2:
-    container_name: clientes_prueba2
-    image: client:latest
-    entrypoint: python3 /main.py 
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONHASHSEED=0
-      - LOGGING_LEVEL=INFO
-    networks:
-      - testing_net
-    depends_on:
-      - server    
-    volumes:
-      - type: bind
-        source: ./data/client5/config.ini
-        target: /config.ini
-      - type: bind
-        source: ./data/client
-        target: /data
-      - type: bind
-        source: ./data/client5
         target: /resultados
 
 networks:

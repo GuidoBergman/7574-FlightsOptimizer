@@ -121,7 +121,7 @@ class SesionCliente:
                 break
             elif estado == STATUS_ERR:
                 logging.error(f'Error al recibir vuelo')
-                break
+                raise Exception("Error al recibir vuelo")
 
             # Muestra por logs los chunck recibidos
             logging.debug(f'Accion: recibir_vuelo | estado: OK | Nro chunck: { chunk_recibidos } | Vuelos recibidos:   {len(vuelos_rec)}')

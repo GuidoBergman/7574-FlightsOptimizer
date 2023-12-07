@@ -2,10 +2,13 @@
   "ExpandedNodes": [
     "",
     "\\client",
-    "\\client\\comun",
-    "\\server",
-    "\\server\\comun"
+    "\\filtros\\calculador_promedio",
+    "\\filtros\\calculador_promedio\\comun",
+    "\\filtros\\filtro_escalas",
+    "\\filtros\\filtro_escalas\\comun",
+    "\\filtros\\filtro_precio",
+    "\\filtros\\filtro_precio\\comun"
   ],
-  "SelectedNode": "\\server\\comun\\sesioncliente.py",
+  "SelectedNode": "\\docker-compose-dev.yaml",
   "PreviewInSolutionExplorer": false
 }
