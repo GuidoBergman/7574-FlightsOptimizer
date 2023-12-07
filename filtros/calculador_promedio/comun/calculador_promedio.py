@@ -41,7 +41,12 @@ class CalculadorPromedio:
 
         informacion_a_persistir = str(promedio) + ',' + str(cantidad)
         return informacion_a_persistir
-
+    
+    def procesar_flush(self, id_cliente):        
+        logging.info(f'FLUSH Cliente: {id_cliente}')
+        self._protocolo.finalizo_cliente(id_cliente)
+        return None
+    
     def run(self):
           logging.info(f"Iniciando promedios")  
           try:
@@ -52,7 +57,7 @@ class CalculadorPromedio:
                 promedio = float(linea[0])
                 cantidad = int(linea[1])
                 self.procesar_promedio(id_cliente, promedio, cantidad)
-            self._protocolo.iniciar_promedio(self.procesar_promedio)
+            self._protocolo.iniciar_promedio(self.procesar_promedio, self.procesar_flush)
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
             exc = sys.exception()

@@ -123,7 +123,7 @@ class Client:
         if not self._protocolo.solicitar_sesion():
            logging.info("Sesion rechazada")
            self._protocolo.cerrar()
-           return 
+           return False
         
         logging.info("Enviando Aeropuertos")
         try:
@@ -139,12 +139,13 @@ class Client:
         self._handler_proceso.start()
         try:
             self._recibir_resultados()
-        except (ConnectionResetError, BrokenPipeError, OSError):
-            return
+        except (ConnectionResetError, BrokenPipeError, OSError) as e:
+            logging.error(f"Error recibiendo resultados {e}")
+            return True
 
         self._protocolo.cerrar()
         self._handler_proceso.join()
-
+        return True
 
                 
 

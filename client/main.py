@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from comun.client import Client
 import logging
 import os
-
+import time
 
 def initialize_config():
     """ Parse env variables or config file to find program config params
@@ -63,9 +63,18 @@ def main():
         logging.error("El archivo de vuelos no existe")
         archivos_validos = False
         
-    if archivos_validos:        
-        client = Client(host, port, archivo_aeropuertos, archivo_vuelos)
-        client.run()
+    if archivos_validos:
+        tiempo_espera = 10
+        ejecutado_obtenido = False
+        while not ejecutado_obtenido:
+            client = Client(host, port, archivo_aeropuertos, archivo_vuelos)
+            ejecutado_obtenido = client.run()
+            if not ejecutado_obtenido:
+                logging.info(f"Esperando para volver a conectarse {tiempo_espera} segundos")
+                time.sleep(tiempo_espera)
+                tiempo_espera = tiempo_espera * 2
+  
+        
 
 def initialize_log(logging_level):
     """

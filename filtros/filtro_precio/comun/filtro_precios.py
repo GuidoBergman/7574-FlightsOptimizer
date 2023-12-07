@@ -43,6 +43,7 @@ class FiltroPrecios:
             
     def procesar_flush(self, id_cliente):        
         logging.info(f'FLUSH Cliente: {id_cliente}')
+        self._protocolo.enviar_flush_promedio(id_cliente)
         self._protocolo.finalizo_cliente(id_cliente)
         return None
         
