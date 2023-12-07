@@ -1,3 +1,4 @@
+import os
 import uuid
 import logging
 import threading
@@ -11,7 +12,7 @@ from protocolo_cliente import ProtocoloCliente, ESTADO_FIN_VUELOS, ESTADO_FIN_AE
 import signal
 import sys
 import traceback
-
+MAXIMOS_CLIENTES = 2
 class SesionCliente:
     def __init__(self, _client_sock, cant_filtros_escalas,
         cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio, id_cliente = None):
@@ -41,6 +42,19 @@ class SesionCliente:
         self._protocolos.append(protDistancia)
         self._protocolos_con_aeropuerto.append(protDistancia)
   
+    def cantidad_clientes(self):
+            directorio = "/data"
+            archivos = [f for f in os.listdir(directorio) if os.path.isfile(os.path.join(directorio, f))]
+            # Filtrar archivos que comienzan con "sesion" y extraer el número de cliente
+            clientes = [archivo.replace("sesion", "") for archivo in archivos if archivo.startswith("sesion")]
+            return len(clientes)
+    
+    def crear_archivo(self):
+        nombre_archivo = f"/data/sesion{self.id_cliente}"
+        # Crear un archivo vacio, que podria tener datos sobre la sesion
+        with open(nombre_archivo, 'w') as archivo:
+            pass
+
     def correr(self):
         try:    
             
@@ -49,14 +63,21 @@ class SesionCliente:
             self._proceso_enviador = Process(target=enviador_resultados.iniciar, args=((self._client_sock,
                     self._cant_filtros_escalas, self._cant_filtros_distancia,
                     self._cant_filtros_velocidad, self._cant_filtros_precio
-                )))            
-            self._proceso_enviador.start()
-            self._protocolo_cliente = ProtocoloCliente(self._client_sock)  
-            self._recibir_aeropuertos()  
-            self._recibir_vuelos()
-            self._enviar_fin_vuelos()
-            logging.info("Espera terminen los resultados")
-            self._proceso_enviador.join()
+                )))
+            
+            self._protocolo_cliente = ProtocoloCliente(self._client_sock)
+            if self.cantidad_clientes() < MAXIMOS_CLIENTES:
+                self.crear_archivo()
+                self._protocolo_cliente.aceptar_sesion()
+                self._proceso_enviador.start()
+                self._recibir_aeropuertos()  
+                self._recibir_vuelos()
+                self._enviar_fin_vuelos()
+                logging.info("Espera terminen los resultados")
+                self._proceso_enviador.join()
+            else:
+                self._protocolo_cliente.cancelar_sesion()
+                
             self._client_sock.close()            
             logging.info(f'Termina el proceso cliente {self.id_cliente}')
         except Exception as e:
@@ -87,6 +108,8 @@ class SesionCliente:
         logging.info(f"Enviando FLUSH para cliente {self.id_cliente}")
         for prot in self._protocolos:
             prot.enviar_flush(self.id_cliente)
+        os.remove(f"/data/sesion{self.id_cliente}")
+        
         
     def _recibir_vuelos(self):
         chunk_recibidos = 0
@@ -116,7 +139,7 @@ class SesionCliente:
         logging.info(f"Enviando FIN VUELOS para cliente {self.id_cliente}")
         for prot in self._protocolos:
             prot.enviar_fin_vuelos(self.id_cliente)
-         
+        os.remove(f"/data/sesion{self.id_cliente}")
                 
     def sigterm_handler(self, _signo, _stack_frame):
         logging.error('SIGTERM recibida (sesión cliente)')

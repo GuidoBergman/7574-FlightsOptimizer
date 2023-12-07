@@ -1,7 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\client",
+    "\\client\\comun",
+    "\\server",
+    "\\server\\comun"
   ],
-  "SelectedNode": "\\C:\\Users\\luisw\\Source\\Repos\\7574-FlightsOptimizer",
+  "SelectedNode": "\\server\\comun\\sesioncliente.py",
   "PreviewInSolutionExplorer": false
 }

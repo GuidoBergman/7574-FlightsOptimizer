@@ -59,8 +59,6 @@ def main():
     host_watchdog = config_params["host_watchdog"] 
     port_watchdog = config_params["port_watchdog"] 
     
-
-
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration

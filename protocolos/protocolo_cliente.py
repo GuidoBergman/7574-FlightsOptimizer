@@ -4,6 +4,10 @@ from struct import unpack, pack, calcsize
 import logging
 
 TAMANIO_IDENTIFICADOR_MENSAJE = 1
+SESION_SOLICITAR = 'S'
+SESION_ACEPTAR = 'T'
+SECION_CANCELAR = 'C'
+
 IDENTIFICADOR_VUELO = 'V'
 IDENTIFICADOR_AEROPUERTO = 'A'
 IDENTIFICADOR_FIN_VUELO = 'F'
@@ -26,7 +30,7 @@ class ProtocoloCliente:
 
     def __init__(self, socket):
         self._socket = socket
-
+    
 
     def _recibir_identificador_mensaje(self):
         estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
@@ -34,6 +38,29 @@ class ProtocoloCliente:
             return STATUS_ERR, None       
         return estado, mensaje.decode(STRING_ENCODING)
 
+
+    def cancelar_sesion(self):
+        estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
+        logging.info(f"Pedido sesion || mensaje recibido {mensaje}")
+        self._socket.send(SECION_CANCELAR.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        logging.info("Cancela Sesion")
+        
+    def aceptar_sesion(self):
+        estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
+        logging.info(f"Pedido sesion || mensaje recibido {mensaje}")
+        self._socket.send(SESION_ACEPTAR.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        logging.info(f"Acepta Sesion")
+
+    def solicitar_sesion(self):
+        logging.info("Envia Solicitar Sesion")
+        self._socket.send(SESION_SOLICITAR.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)
+        logging.info("Espera resupuesta...")
+        estado, mensaje = self._socket.receive(TAMANIO_IDENTIFICADOR_MENSAJE)
+        logging.info(f"Respuesta sesion recibida: {mensaje}")
+        if mensaje.decode(STRING_ENCODING) == SESION_ACEPTAR:
+            return True
+        return False        
+    
     def recibir_vuelo(self):
         estado, identificador_mensaje = self._recibir_identificador_mensaje()
         if estado != STATUS_OK:
@@ -119,8 +146,6 @@ class ProtocoloCliente:
         else:
             logging.error(f'acción: recibir_vuelo | result: error')
             return STATUS_ERR, None
-        
-
         
     def enviar_vuelos(self, vuelos):
         self._socket.send(IDENTIFICADOR_VUELO.encode(STRING_ENCODING), TAMANIO_IDENTIFICADOR_MENSAJE)

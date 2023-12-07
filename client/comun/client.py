@@ -119,6 +119,11 @@ class Client:
 
     def run(self):
         logging.info("Iniciando cliente")
+        logging.info("Solicita sesion")
+        if not self._protocolo.solicitar_sesion():
+           logging.info("Sesion rechazada")
+           self._protocolo.cerrar()
+           return 
         
         logging.info("Enviando Aeropuertos")
         try:
@@ -128,13 +133,10 @@ class Client:
             error_message = str(e)          # Obtiene el mensaje de error
             logging.error(f"Error conectando: {error_type} - {error_message}")
             return
-
-
         logging.info("Enviando Vuelos")
         enviador_vuelos = EnviadorVuelos(self._protocolo)
         self._handler_proceso = Process(target=enviador_vuelos.enviar_vuelos, args=(('/data/' + self.archivo_vuelos),))
         self._handler_proceso.start()
-
         try:
             self._recibir_resultados()
         except (ConnectionResetError, BrokenPipeError, OSError):

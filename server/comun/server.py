@@ -1,5 +1,6 @@
 from ast import Import
 import logging
+import os
 import signal
 from multiprocessing import Process
 from socket_comun import SocketComun
@@ -80,11 +81,31 @@ class Server:
 
 
     # Run wrapper para el manejo de sigterm
+
+
+    def _flush_caidos(self):
+        logging.info("Buscando clientes anteriores...")
+        directorio = "/data"
+        # Obtener la lista de archivos en el directorio
+        archivos = [f for f in os.listdir(directorio) if os.path.isfile(os.path.join(directorio, f))]
+        # Filtrar archivos que comienzan con "sesion" y extraer el número de cliente
+        clientes = [archivo.replace("sesion", "") for archivo in archivos if archivo.startswith("sesion")]
+        for cliente in clientes:
+            logging.info(f"Encuentra el archivo de la sesion del cliente {cliente}")
+            sesion = SesionCliente(None, self._cant_filtros_escalas ,self._cant_filtros_distancia,
+                                   self._cant_filtros_velocidad, self._cant_filtros_precio, id_cliente = cliente)
+            sesion._enviar_flush()
+            
+
+
+
+
     def run(self):
         try:
             logging.info('Iniciando servidor')
             self._handle_protocolo_heartbeat = Process(target=self._protocolo_heartbeat.enviar_heartbeats)  
             self._handle_protocolo_heartbeat.start()
+            self._flush_caidos()
             self._run()
         except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
