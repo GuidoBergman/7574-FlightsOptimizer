@@ -5,6 +5,8 @@ import queue
 import pika
 import os
 
+MAX_QUEUE_LENGTH = 2147483647
+MAX_QUEUE_LENGTH_BYTES = 2147483647
 
 HOST = 'rabbitmq'
 
@@ -44,7 +46,10 @@ class ManejadorColas:
         
 
     def crear_cola(self, nombre_cola):
-        self._channel.queue_declare(queue=nombre_cola, durable=True)
+        self._channel.queue_declare(queue=nombre_cola, durable=True,  
+            arguments={'x-max-length': MAX_QUEUE_LENGTH, 
+                       'x-max-length-bytes': MAX_QUEUE_LENGTH_BYTES}
+    )
     
     def crear_cola_por_topico(self, nombre_cola):
         self._channel.exchange_declare(exchange=nombre_cola, exchange_type='direct', durable=True)
@@ -68,14 +73,18 @@ class ManejadorColas:
        self.vincular_wrapper(nombre_cola, callback_function, auto_ack, post_ack_callback=post_ack_callback)
 
     def consumir_mensajes_por_topico(self, nombre_cola, id, callback_function, topico, auto_ack=True, post_ack_callback=None):
-       resultado = self._channel.queue_declare(queue=nombre_cola + id, durable=True)
+       resultado = self._channel.queue_declare(queue=nombre_cola + id, durable=True, 
+                        arguments={'x-max-length': MAX_QUEUE_LENGTH, 
+                       'x-max-length-bytes': MAX_QUEUE_LENGTH_BYTES})
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima, routing_key=str(topico))
        self.vincular_wrapper(nombre_cola, callback_function, auto_ack, post_ack_callback=post_ack_callback)
  
     def subscribirse_cola(self, nombre_cola, id, callback_function, auto_ack=True, post_ack_callback=None):
-       resultado = self._channel.queue_declare(queue=nombre_cola + id, durable=True)
+       resultado = self._channel.queue_declare(queue=nombre_cola + id, durable=True, 
+                        arguments={'x-max-length': MAX_QUEUE_LENGTH, 
+                       'x-max-length-bytes': MAX_QUEUE_LENGTH_BYTES})
        nombre_cola_anonima = resultado.method.queue
        self._nombrecolas[nombre_cola] = nombre_cola_anonima
        self._channel.queue_bind(exchange=nombre_cola, queue=nombre_cola_anonima)           
