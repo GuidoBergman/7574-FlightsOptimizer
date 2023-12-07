@@ -150,8 +150,7 @@ class FiltroVelocidad:
             self._protocolo.iniciar(self.procesar_vuelo, self.procesar_finvuelo, self.procesar_flush, self._id, self._cant_filtros_escalas) 
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
-            exc = sys.exception()
-            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+            exc = sys.exception()         
             traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
 

@@ -93,8 +93,7 @@ class FiltroPrecios:
           self._protocolo.iniciar(self.procesar_vuelos, self.procesar_finvuelo, self.procesar_promediogeneral, self.procesar_flush, self._id)
         except Exception as e:
             if hasattr(sys, 'exception'):
-                exc = sys.exception()
-                traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+                exc = sys.exception()       
                 traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
           
