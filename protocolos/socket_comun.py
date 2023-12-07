@@ -17,6 +17,9 @@ class SocketComun:
         self._socket.bind((host, port))
         self._socket.listen(listen_backlog)
 
+    def set_timeout(self, timeout):
+        self._socket.settimeout(timeout)
+
     def accept(self):
         """
         Accept new connections

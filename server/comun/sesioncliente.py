@@ -13,6 +13,12 @@ import signal
 import sys
 import traceback
 MAXIMOS_CLIENTES = 2
+TIMEOUT_CLIENTE = 10
+
+class ConexionConClientePerdida(Exception):
+    "Conexíon con el cliente perdida"
+    pass
+
 class SesionCliente:
     def __init__(self, _client_sock, cant_filtros_escalas,
         cant_filtros_distancia, cant_filtros_velocidad, cant_filtros_precio, id_cliente = None):
@@ -26,6 +32,7 @@ class SesionCliente:
         
         signal.signal(signal.SIGTERM, self.sigterm_handler)        
         self._client_sock = _client_sock
+        self._client_sock.set_timeout(TIMEOUT_CLIENTE)
         self._cant_filtros_escalas = cant_filtros_escalas
         self._cant_filtros_distancia = cant_filtros_distancia
         self._cant_filtros_velocidad = cant_filtros_velocidad
@@ -98,7 +105,7 @@ class SesionCliente:
                 break
             elif estado == STATUS_ERR:
                 logging.error(f'Error al recibir aeropuerto')
-                break
+                raise ConexionConClientePerdida
             logging.info(f'Aeropuertos recibidos: { self.id_cliente} total { len(aeropuertos)}')
             for prot in self._protocolos_con_aeropuerto:
                     prot.enviar_aeropuertos(self.id_cliente, aeropuertos)
