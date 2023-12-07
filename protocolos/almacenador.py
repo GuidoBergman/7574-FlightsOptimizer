@@ -22,17 +22,15 @@ class Almacenador:
         self._archivos[nombre_archivo].close()
         del self._archivos;
         archi = join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION)
-        if os.path.exists(archi):
-            os.remove(archi)
-        archi = join(BASEPATH_ARCHIVOS, f"b'{str(nombre_archivo)}" + EXTENCION)
-        if os.path.exists(archi):
-            os.remove(archi)
+        os.remove(archi)
         
     
 
     def guardar_linea(self, nombre_archivo, contenido):
         if nombre_archivo not in self._archivos:
-            self._archivos[nombre_archivo] = open(join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION), 'a+')
+            nombre_archivo_fisico = join(BASEPATH_ARCHIVOS, str(nombre_archivo) + EXTENCION)
+            logging.info(f"Abriendo Archivo: {nombre_archivo_fisico}")
+            self._archivos[nombre_archivo] = open(nombre_archivo_fisico, 'a+')
 
         self._archivos[nombre_archivo].write(str(contenido) + '\n')        
 

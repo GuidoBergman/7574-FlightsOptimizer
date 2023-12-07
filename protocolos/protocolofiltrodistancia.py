@@ -62,7 +62,8 @@ class ProtocoloFiltroDistancia(ProtocoloBase):
             if self._recuperador.es_duplicado(id_cliente, body):
                 logging.info(f'Se recibió un fin de aeropuertos duplicado: {body}')
                 return
-            contenido_persistir = self.procesar_finaeropuerto(id_cliente.decode('utf-8'))
+            id_cliente = id_cliente.decode('utf-8')
+            contenido_persistir = self.procesar_finaeropuerto(id_cliente)
         self._recuperador.almacenar(id_cliente, body, contenido_persistir)
 
     def callback_function(self, body):

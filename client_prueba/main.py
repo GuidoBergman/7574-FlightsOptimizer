@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import time
 from configparser import ConfigParser
 from comun.client import Client
 from comun.datos_archivo import DatosArchivo
@@ -64,11 +64,21 @@ def main():
     #datosarchivos.append(DatosArchivo("archivo_prueba6.csv", 84, 4565, 234, 544))
     #datosarchivos.append(DatosArchivo("archivo_prueba7.csv", 85, 4648, 234, 569))
     #datosarchivos.append(DatosArchivo("archivo_prueba8.csv", 79, 4663, 234, 542))
-    datosarchivos.append(DatosArchivo("archivo_prueba9.csv", 79, 4450, 235, 549))
+    datosarchivos.append(DatosArchivo("archivo_prueba9.csv", 79, 4450, 234, 549))
     elemento_aleatorio = random.choice(datosarchivos)
     logging.info(f"Iniciando pruebas para archivo: {elemento_aleatorio.nombre_archivo}")
-    client = Client(host, port, archivo_aeropuertos, elemento_aleatorio)
-    client.run()
+    tiempo_espera = 10
+    ejecutado_obtenido = False
+    while not ejecutado_obtenido:
+        client = Client(host, port, archivo_aeropuertos, elemento_aleatorio.nombre_archivo)
+        ejecutado_obtenido = client.run()
+        if not ejecutado_obtenido:
+            logging.info(f"Esperando para volver a conectarse {tiempo_espera} segundos")
+            time.sleep(tiempo_espera)
+            tiempo_espera = tiempo_espera * 2
+        else:
+            elemento_aleatorio.validar()
+  
 
 def initialize_log(logging_level):
     """

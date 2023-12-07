@@ -27,16 +27,20 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
-      - CANT_FILTROS_ESCALAS=1
-      - CANT_FILTROS_DISTANCIA=1
-      - CANT_FILTROS_VELOCIDAD=1
-      - CANT_FILTROS_PRECIO=1
-      - CANT_WATCHDOGS=1
+      - CANT_FILTROS_ESCALAS=2
+      - CANT_FILTROS_DISTANCIA=2
+      - CANT_FILTROS_VELOCIDAD=2
+      - CANT_FILTROS_PRECIO=2
+      - CANT_WATCHDOGS=2
     depends_on:
       - filtro_escalas1
+      - filtro_escalas2
       - filtro_distancia1
+      - filtro_distancia2
       - filtro_velocidad1
+      - filtro_velocidad2
       - filtro_precio1
+      - filtro_precio2
 
     networks:
       - testing_net
@@ -58,8 +62,8 @@ services:
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_FILTROS_VELOCIDAD=1
-      - CANT_WATCHDOGS=1
+      - CANT_FILTROS_VELOCIDAD=2
+      - CANT_WATCHDOGS=2
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -73,6 +77,30 @@ services:
         source: ./data/filtro_escalas1
         target: /data
     
+  filtro_escalas2:
+    container_name: filtro_escalas2
+    image: filtro_escalas:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_FILTROS_VELOCIDAD=2
+      - CANT_WATCHDOGS=2
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_escalas/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/filtro_escalas2
+        target: /data
+    
   filtro_distancia1:
     container_name: filtro_distancia1
     image: filtro_distancia:latest
@@ -82,7 +110,7 @@ services:
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_WATCHDOGS=1
+      - CANT_WATCHDOGS=2
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -98,6 +126,31 @@ services:
         
 
     
+  filtro_distancia2:
+    container_name: filtro_distancia2
+    image: filtro_distancia:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_WATCHDOGS=2
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_distancia/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/filtro_distancia2
+        target: /data
+        
+
+    
   filtro_velocidad1:
     container_name: filtro_velocidad1
     image: filtro_velocidad:latest
@@ -107,8 +160,8 @@ services:
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_FILTROS_ESCALAS=1
-      - CANT_WATCHDOGS=1
+      - CANT_FILTROS_ESCALAS=2
+      - CANT_WATCHDOGS=2
     depends_on:
       - calculador_promedio
     networks:
@@ -121,6 +174,29 @@ services:
         source: ./data/filtro_velocidad1
         target: /data
     
+  filtro_velocidad2:
+    container_name: filtro_velocidad2
+    image: filtro_velocidad:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_FILTROS_ESCALAS=2
+      - CANT_WATCHDOGS=2
+    depends_on:
+      - calculador_promedio
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_velocidad/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/filtro_velocidad2
+        target: /data
+    
   filtro_precio1:
     container_name: filtro_precio1
     image: filtro_precio:latest
@@ -130,7 +206,7 @@ services:
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO
       - ID=1
-      - CANT_WATCHDOGS=1
+      - CANT_WATCHDOGS=2
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -144,6 +220,29 @@ services:
         source: ./data/filtro_precio1
         target: /data
     
+  filtro_precio2:
+    container_name: filtro_precio2
+    image: filtro_precio:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+      - ID=2
+      - CANT_WATCHDOGS=2
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./filtros/filtro_precio/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/filtro_precio2
+        target: /data
+    
   calculador_promedio:
     container_name: calculador_promedio
     image: calculador_promedio:latest
@@ -152,8 +251,8 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
-      - CANT_FILTROS_PRECIO=1
-      - CANT_WATCHDOGS=1
+      - CANT_FILTROS_PRECIO=2
+      - CANT_WATCHDOGS=2
     depends_on:
       rabbitmq:
          condition: service_healthy
@@ -167,6 +266,29 @@ services:
         source: ./data/calculador_promedio
         target: /data
 
+  client:
+    container_name: client
+    image: client:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server
+    volumes:
+      - type: bind
+        source: ./client/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/client
+        target: /data
+      - type: bind
+        source: ./data/client
+        target: /resultados
+
   watchdog1:
     container_name: watchdog1
     image: watchdog:latest
@@ -175,11 +297,11 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONHASHSEED=0
       - LOGGING_LEVEL=INFO      
-      - CANT_FILTROS_ESCALAS=1
-      - CANT_FILTROS_DISTANCIA=1
-      - CANT_FILTROS_VELOCIDAD=1
-      - CANT_FILTROS_PRECIO=1
-      - CANT_WATCHDOGS=1
+      - CANT_FILTROS_ESCALAS=2
+      - CANT_FILTROS_DISTANCIA=2
+      - CANT_FILTROS_VELOCIDAD=2
+      - CANT_FILTROS_PRECIO=2
+      - CANT_WATCHDOGS=2
       - ID=1
     depends_on:
       rabbitmq:
@@ -192,9 +314,34 @@ services:
         target: /config.ini
       - /var/run/docker.sock:/var/run/docker.sock
 
-  client1:
-    container_name: client1
-    image: client:latest
+  watchdog2:
+    container_name: watchdog2
+    image: watchdog:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO      
+      - CANT_FILTROS_ESCALAS=2
+      - CANT_FILTROS_DISTANCIA=2
+      - CANT_FILTROS_VELOCIDAD=2
+      - CANT_FILTROS_PRECIO=2
+      - CANT_WATCHDOGS=2
+      - ID=2
+    depends_on:
+      rabbitmq:
+         condition: service_healthy
+    networks:
+      - rabbit_net
+    volumes:
+      - type: bind
+        source: ./watchdog/config.ini
+        target: /config.ini
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  clientes_prueba1:
+    container_name: clientes_prueba1
+    image: client_prueba:latest
     entrypoint: python3 /main.py 
     environment:
       - PYTHONUNBUFFERED=1
@@ -213,6 +360,29 @@ services:
         target: /data
       - type: bind
         source: ./data/client1
+        target: /resultados
+
+  clientes_prueba2:
+    container_name: clientes_prueba2
+    image: client_prueba:latest
+    entrypoint: python3 /main.py 
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONHASHSEED=0
+      - LOGGING_LEVEL=INFO
+    networks:
+      - testing_net
+    depends_on:
+      - server    
+    volumes:
+      - type: bind
+        source: ./data/client2/config.ini
+        target: /config.ini
+      - type: bind
+        source: ./data/client
+        target: /data
+      - type: bind
+        source: ./data/client2
         target: /resultados
 
 networks:

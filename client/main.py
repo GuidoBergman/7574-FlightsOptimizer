@@ -63,9 +63,7 @@ def main():
         logging.error("El archivo de vuelos no existe")
         archivos_validos = False
         
-    if archivos_validos:        
-        
-        
+    if archivos_validos:
         tiempo_espera = 10
         ejecutado_obtenido = False
         while not ejecutado_obtenido:
