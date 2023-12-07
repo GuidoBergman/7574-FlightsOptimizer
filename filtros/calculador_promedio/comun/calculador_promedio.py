@@ -60,8 +60,7 @@ class CalculadorPromedio:
             self._protocolo.iniciar_promedio(self.procesar_promedio, self.procesar_flush)
           except Exception as e:
             logging.error(f'Ocurrió una excepción: {e}')
-            exc = sys.exception()
-            traceback.print_tb(exc.__traceback__, limit=1, file=sys.stdout)          
+            exc = sys.exception()         
             traceback.print_exception(exc, limit=2, file=sys.stdout)
             self.cerrar()
           
