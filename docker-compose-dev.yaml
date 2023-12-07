@@ -167,29 +167,6 @@ services:
         source: ./data/calculador_promedio
         target: /data
 
-  client:
-    container_name: client
-    image: client:latest
-    entrypoint: python3 /main.py 
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONHASHSEED=0
-      - LOGGING_LEVEL=INFO
-    networks:
-      - testing_net
-    depends_on:
-      - server
-    volumes:
-      - type: bind
-        source: ./client/config.ini
-        target: /config.ini
-      - type: bind
-        source: ./data/client
-        target: /data
-      - type: bind
-        source: ./data/client
-        target: /resultados
-
   watchdog1:
     container_name: watchdog1
     image: watchdog:latest
@@ -307,8 +284,8 @@ services:
         source: ./data/client4
         target: /resultados
 
-  clientes_prueba5:
-    container_name: clientes_prueba5
+  clientes_prueba2:
+    container_name: clientes_prueba2
     image: client:latest
     entrypoint: python3 /main.py 
     environment:
